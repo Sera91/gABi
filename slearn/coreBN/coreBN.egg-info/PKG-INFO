@@ -1,0 +1,81 @@
+Metadata-Version: 2.1
+Name: coreBN
+Version: 0.0
+Summary: A library for Probabilistic Graphical Models
+Author: S. Di Gioia
+License: libera
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: MacOS
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Description-Content-Type: text/markdown
+Provides-Extra: all
+Provides-Extra: tests
+
+coreBN
+=====
+
+
+coreBN is a python library for working with Probabilistic Graphical Models. 
+
+
+Dependencies
+=============
+It has following non optional dependencies:
+- python 3.6 or higher
+- networkX
+- scipy 
+- numpy
+- pytorch
+
+Some of the functionality would also require:
+- tqdm
+- pandas
+- pyparsing
+- statsmodels
+- joblib
+
+
+Installation
+============
+
+cd coreBN/
+$ pip install -r requirements.txt
+$ python setup.py install
+
+Testing
+-------
+
+After installation, you can launch the test from
+source directory (you will need to have the ``pytest`` package installed):
+```bash
+$ pytest -v
+```
+to see the coverage of existing code use following command
+```
+$ pytest --cov-report html --cov=pgmpy
+```
+
+Documentation and usage
+=======================
+
+
+I will use sphinx to build the documentation. To build the documentation on your local system use:
+```
+$ cd /docs
+$ make html
+```
+The generated docs will be in _build/html
+
+
+
+
