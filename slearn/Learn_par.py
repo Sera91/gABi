@@ -61,8 +61,7 @@ def fit(model, df, methodtype='bayes', scoretype='bdeu', smooth=None, n_jobs=-1,
     ----------
     model : dict
         Contains a model object with a key 'adjmat' (adjacency matrix).
-    df : pd.DataFrame()
-        Pandas DataFrame containing the data.
+    df : pd.DataFrame() #Pandas DataFrame containing the data.
     methodtype : str, (default: 'bayes')
         Strategy for parameter learning.
             * 'ml', 'maximumlikelihood': Learning CPDs using Maximum Likelihood Estimators.
@@ -74,8 +73,9 @@ def fit(model, df, methodtype='bayes', scoretype='bdeu', smooth=None, n_jobs=-1,
             * 'k2'
     smooth : float (default: None)
         The smoothing value (α) for Bayesian parameter estimation. Should be Nonnegative.
-    Print progress to screen. The default is 3.
-        0: None, 1: ERROR, 2: WARN, 3: INFO (default), 4: DEBUG, 5: TRACE
+    verbose: guiding the printing process on the screen. 
+             0: None, 1: ERROR, 2: WARN, 3: INFO (default), 4: DEBUG, 5: TRACE
+             The default is 3.
 
     Returns
     -------
