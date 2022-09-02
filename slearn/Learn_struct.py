@@ -23,18 +23,19 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
     The search space of DAGs is super-exponential in the number of variables and the above scoring functions allow for local maxima.
 
     To learn model structure (a DAG) from a data set, there are 2 broad techniques:
-        1. Score-based structure learning (BIC/BDeu/K2 score; exhaustive search, hill climb/tabu search)
-            * exhaustivesearch
-            * hillclimbsearch
+        1. Score-based structure learning (BIC/BDeu/K2 score; exhaustive search, hill climb/tabu search):
+            a) exhaustivesearch
+            b) hillclimbsearch
             
-        2. Constraint-based structure learning (PC)
-            a. chi-square test
-       
+        2. Constraint-based structure learning:
+            a. PC (based in indep tests)
+            b. IAMB
+        
 
     
-    The score-based Structure Learning approach construes model selection as an optimization task. It has two building blocks:
-    A scoring function sD:->R that maps models to a numerical score, based on how well they fit to a given data set D.
-    A search strategy to traverse the search space of possible models M and select a model with optimal score.
+    The score-based Structure Learning approach has two building blocks:
+       - a scoring function sD:->R that maps models to a numerical score, based on how well they fit to a given data set D.
+       - a search strategy to traverse the search space of possible models M and select a model with optimal score.
     Commonly used scoring functions to measure the fit between model and data are Bayesian Dirichlet scores such as BDeu or K2 and the Bayesian Information Criterion (BIC, also called MDL).
     BDeu is dependent on an equivalent sample size.
 
@@ -47,9 +48,7 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
         'hc' or 'hillclimbsearch' (default)
         'ex' or 'exhaustivesearch'
         'cs' or 'constraintsearch'
-        'cl' or 'chow-liu' (requires setting root_node parameter)
-        'nb' or 'naivebayes' (requires <root_node>)
-        'tan' (requires <root_node> and <class_node> parameter)
+        
     scoretype : str, (default : 'bic')
         Scoring function for the search spaces.
         'bic', 'k2', 'bdeu'
@@ -62,7 +61,7 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
         Works only in case of methodtype='hc' See also paramter: `bw_list_method`
     bw_list_method : list of str or tuple, (default : None)
         A list of edges can be passed as `black_list` or `white_list` to exclude or to limit the search.
-            * 'edges' : [('A', 'B'), ('C','D'), (...)] This option is limited to only methodtype='hc'
+            * 'edges' : [('A', 'B'), ('C','D'), (...)] 
             * 'nodes' : ['A', 'B', ...] Filter the dataframe based on the nodes for `black_list` or `white_list`. Filtering can be done for every methodtype/scoretype.
     max_indegree : int, (default : None)
         If provided and unequal None, the procedure only searches among models where all nodes have at most max_indegree parents. (only in case of methodtype='hc')
@@ -228,7 +227,7 @@ def _white_black_list_filter(df, white_list, black_list, bw_list_method='edges',
 
 # %% Constraint-based Structure Learning
 def _constraintsearch(df, significance_level=0.05, n_jobs=-1, verbose=3):
-    """Contrain search.
+    """Contraint-based BN structure learnging based on PC search algorithm.
 
     PC PDAG construction is only guaranteed to work under the assumption that the
     identified set of independencies is *faithful*, i.e. there exists a DAG that
@@ -248,7 +247,7 @@ def _constraintsearch(df, significance_level=0.05, n_jobs=-1, verbose=3):
     With a method for independence testing at hand, we can construct a DAG from the data set in three steps:
         1. Construct an undirected skeleton - `estimate_skeleton()`
         2. Orient compelled edges to obtain partially directed acyclid graph (PDAG; I-equivalence class of DAGs) - `skeleton_to_pdag()`
-        optional-3. Extend DAG pattern to a DAG by conservatively orienting the remaining edges in some way - `pdag_to_dag()`
+        3. Extend DAG pattern to a DAG by conservatively orienting the remaining edges in some way - `pdag_to_dag()`
 
         The first two steps form the so-called PC algorithm, see [2], page 550. PDAGs are `DirectedGraph`s, that may contain both-way edges, to indicate that the orientation for the edge is not determined.
 
