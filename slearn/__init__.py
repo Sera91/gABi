@@ -20,6 +20,7 @@ from slearn.base import (
     get_node_properties,
     get_edge_properties,
     _filter_df,
+    _bif2bayesian,
     independence_test,
     save,
     load,

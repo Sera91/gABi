@@ -969,7 +969,7 @@ def _plot_static(model, params_static, nodelist, node_colors, node_sizes, G, pos
 def _plot_interactive(model, params_interactive, nodelist, node_colors, node_sizes, edgelist, edge_colors, edge_weights, title, verbose=3):
     try:
         from pyvis.network import Network
-        from IPython.coreBN.display import display, HTML
+        from IPython.core.display import display, HTML
     except ModuleNotFoundError:
         if verbose>=1: raise Exception('[slearn] >"pyvis" module is not installed. Please pip install first: "pip install pyvis"')
     # Convert adjacency matrix into Networkx Graph
@@ -996,7 +996,7 @@ def _plot_interactive(model, params_interactive, nodelist, node_colors, node_siz
     filename = title.strip().replace(' ', '_') + '.html'
     g.show(filename)
     display(HTML(filename))
-    # webbrowser.open('slearn.html')
+
 
 
 # %% Plot properties
@@ -1105,7 +1105,7 @@ def import_example(data='sprinkler', n=10000, verbose=3):
     ----------
     data: str, (default: sprinkler)
         Pre-defined examples.
-        'titanic', 'sprinkler', 'alarm', 'andes', 'asia', 'sachs', 'water', 'random', 'stormofswords'
+        'titanic', 'sprinkler', 'Alarm', 'Asia', 'random'
     n: int, optional
         Number of samples to generate. The default is 1000.
     verbose: int, (default: 3)
@@ -1120,6 +1120,17 @@ def import_example(data='sprinkler', n=10000, verbose=3):
     if data=='random':
         return pd.DataFrame(np.random.randint(low=0, high=2, size=(n, 5)), columns=['A', 'B', 'C', 'D', 'E'])
 
+    if (data=='Asia') or (data=='Alarm'):
+       PATH_TO_DATA='slearn/datasets_input/'
+       file_input  = PATH_TO_DATA+data+'_10k.csv'
+       df_input= pd.read_csv(file_input)
+       new_df_input = df_input.copy()
+       from sklearn.preprocessing import LabelEncoder
+       lb=LabelEncoder()
+       for name in df_input.columns.tolist():
+            new_df_input[name]= lb.fit_transform(df_input[name])
+       return new_df_input 
+
     # Change name for downloading
     if data=='titanic': data = 'titanic_train'
 
@@ -1127,7 +1138,7 @@ def import_example(data='sprinkler', n=10000, verbose=3):
     PATH_TO_DATA = dutils.download_example(data, verbose=verbose)
 
     # Import dataset
-    if (data=='sprinkler') or (data=='titanic_train') or (data=='stormofswords'):
+    if (data=='sprinkler') or (data=='titanic_train'):
         if verbose>=3: print('[slearn] >Import dataset..')
         df = pd.read_csv(PATH_TO_DATA, delimiter=',')
     else:
