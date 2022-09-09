@@ -638,7 +638,7 @@ def compare_networks(model_1, model_2, pos=None, showfig=True, figsize=(15, 8), 
 
 
 # %% Get node properties
-def get_node_properties(model, node_color='#1f456e', node_size=None, verbose=3):
+def get_node_properties(model, node_color='#ffffff', node_size=None, verbose=3):
     """Collect node properties.
 
     Parameters
@@ -789,7 +789,7 @@ def plot(model,
          node_size=None,
          node_properties=None,
          edge_properties=None,
-         params_interactive={'width': '70%', 'height': '800px', 'notebook': False, 'layout': None, 'font_color': False, 'bgcolor': '#ffffff'},
+         params_interactive={'width': '70%', 'height': '800px', 'notebook': False, 'layout': None, 'font_color': False, 'bgcolor': 'white'},
          params_static={'minscale': 1, 'maxscale': 10, 'figsize': (15, 10), 'width': None, 'height': None, 'font_size': 14, 'font_family': 'sans-serif', 'alpha': 0.8, 'node_shape': 'o', 'layout': 'spring_layout', 'font_color': '#000000', 'facecolor': 'white', 'edge_alpha': 0.8, 'arrowstyle': '-|>', 'arrowsize': 30},
          verbose=3):
     """Plot the learned stucture.
@@ -875,7 +875,7 @@ def plot(model,
     # Plot properties
     defaults = {'height': '800px', 'width': '70%', 'notebook': False, 'layout': None, 'font_color': False, 'bgcolor': '#ffffff', 'directed': True}
     params_interactive = {**defaults, **params_interactive}
-    defaults = {'minscale': 1, 'maxscale': 10, 'figsize': (15, 10), 'height': None, 'width': None, 'font_size': 14, 'font_family': 'sans-serif', 'alpha': 0.8, 'layout': 'spring_layout', 'font_color': 'k', 'facecolor': '#ffffff', 'node_shape': 'o', 'edge_alpha': 0.8, 'arrowstyle': '-|>', 'arrowsize': 30}
+    defaults = {'minscale': 1, 'maxscale': 10, 'figsize': (15, 10), 'height': None, 'width': None, 'font_size': 15, 'font_family': 'sans-serif', 'alpha': 0.8, 'layout': 'spring_layout', 'font_color': 'k', 'facecolor': '#ffffff', 'node_shape': 'o', 'edge_alpha': 0.8, 'arrowstyle': '-|>', 'arrowsize': 30}
     params_static = {**defaults, **params_static}
 
     ##### DEPRECATED IN LATER VERSION #####
@@ -1132,13 +1132,15 @@ def import_example(data='sprinkler', n=10000, verbose=3):
        return new_df_input 
 
     # Change name for downloading
-    if data=='titanic': data = 'titanic_train'
+    if data=='titanic': 
+       # Download example dataset from github source
+       PATH_TO_DATA = dutils.download_example(data, verbose=verbose)
 
-    # Download example dataset from github source
-    PATH_TO_DATA = dutils.download_example(data, verbose=verbose)
+    if data=='sprinkler':
+       PATH_TO_DATA ='slearn/datasets_input/Sprinkler_1000.csv'
 
     # Import dataset
-    if (data=='sprinkler') or (data=='titanic_train'):
+    if (data=='sprinkler') or (data=='titanic'):
         if verbose>=3: print('[slearn] >Import dataset..')
         df = pd.read_csv(PATH_TO_DATA, delimiter=',')
     else:
