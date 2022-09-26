@@ -20,7 +20,7 @@ def adjmat_to_graph(adjmat, verbose=3):
     config['verbose'] = verbose
 
     adjmat = is_DataFrame(adjmat)
-    if config['verbose']>=3: print('[slearn] >Making graph')
+    if config['verbose']>=3: print('we are making a graph from the adjacency matrix')
     G=nx.from_pandas_adjacency(adjmat)
 
     return(G)

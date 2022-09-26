@@ -258,7 +258,8 @@ def _constraintsearch(df, significance_level=0.05, n_jobs=-1, verbose=3):
     model = ConstraintBasedEstimator(df)
 
     # Estimate using chi2
-    skel, seperating_sets = model.build_skeleton(significance_level=significance_level)
+    n_nodes = len(df.columns.values.tolist())
+    skel, seperating_sets = model.build_skeleton(max_cond_vars=n_nodes,significance_level=significance_level)
 
     if verbose>=4: print("Undirected edges: ", skel.edges())
     pdag = model.skeleton_to_pdag(skel, seperating_sets)

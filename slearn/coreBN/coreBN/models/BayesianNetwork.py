@@ -1278,15 +1278,15 @@ class BayesianNetwork(DAG):
     @staticmethod
     def load(filename, filetype="bif"):
         """
-        Writes the model to a file.
+        Read the model from a file.
 
         Parameters
         ----------
         filename: str
-            The path along with the filename where to write the file.
+            The path along with the filename where to find the file.
 
         filetype: str (default: bif)
-            The format in which to write the model to file. Can be one of
+            The format in which to read the model from file. Can be one of
             the following: bif, uai, xmlbif.
 
         Examples

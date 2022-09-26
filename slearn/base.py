@@ -75,7 +75,7 @@ def make_DAG(DAG, CPD=None, methodtype='bayes', checkmodel=True, verbose=3):
 
     Parameters
     ----------
-    DAG : list
+    DAG : list of edges
         list containing source and target in the form of [('A','B'), ('B','C')].
     CPD : list, array-like
         Containing TabularCPD for each node.
@@ -246,7 +246,7 @@ def vec2df(source, target, weights=None):
 
     Description
     -----------
-    Convert edges between source and taget into a dataframe based on the weight.
+    Convert edges into a dataframe based on the weight.
     A weight of 2 will result that a row with the edge is created 2x.
 
     Parameters
@@ -297,9 +297,9 @@ def vec2df(source, target, weights=None):
     return pd.DataFrame(np.array(rows), columns=columns)
 
 
-# %%  Convert adjacency matrix to vector
+# %%  Convert edge list to adjacency matrix
 def vec2adjmat(source, target, weights=None, symmetric=True):
-    """Convert source and target into adjacency matrix.
+    """Convert edges between selected sources and targets into adjacency matrix.
 
     Parameters
     ----------
@@ -464,6 +464,17 @@ def sampling(DAG, n=1000, verbose=3):
     # Forward sampling and make dataframe
     df=infer_model.forward_sample(size=n)
     return(df)
+
+
+# Create Bayesian network from file with edgelist
+def _txt2BN(pathname, verbose=3):
+    """
+    return bayesian network from edgelist
+    read from file txt
+    """
+    if verbose>=3: print('[slearn] >Reading edgelist from file <%s>' %(pathname))
+    
+    nx
 
 
 # %% Convert BIF model to bayesian model
