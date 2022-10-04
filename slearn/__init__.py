@@ -27,10 +27,10 @@ from slearn.base import (
 )
 
 # Import function in new level
-import slearn.Learn_struct as structure_learning
-import slearn.Learn_par as parameter_learning
-import slearn.Inf as inference
-import slearn.Netk as network
+import slearn.learning_frontend as structure
+import slearn.fitting_frontend as parameter
+import slearn.cinf as inference
+import slearn.BN_frontend as network
 import slearn.CM as confmatrix
 import coreBN
 from packaging import version
