@@ -14,8 +14,8 @@ import slearn.base as slearn
 
 
 # %% Structure Learning
-def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, bw_list_method=None, max_indegree=None, tabu_length=100, epsilon=1e-4, max_iter=1e6, root_node=None, class_node=None, fixed_edges=None, return_all_dags=False, n_jobs=-1, verbose=3):
-    """Structure learning fit model.
+def learn(df, method='hc', scoretype='bic', black_list=None, white_list=None, bw_list_method=None, max_indegree=None, tabu_length=100, epsilon=1e-4, max_iter=1e6, fixed_edges=None, return_all_dags=False, n_jobs=-1, verbose=3):
+    """Structure learning function.
 
     Description
     -----------
@@ -24,10 +24,12 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
 
     To learn model structure (a DAG) from a data set, there are 2 broad techniques:
         1. Score-based structure learning (BIC/BDeu/K2 score; exhaustive search, hill climb/tabu search):
-            a) exhaustivesearch
-            b) hillclimbsearch
+            
+            a) hillclimbsearch
+            b) ex. search
             
         2. Constraint-based structure learning:
+            
             a. PC (based in indep tests)
             b. IAMB
         
@@ -43,42 +45,48 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
     ----------
     df : pd.DataFrame()
         Input dataframe.
-    methodtype : str, (default : 'hc')
-        String Search strategy for structure_learning.
-        'hc' or 'hillclimbsearch' (default)
-        'ex' or 'exhaustivesearch'
-        'cs' or 'constraintsearch'
+    method : str, (default : 'hc')
+                 Search strategy for structure_learning.
+                 It can have the following value
+                 'pc' or 'pc-stable'(default)
+                 'hc' or 'hillclimbsearch' 
+                 'ex' or 'exhaustivesearch'
+                 'iamb' (to be implemented)
+        
         
     scoretype : str, (default : 'bic')
-        Scoring function for the search spaces.
-        'bic', 'k2', 'bdeu'
+                Used only for the score-based methods
+                Scoring function for the search spaces.
+                'bic', 'k2', 'bdeu', 'bgeu'
     black_list : List or None, (default : None)
-        List of edges are black listed.
-        In case of filtering on nodes, the nodes black listed nodes are removed from the dataframe. The resulting model will not contain any nodes that are in black_list.
+                 List of edges that are black listed.
+                 or list of nodes to remove from the dataframe. 
+                 The resulting model will not contain any nodes that are in black_list.
     white_list : List or None, (default : None)
-        List of edges are white listed.
-        In case of filtering on nodes, the search is limited to those edges. The resulting model will then only contain nodes that are in white_list.
-        Works only in case of methodtype='hc' See also paramter: `bw_list_method`
-    bw_list_method : list of str or tuple, (default : None)
-        A list of edges can be passed as `black_list` or `white_list` to exclude or to limit the search.
-            * 'edges' : [('A', 'B'), ('C','D'), (...)] 
-            * 'nodes' : ['A', 'B', ...] Filter the dataframe based on the nodes for `black_list` or `white_list`. Filtering can be done for every methodtype/scoretype.
+                 List of edges are white listed.
+                 In case of filtering on nodes, the search is limited to those nodes. 
+                 The resulting model will then only contain nodes that are in white_list.
+
+                 Works only in case of method='hc' See also paramter: `bw_list_method`
+    bw_list_method :  str or tuple, (default : None)
+                     It can assume the values:
+                     - 'edges' 
+                     - 'nodes' 
     max_indegree : int, (default : None)
-        If provided and unequal None, the procedure only searches among models where all nodes have at most max_indegree parents. (only in case of methodtype='hc')
-    epsilon: float (default: 1e-4)
-        Defines the exit condition. If the improvement in score is less than `epsilon`, the learned model is returned. (only in case of methodtype='hc')
+                   If provided and unequal None, the procedure only searches among models where all nodes have at                 most max_indegree parents. (only in case of method='hc')
+    epsilon:  float (default: 1e-4)
+               Defines the exit condition. If the improvement in score is less than `epsilon`, 
+               the learned model is returned. (only in case of method='hc')
     max_iter: int (default: 1e6)
-        The maximum number of iterations allowed. Returns the learned model when the number of iterations is greater than `max_iter`. (only in case of methodtype='hc')
-    root_node: String. (only in case of chow-liu, Tree-augmented Naive Bayes (TAN))
-        The root node for treeSearch based methods.
-    class_node: String
-        The class node is required for Tree-augmented Naive Bayes (TAN)
+               The maximum number of iterations allowed. Returns the learned model when the number
+               of iterations is greater than `max_iter`. (only in case of method='hc')
+    
     fixed_edges: iterable, Only in case of HillClimbSearch.
-        A list of edges that will always be there in the final learned model. The algorithm will add these edges at the start of the algorithm and will never change it.
+                 A list of edges that will always be there in the final learned model. The algorithm will add these edges at the start of the algorithm and will never change it.
     return_all_dags : Bool, (default: False)
-        Return all possible DAGs. Only in case methodtype='exhaustivesearch'
-    verbose : int, (default : 3)
-        0: None, 1: Error,  2: Warning, 3: Info (default), 4: Debug, 5: Trace
+        Return all possible DAGs. Only in case method='exhaustivesearch'
+    verbose : int, (default= 3)
+              0: None, 1: Error,  2: Warning, 3: Info (default), 4: Debug, 5: Trace
 
     Returns
     -------
@@ -95,7 +103,7 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
     >>> # Sampling
     >>> df = sl.sampling(model, n=10000)
     >>> # Structure learning of sampled dataset
-    >>> model_sl = sl.structure_learning.fit(df, methodtype='hc', scoretype='bic')
+    >>> model_sl = sl.structure.learn(df, method='pc', scoretype='bic')
     >>>
     >>> # Compute edge strength using chi-square independence test
     >>> model_sl = sl.independence_test(model_sl, df)
@@ -109,7 +117,7 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
     """
     out = []
     # Set config
-    config = {'method': methodtype, 'scoring': scoretype, 'black_list': black_list, 'white_list': white_list, 'bw_list_method': bw_list_method, 'max_indegree': max_indegree, 'tabu_length': tabu_length, 'epsilon': epsilon, 'max_iter': max_iter, 'root_node': root_node, 'class_node': class_node, 'fixed_edges': fixed_edges, 'return_all_dags': return_all_dags, 'n_jobs': n_jobs, 'verbose': verbose}
+    config = {'method': method, 'scoring': scoretype, 'black_list': black_list, 'white_list': white_list, 'bw_list_method': bw_list_method, 'max_indegree': max_indegree, 'tabu_length': tabu_length, 'epsilon': epsilon, 'max_iter': max_iter, 'fixed_edges': fixed_edges, 'return_all_dags': return_all_dags, 'n_jobs': n_jobs, 'verbose': verbose}
     # Make some checks
     config = _make_checks(df, config, verbose=verbose)
     # Make sure columns are of type string
@@ -146,12 +154,12 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
                                )
 
     # Constraint-based Structure Learning
-    if config['method']=='cs' or config['method']=='constraintsearch':
+    if config['method']=='pc' or config['method']=='pc-stable':
         """Constraint-based Structure Learning
         
         Construct DAG (pattern) according to identified independencies between vars, based on (Conditional) Independence Tests.
         """
-        out = _constraintsearch(df, n_jobs=config['n_jobs'], verbose=config['verbose'])
+        out = _pc_wrapper(df, n_jobs=config['n_jobs'], verbose=config['verbose'])
 
     
     # 
@@ -167,7 +175,7 @@ def fit(df, methodtype='hc', scoretype='bic', black_list=None, white_list=None, 
 def _make_checks(df, config, verbose=3):
     assert isinstance(pd.DataFrame(), type(df)), 'df must be of type pd.DataFrame()'
     if not np.isin(config['scoring'], ['bic', 'k2', 'bdeu']): raise Exception('"scoretype=%s" is invalid.' %(config['scoring']))
-    if not np.isin(config['method'], ['hc', 'ex', 'cs', 'exhaustivesearch', 'hillclimbsearch', 'constraintsearch']): raise Exception('"methodtype=%s" is invalid.' %(config['method']))
+    if not np.isin(config['method'], ['hc', 'ex', 'pc', 'iamb', 'hillclimbsearch', 'exhaustivesearch', 'pc-stable']): raise Exception('"method=%s" is invalid.' %(config['method']))
 
     if isinstance(config['white_list'], str):
         config['white_list'] = [config['white_list']]
@@ -179,7 +187,7 @@ def _make_checks(df, config, verbose=3):
     if (config['black_list'] is not None) and len(config['black_list'])==0:
         config['black_list'] = None
 
-    if (config['method']!='hc') and (config['bw_list_method']=='edges'): raise Exception('[slearn] >The "bw_list_method=%s" does not work with "methodtype=%s"' %(config['bw_list_method'], config['method']))
+    if (config['method']!='hc') and (config['bw_list_method']=='edges'): raise Exception('[slearn] >The "bw_list_method=%s" does not work with "method=%s"' %(config['bw_list_method'], config['method']))
    
     if config['fixed_edges'] is None:
         config['fixed_edges']=set()
@@ -190,9 +198,7 @@ def _make_checks(df, config, verbose=3):
     if df.shape[1]>10 and df.shape[1]<15:
         if verbose>=2: print('[slearn] >Warning: Computing DAG with %d nodes can take a very long time!' %(df.shape[1]))
     if (config['max_indegree'] is not None) and config['method']!='hc':
-        if verbose>=2: print('[slearn] >Warning: max_indegree only works in case of methodtype="hc"')
-    if (config['class_node'] is not None) and config['method']!='tan':
-        if verbose>=2: print('[slearn] >Warning: max_indegree only works in case of methodtype="tan"')
+        if verbose>=2: print('[slearn] >Warning: max_indegree only works in case of method="hc"')
 
     return config
 
@@ -226,7 +232,7 @@ def _white_black_list_filter(df, white_list, black_list, bw_list_method='edges',
 
 
 # %% Constraint-based Structure Learning
-def _constraintsearch(df, significance_level=0.05, n_jobs=-1, verbose=3):
+def _pc_wrapper(df, significance_level=0.05, n_jobs=-1, verbose=3):
     """Contraint-based BN structure learnging based on PC search algorithm.
 
     PC PDAG construction is only guaranteed to work under the assumption that the
@@ -310,10 +316,10 @@ def _hillclimbsearch(df, scoretype='bic', black_list=None, white_list=None, max_
     out={}
     # Set scoring type
     scoring_method = _SetScoringType(df, scoretype, verbose=verbose)
-    # Set search algorithm
+    # Search algorithm
     model = HillClimbSearch(df)
 
-    # Compute best DAG
+    # Learn best BN with hill-climbing
     if bw_list_method=='edges':
         if (black_list is not None) or (white_list is not None):
             if verbose>=3: print('[slearn] >Filter edges based on black_list/white_list')

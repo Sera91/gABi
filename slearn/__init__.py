@@ -83,7 +83,7 @@ Example
 >>> q2 = sl.inference.fit(model, variables=['Wet_Grass','Rain'], evidence={'Sprinkler':1})
 >>>
 >>> # Structure learning
->>> model_sl = sl.structure_learning.fit(df)
+>>> model_sl = sl.structure.learn(df)
 >>> # Compute edge strength using chi-square independence test
 >>> model_sl = sl.independence_test(model_sl, df)
 >>> # Plot DAG
@@ -99,10 +99,5 @@ Example
 >>> # Compare networks
 >>> scores, adjmat = sl.compare_networks(model_sl, model)
 
-References
-----------
-* https://bnlearn.readthedocs.io
-* https://towardsdatascience.com/a-step-by-step-guide-in-detecting-causal-relationships-using-bayesian-structure-learning-in-python-c20c6b31cee5
-* https://towardsdatascience.com/a-step-by-step-guide-in-designing-knowledge-driven-models-using-bayesian-theorem-7433f6fd64be
 
 """
