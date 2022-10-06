@@ -14,7 +14,7 @@ import slearn.base as slearn
 
 
 # %% Structure Learning
-def learn(df, method='hc', scoretype='bic', black_list=None, white_list=None, bw_list_method=None, max_indegree=None, tabu_length=100, epsilon=1e-4, max_iter=1e6, fixed_edges=None, return_all_dags=False, n_jobs=-1, verbose=3):
+def learn(df, method='hc', scoretype='bic', black_list=None, white_list=None, bw_list_method=None, max_indegree=None, tabu_length=100, epsilon=1e-4, max_iter=1e6, fixed_edges=None, return_all_dags=False, n_jobs=-1, variant="stable", verbose=3):
     """Structure learning function.
 
     Description
@@ -159,7 +159,7 @@ def learn(df, method='hc', scoretype='bic', black_list=None, white_list=None, bw
         
         Construct DAG (pattern) according to identified independencies between vars, based on (Conditional) Independence Tests.
         """
-        out = _pc_wrapper(df, n_jobs=config['n_jobs'], verbose=config['verbose'])
+        out = _pc_wrapper(df, n_jobs=config['n_jobs'], verbose=config['verbose'], variant=variant)
 
     
     # 
@@ -232,7 +232,7 @@ def _white_black_list_filter(df, white_list, black_list, bw_list_method='edges',
 
 
 # %% Constraint-based Structure Learning
-def _pc_wrapper(df, significance_level=0.05, n_jobs=-1, verbose=3):
+def _pc_wrapper(df, significance_level=0.05, n_jobs=-1, verbose=3, variant="stable"):
     """Contraint-based BN structure learnging based on PC search algorithm.
 
     PC PDAG construction is only guaranteed to work under the assumption that the
@@ -260,12 +260,15 @@ def _pc_wrapper(df, significance_level=0.05, n_jobs=-1, verbose=3):
     """
     if verbose>=4 and n_jobs>0: print('[slearn] >n_jobs is not supported for [constraintsearch]')
     out = {}
-    # Set search algorithm
+    # Set structure-learning algorithm
     model = PC(df)
 
-    # Estimate using chi2
+    #Building DAG skeleton
     n_nodes = len(df.columns.values.tolist())
-    skel, seperating_sets = model.build_skeleton(max_cond_vars=n_nodes,significance_level=significance_level)
+    if (variant=="parallel") and (n_jobs>1):
+       skel, seperating_sets = model.build_skeleton(max_cond_vars=n_nodes,significance_level=significance_level, variant=variant, n_jobs=n_jobs)
+    else:
+       skel, seperating_sets = model.build_skeleton(max_cond_vars=n_nodes,significance_level=significance_level)
 
     if verbose>=4: print("Undirected edges: ", skel.edges())
     pdag = model.skeleton_to_pdag(skel, seperating_sets)
@@ -280,8 +283,12 @@ def _pc_wrapper(df, significance_level=0.05, n_jobs=-1, verbose=3):
     out['dag'] = dag
     out['dag_edges'] = dag.edges()
 
-    # Search using "estimate()" method provides a shorthand for the three steps above and directly returns a "BayesianNetwork"
-    best_model = model.estimate(significance_level=significance_level)
+    # Search "estimate()" method provides a shorthand for the three steps above and directly returns a "BayesianNetwork"
+    if (variant=="parallel") and (n_jobs>1):
+       best_model = model.estimate(significance_level=significance_level, variant=variant, n_jobs=n_jobs)
+    else:
+       best_model = model.estimate(significance_level=significance_level)
+
     out['model'] = best_model
 
     if verbose>=4: print(best_model.edges())
