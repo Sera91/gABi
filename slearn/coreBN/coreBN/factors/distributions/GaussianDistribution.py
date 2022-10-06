@@ -49,21 +49,21 @@ class GaussianDistribution(BaseDistribution):
         >>> dis.assignment([0, 0, 0])
         0.0014805631279234139
         """
-        no_of_var = len(variables)
+        N_var = len(variables)
 
         self.variables = variables
-        self.mean = np.asarray(np.reshape(mean, (no_of_var, 1)), dtype=float)
+        self.mean = np.asarray(np.reshape(mean, (N_var, 1)), dtype=float)
         self.covariance = np.asarray(cov, dtype=float)
         self._precision_matrix = None
 
-        if len(mean) != no_of_var:
+        if len(mean) != N_var:
             raise ValueError(
                 "Length of mean_vector must be equal to the", "number of variables."
             )
 
-        if self.covariance.shape != (no_of_var, no_of_var):
+        if self.covariance.shape != (N_var, N_var):
             raise ValueError(
-                f"The Covariance matrix should be a square matrix  with order equal to the number of variables. Got: {self.covariance.shape}, Expected: {(no_of_var, no_of_var)}"
+                f"The Covariance matrix should be a square matrix  with order equal to the number of variables. Got: {self.covariance.shape}, Expected: {(N_var, N_var)}"
             )
 
     @property
