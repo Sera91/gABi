@@ -9,7 +9,7 @@ from coreBN.utils.decorators import convert_args_tuple
 class BaseEstimator(object):
     def __init__(self, data=None, state_names=None, complete_samples_only=True):
         """
-        Base class for estimators in pgmpy; `ParameterEstimator`,
+        Base class for estimators in coreBN; `ParameterEstimator`,
         `StructureEstimator` and `StructureScore` derive from this class.
 
         Parameters
@@ -98,7 +98,7 @@ class BaseEstimator(object):
         Examples
         --------
         >>> import pandas as pd
-        >>> from pgmpy.estimators import BaseEstimator
+        >>> from coreBN.estimators import BaseEstimator
         >>> data = pd.DataFrame(data={'A': ['a1', 'a1', 'a2'],
                                       'B': ['b1', 'b2', 'b1'],
                                       'C': ['c1', 'c1', 'c2']})
@@ -181,11 +181,11 @@ class BaseEstimator(object):
 class ParameterEstimator(BaseEstimator):
     def __init__(self, model, data, **kwargs):
         """
-        Base class for parameter estimators in pgmpy.
+        Base class for parameter estimators in coreBN.
 
         Parameters
         ----------
-        model: pgmpy.models.BayesianNetwork or pgmpy.models.MarkovNetwork or pgmpy.models.NoisyOrModel model
+        model: coreBN.models.BayesianNetwork or coreBN.models.MarkovNetwork or coreBN.models.NoisyOrModel model
             for which parameter estimation is to be done.
 
         data: pandas DataFrame object
@@ -238,8 +238,8 @@ class ParameterEstimator(BaseEstimator):
         Examples
         --------
         >>> import pandas as pd
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.estimators import ParameterEstimator
+        >>> from coreBN.models import BayesianNetwork
+        >>> from coreBN.estimators import ParameterEstimator
         >>> model = BayesianNetwork([('A', 'C'), ('B', 'C')])
         >>> data = pd.DataFrame(data={'A': ['a1', 'a1', 'a2'],
                                       'B': ['b1', 'b2', 'b1'],
@@ -266,7 +266,7 @@ class ParameterEstimator(BaseEstimator):
 class StructureEstimator(BaseEstimator):
     def __init__(self, data=None, independencies=None, **kwargs):
         """
-        Base class for structure estimators in pgmpy.
+        Base class for structure estimators in coreBN.
 
         Parameters
         ----------
