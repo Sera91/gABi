@@ -2,21 +2,20 @@ coreBN
 =====
 
 
-coreBN is a python library for working with Probabilistic Graphical Models. 
+coreBN is a python library for Automatic Structure Learning in the framework of Probabilistic (Causal) Graphical Models. (TO DO: change coreBN in SLEARN)
 
 
 Dependencies
 =============
+
 It has following non optional dependencies:
-- python 3.6 or higher
+- python 3.8
 - networkX
 - scipy 
 - numpy
-- pytorch
-
-Some of the functionality would also require:
-- tqdm
 - pandas
+- pytorch
+- tqdm
 - pyparsing
 - statsmodels
 - joblib
@@ -39,7 +38,7 @@ $ pytest -v
 ```
 to see the coverage of existing code use following command
 ```
-$ pytest --cov-report html --cov=pgmpy
+$ pytest --cov-report html --cov=coreBN
 ```
 
 Documentation and usage
