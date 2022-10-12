@@ -34,13 +34,13 @@ class CausalInference(object):
     Examples
     --------
     Create a small Bayesian Network.
-    >>> from pgmpy.models import BayesianNetwork
+    >>> from coreBN.models import BayesianNetwork
     >>> game = BayesianNetwork([('X', 'A'),
     ...                         ('A', 'Y'),
     ...                         ('A', 'B')])
 
     Load the graph into the CausalInference object to make causal queries.
-    >>> from pgmpy.inference.CausalInference import CausalInference
+    >>> from coreBN.inference.CausalInference import CausalInference
     >>> inference = CausalInference(game)
     >>> inference.get_all_backdoor_adjustment_sets(X="X", Y="Y")
     >>> inference.get_all_frontdoor_adjustment_sets(X="X", Y="Y")
@@ -49,8 +49,7 @@ class CausalInference(object):
     ----------
     'Causality: Models, Reasoning, and Inference' - Judea Pearl (2000)
 
-    Many thanks to @ijmbarr for their implementation of Causal Graphical models available. It served as an invaluable
-    reference. Available on GitHub: https://github.com/ijmbarr/causalgraphicalmodels
+    Many thanks to @ijmbarr for their implementation of Causal Graphical models available on GitHub: https://github.com/ijmbarr/causalgraphicalmodels
     """
 
     def __init__(self, model, set_nodes=None):
