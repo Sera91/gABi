@@ -786,7 +786,7 @@ class DiscreteFactor(BaseFactor, StateNameMixin):
 
         phi.values = phi.values / phi1.values
 
-        # If factor division 0/0 = 0 but is undefined for x/0. In pgmpy we are using
+        # If factor division 0/0 = 0 but is undefined for x/0. In coreBN we are using
         # np.inf to represent x/0 cases.
         phi.values[np.isnan(phi.values)] = 0
 
