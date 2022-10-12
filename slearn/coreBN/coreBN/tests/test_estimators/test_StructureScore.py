@@ -16,7 +16,7 @@ class TestBDeuScore(unittest.TestCase):
 
         # data_link - "https://www.kaggle.com/c/titanic/download/train.csv"
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
         self.titanic_data2 = self.titanic_data[["Survived", "Sex", "Pclass"]]
 
@@ -81,7 +81,7 @@ class TestBicScore(unittest.TestCase):
 
         # data_link - "https://www.kaggle.com/c/titanic/download/train.csv"
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
         self.titanic_data2 = self.titanic_data[["Survived", "Sex", "Pclass"]]
 
@@ -115,7 +115,7 @@ class TestK2Score(unittest.TestCase):
 
         # data_link - "https://www.kaggle.com/c/titanic/download/train.csv"
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
         self.titanic_data2 = self.titanic_data[["Survived", "Sex", "Pclass"]]
 

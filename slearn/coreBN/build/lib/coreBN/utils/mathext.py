@@ -190,7 +190,7 @@ def powerset(l):
 
     Example
     -------
-    >>> from pgmpy.utils.mathext import powerset
+    >>> from coreBN.utils.mathext import powerset
     >>> list(powerset([1,2,3]))
     [(), (1,), (2,), (3,), (1, 2), (1, 3), (2, 3), (1, 2, 3)]
     """

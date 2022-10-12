@@ -22,7 +22,7 @@ class TestBaseEstimator(unittest.TestCase):
 
         # link to dataset: "https://www.kaggle.com/c/titanic/download/train.csv"
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
         self.titanic_data2 = self.titanic_data[["Survived", "Sex", "Pclass"]]
         self.est_titanic = ExhaustiveSearch(self.titanic_data2)

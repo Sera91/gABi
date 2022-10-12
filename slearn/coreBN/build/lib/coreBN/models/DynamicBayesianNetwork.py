@@ -112,10 +112,10 @@ class DynamicBayesianNetwork(DAG):
          (('L', 0), ('L', 1)), (('G', 1), ('L', 1))]
 
         If any variable is not present in the network while adding an edge,
-        pgmpy will automatically add that variable to the network.
+        coreBN will automatically add that variable to the network.
 
         But for adding nodes to the model we don't need to specify the time
-        slice as it is common in all the time slices. And therefore pgmpy
+        slice as it is common in all the time slices. And therefore coreBN
         automatically replicated it all the time slices. For example, for
         adding a new variable `S` in the above network we can simply do:
         >>> dbn.add_node('S')

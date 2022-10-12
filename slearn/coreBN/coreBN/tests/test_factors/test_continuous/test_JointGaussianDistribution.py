@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import numpy.testing as np_test
 
-from pgmpy.factors.distributions import GaussianDistribution as GD
+from coreBN.factors.distributions import GaussianDistribution as GD
 
 
 class TestGDInit(unittest.TestCase):

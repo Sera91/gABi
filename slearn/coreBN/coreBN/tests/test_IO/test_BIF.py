@@ -62,7 +62,7 @@ class TestBIFReader(unittest.TestCase):
         )
 
         self.water_model = BIFReader(
-            "pgmpy/tests/test_IO/testdata/water.bif", include_properties=True
+            "coreBN/tests/test_IO/testdata/water.bif", include_properties=True
         )
 
     def test_network_name(self):

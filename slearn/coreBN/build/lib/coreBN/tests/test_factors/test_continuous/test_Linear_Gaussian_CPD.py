@@ -3,7 +3,7 @@ import numpy.testing as np_test
 import pandas as pd
 import numpy as np
 
-from pgmpy.factors.continuous import LinearGaussianCPD
+from coreBN.factors.continuous import LinearGaussianCPD
 
 
 class TestLGCPD(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestLGCPD(unittest.TestCase):
         # beta = [2, 0.7, 0.3]
         sigma_c = 4
 
-        x_df = pd.read_csv("pgmpy/tests/test_factors/test_continuous/gbn_values_1.csv")
+        x_df = pd.read_csv("coreBN/tests/test_factors/test_continuous/gbn_values_1.csv")
 
         mu = np.array([7, 13])
         sigma = np.array([[4, 3], [3, 6]])

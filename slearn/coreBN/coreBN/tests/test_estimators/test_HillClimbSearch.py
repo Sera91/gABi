@@ -32,7 +32,7 @@ class TestHillClimbEstimator(unittest.TestCase):
 
         # link to dataset: "https://www.kaggle.com/c/titanic/download/train.csv"
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
         self.titanic_data1 = self.titanic_data[
             ["Survived", "Sex", "Pclass", "Age", "Embarked"]

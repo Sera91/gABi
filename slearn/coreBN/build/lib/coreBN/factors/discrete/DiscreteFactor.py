@@ -667,8 +667,8 @@ class DiscreteFactor(BaseFactor, StateNameMixin):
 
         Returns
         -------
-        Multiplied factor: coreBN.factors.discrete.DiscreteFactor or None
-            If inplace=True (default) returns None else returns a new `DiscreteFactor` instance.
+        Multiplied factor:  
+            If inplace=True (default) returns None else returns a new `DiscreteFactor` instance (type: coreBN.factors.discrete.DiscreteFactor)
 
         Examples
         --------
@@ -680,19 +680,7 @@ class DiscreteFactor(BaseFactor, StateNameMixin):
         ['x1', 'x2', 'x3', 'x4']
         >>> phi1.cardinality
         array([2, 3, 2, 2])
-        >>> phi1.values
-        array([[[[ 0,  0],
-                 [ 4,  6]],
-                [[ 0,  4],
-                 [12, 18]],
-                [[ 0,  8],
-                 [20, 30]]],
-               [[[ 6, 18],
-                 [35, 49]],
-                [[ 8, 24],
-                 [45, 63]],
-                [[10, 30],
-                 [55, 77]]]]
+        
         """
         phi = self if inplace else self.copy()
         if isinstance(phi1, (int, float)):
@@ -739,7 +727,7 @@ class DiscreteFactor(BaseFactor, StateNameMixin):
 
         Returns
         -------
-        Divided factor: coreBN.factors.discrete.DiscreteFactor or None
+        Divided factor: 
             If inplace=True (default) returns None else returns a new `DiscreteFactor` instance.
 
         Examples
@@ -786,7 +774,7 @@ class DiscreteFactor(BaseFactor, StateNameMixin):
 
         phi.values = phi.values / phi1.values
 
-        # If factor division 0/0 = 0 but is undefined for x/0. In pgmpy we are using
+        # If factor division 0/0 = 0 but is undefined for x/0. In coreBN we are using
         # np.inf to represent x/0 cases.
         phi.values[np.isnan(phi.values)] = 0
 

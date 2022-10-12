@@ -4,8 +4,8 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 
-from pgmpy.models import NaiveBayes
-from pgmpy.independencies import Independencies
+from coreBN.models import NaiveBayes
+from coreBN.independencies import Independencies
 
 
 class TestBaseModelCreation(unittest.TestCase):

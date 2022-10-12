@@ -21,7 +21,7 @@ class TestBaseEstimator(unittest.TestCase):
         )
 
         self.titanic_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/titanic_train.csv"
+            "coreBN/tests/test_estimators/testdata/titanic_train.csv"
         )
 
     def test_state_count(self):

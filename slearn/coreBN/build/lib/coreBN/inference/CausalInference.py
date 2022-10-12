@@ -34,13 +34,13 @@ class CausalInference(object):
     Examples
     --------
     Create a small Bayesian Network.
-    >>> from pgmpy.models import BayesianNetwork
+    >>> from coreBN.models import BayesianNetwork
     >>> game = BayesianNetwork([('X', 'A'),
     ...                         ('A', 'Y'),
     ...                         ('A', 'B')])
 
     Load the graph into the CausalInference object to make causal queries.
-    >>> from pgmpy.inference.CausalInference import CausalInference
+    >>> from coreBN.inference.CausalInference import CausalInference
     >>> inference = CausalInference(game)
     >>> inference.get_all_backdoor_adjustment_sets(X="X", Y="Y")
     >>> inference.get_all_frontdoor_adjustment_sets(X="X", Y="Y")
@@ -49,8 +49,7 @@ class CausalInference(object):
     ----------
     'Causality: Models, Reasoning, and Inference' - Judea Pearl (2000)
 
-    Many thanks to @ijmbarr for their implementation of Causal Graphical models available. It served as an invaluable
-    reference. Available on GitHub: https://github.com/ijmbarr/causalgraphicalmodels
+    Many thanks to @ijmbarr for their implementation of Causal Graphical models available on GitHub: https://github.com/ijmbarr/causalgraphicalmodels
     """
 
     def __init__(self, model, set_nodes=None):
@@ -403,13 +402,13 @@ class CausalInference(object):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import CausalInference
+        >>> from coreBN.models import BayesianNetwork
+        >>> from coreBN.inference import CausalInference
         >>> model = BayesianNetwork([("x1", "y1"), ("x1", "z1"), ("z1", "z2"),
         ...                        ("z2", "x2"), ("y2", "z2")])
         >>> c_infer = CausalInference(model)
         >>> c_infer.get_proper_backdoor_graph(X=["x1", "x2"], Y=["y1", "y2"])
-        <pgmpy.models.BayesianNetwork.BayesianNetwork at 0x7fba501ad940>
+        <coreBN.models.BayesianNetwork.BayesianNetwork at 0x7fba501ad940>
 
         References
         ----------
@@ -453,8 +452,8 @@ class CausalInference(object):
 
         Examples
         --------
-        >>> from pgmpy.models import BayesianNetwork
-        >>> from pgmpy.inference import CausalInference
+        >>> from coreBN.models import BayesianNetwork
+        >>> from coreBN.inference import CausalInference
         >>> model = BayesianNetwork([("x1", "y1"), ("x1", "z1"), ("z1", "z2"),
         ...                        ("z2", "x2"), ("y2", "z2")])
         >>> c_infer = CausalInference(model)
@@ -533,24 +532,24 @@ class CausalInference(object):
             Specifies the adjustment set to use. If None, uses the parents of the
             do variables as the adjustment set.
 
-        inference_algo: str or pgmpy.inference.Inference instance
+        inference_algo: str or coreBN.inference.Inference instance
             The inference algorithm to use to compute the probability values.
             String options are: 1) ve: Variable Elimination 2) bp: Belief
             Propagation.
 
         kwargs: Any
             Additional paramters which needs to be passed to inference
-            algorithms.  Please refer to the pgmpy.inference.Inference for
+            algorithms.  Please refer to the coreBN.inference.Inference for
             details.
 
         Returns
         -------
-        Queried distribution: pgmpy.factor.discrete.DiscreteFactor
+        Queried distribution: coreBN.factor.discrete.DiscreteFactor
             A factor object representing the joint distribution over the variables in `variables`.
 
         Examples
         --------
-        >>> from pgmpy.utils import get_example_model
+        >>> from coreBN.utils import get_example_model
         >>> model = get_example_model('alarm')
         >>> infer = CausalInference(model)
         >>> infer.query(['HISTORY'], do={'CVP': 'LOW'}, evidence={'HR': 'LOW'})
@@ -581,19 +580,19 @@ class CausalInference(object):
                 "`evidence` must be a dict of the form: {variable_name: variable_state}"
             )
 
-        from pgmpy.inference import Inference
+        from coreBN.inference import Inference
 
         if inference_algo == "ve":
-            from pgmpy.inference import VariableElimination
+            from coreBN.inference import VariableElimination
 
             inference_algo = VariableElimination
         elif inference_algo == "bp":
-            from pgmpy.inference import BeliefPropagation
+            from coreBN.inference import BeliefPropagation
 
             inference_algo = BeliefPropagation
         elif not isinstance(inference_algo, Inference):
             raise ValueError(
-                f"inference_algo must be one of: 've', 'bp', or an instance of pgmpy.inference.Inference. Got: {inference_algo}"
+                f"inference_algo must be one of: 've', 'bp', or an instance of coreBN.inference.Inference. Got: {inference_algo}"
             )
 
         # Step 2: Check if adjustment set is provided, otherwise try calculating it.

@@ -457,7 +457,8 @@ def cressie_read(X, Y, Z, data, boolean=True, **kwargs):
 
 def power_divergence(X, Y, Z, data, boolean=True, lambda_="cressie-read", **kwargs):
     """
-    Computes the Cressie-Read power divergence statistic [1]. The null hypothesis
+    Conditional Independence test for discrete variables.
+    Computes the Cressie-Read power divergence statistic [*]. The null hypothesis
     for the test is X is independent of Y given Z. A lot of the frequency comparision
     based statistics (eg. chi-square, G-test etc) belong to power divergence family,
     and are special cases of this test.
@@ -507,7 +508,7 @@ def power_divergence(X, Y, Z, data, boolean=True, lambda_="cressie-read", **kwar
 
     References
     ----------
-    [1] Cressie, Noel, and Timothy RC Read. "Multinomial goodness‐of‐fit tests." Journal of the Royal Statistical Society: Series B (Methodological) 46.3 (1984): 440-464.
+    * Cressie, Noel, and Timothy RC Read. "Multinomial goodness‐of‐fit tests." Journal of the Royal Statistical Society: Series B (Methodological) 46.3 (1984): 440-464.
 
     Examples
     --------
@@ -624,7 +625,7 @@ def pearsonr(X, Y, Z, data, boolean=True, **kwargs):
             f"Variable data. Expected type: pandas.DataFrame. Got type: {type(data)}"
         )
 
-    # Step 2: If Z is empty compute a non-conditional test.
+    # Step 2: If Z is empty compute a non-conditional independence test.
     if len(Z) == 0:
         coef, p_value = stats.pearsonr(data.loc[:, X], data.loc[:, Y])
 
@@ -644,3 +645,17 @@ def pearsonr(X, Y, Z, data, boolean=True, **kwargs):
             return False
     else:
         return coef, p_value
+
+
+def Fisher_Z_test(X, Y, Z, data, boolean=True, **kwargs):
+    #import here function developed in C++
+    # TODO 
+    p_value = 0.01
+
+    if boolean:
+        if p_value >= kwargs["significance_level"]:
+            return True
+        else:
+            return False
+    else:
+        return p_value

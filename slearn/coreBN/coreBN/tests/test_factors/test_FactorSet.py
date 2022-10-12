@@ -1,7 +1,7 @@
 import unittest
 
-from pgmpy.factors import FactorSet
-from pgmpy.factors.discrete import DiscreteFactor
+from coreBN.factors import FactorSet
+from coreBN.factors.discrete import DiscreteFactor
 
 
 class TestFactorSet(unittest.TestCase):

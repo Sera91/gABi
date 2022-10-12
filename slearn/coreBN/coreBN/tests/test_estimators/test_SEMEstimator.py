@@ -50,7 +50,7 @@ class TestSEMEstimator(unittest.TestCase):
         self.demo_lisrel = self.demo.to_lisrel()
 
         self.demo_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/democracy1989a.csv",
+            "coreBN/tests/test_estimators/testdata/democracy1989a.csv",
             index_col=0,
             header=0,
         )
@@ -71,7 +71,7 @@ class TestSEMEstimator(unittest.TestCase):
         self.union_lisrel = self.union.to_lisrel()
 
         self.union_data = pd.read_csv(
-            "pgmpy/tests/test_estimators/testdata/union1989b.csv", index_col=0, header=0
+            "coreBN/tests/test_estimators/testdata/union1989b.csv", index_col=0, header=0
         )
 
     def test_get_init_values(self):

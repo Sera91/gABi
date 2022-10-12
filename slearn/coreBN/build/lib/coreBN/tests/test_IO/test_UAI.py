@@ -27,7 +27,7 @@ class TestUAIReader(unittest.TestCase):
  2.0000 2.0000 3.4000"""
         self.maxDiff = None
         self.reader_string = UAIReader(string=string)
-        self.reader_file = UAIReader("pgmpy/tests/test_readwrite/testdata/grid4x4.uai")
+        self.reader_file = UAIReader("coreBN/tests/test_readwrite/testdata/grid4x4.uai")
 
     def test_get_network_type(self):
         network_type_expected = "MARKOV"

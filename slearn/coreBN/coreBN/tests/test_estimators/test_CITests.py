@@ -79,7 +79,7 @@ class TestPearsonr(unittest.TestCase):
 
 class TestChiSquare(unittest.TestCase):
     def setUp(self):
-        self.df_adult = pd.read_csv("pgmpy/tests/test_estimators/testdata/adult.csv")
+        self.df_adult = pd.read_csv("coreBN/tests/test_estimators/testdata/adult.csv")
 
     def test_chisquare_adult_dataset(self):
         # Comparision values taken from dagitty (DAGitty)

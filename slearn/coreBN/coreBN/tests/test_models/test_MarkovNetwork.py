@@ -3,11 +3,11 @@ import unittest
 import networkx as nx
 import numpy as np
 
-from pgmpy.factors import factor_product
-from pgmpy.factors.discrete import DiscreteFactor
-from pgmpy.independencies import Independencies
-from pgmpy.models import BayesianNetwork, FactorGraph, MarkovNetwork
-from pgmpy.tests import help_functions as hf
+from coreBN.factors import factor_product
+from coreBN.factors.discrete import DiscreteFactor
+from coreBN.independencies import Independencies
+from coreBN.models import BayesianNetwork, FactorGraph, MarkovNetwork
+from coreBN.tests import help_functions as hf
 
 
 class TestMarkovNetworkCreation(unittest.TestCase):

@@ -460,7 +460,7 @@ class TestGibbsSampling(unittest.TestCase):
         del self.bayesian_model
         del self.markov_model
 
-    @patch("pgmpy.sampling.GibbsSampling._get_kernel_from_markov_model", autospec=True)
+    @patch("coreBN.sampling.GibbsSampling._get_kernel_from_markov_model", autospec=True)
     def test_init_markov_model(self, get_kernel):
         model = MagicMock(spec_set=MarkovNetwork)
         gibbs = GibbsSampling(model)
@@ -508,7 +508,7 @@ class TestGibbsSampling(unittest.TestCase):
                 )
             )
 
-    @patch("pgmpy.sampling.GibbsSampling.random_state", autospec=True)
+    @patch("coreBN.sampling.GibbsSampling.random_state", autospec=True)
     def test_sample_less_arg(self, random_state):
         self.gibbs.state = None
         random_state.return_value = [
@@ -534,7 +534,7 @@ class TestGibbsSampling(unittest.TestCase):
             {"diff", "intel", "grade"},
         )
 
-    @patch("pgmpy.sampling.GibbsSampling.random_state", autospec=True)
+    @patch("coreBN.sampling.GibbsSampling.random_state", autospec=True)
     def test_generate_sample_less_arg(self, random_state):
         self.gibbs.state = None
         gen = self.gibbs.generate_sample(size=2)
