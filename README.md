@@ -19,3 +19,8 @@ This package have the following dependencies:
  - statsmodels
  - tqdm
  - wget
+ - pyarrow
+ - Apache arrow
+ - pybind11
+ - MAGMA
+ - Boost
