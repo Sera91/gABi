@@ -1,5 +1,9 @@
-# Slearn
-Python-C package for performing bayesian automated inference on data, based on probabilistic graphical models.
+<h1 align="center">
+<img src="logo-github.png" width="300">
+</h1><br>
+
+# gABiC: graphical Automated Bayesian inference in Cosmology
+Python-C++ package for performing bayesian automated inference on data, based on probabilistic graphical models.
 
 This package have the following dependencies:
 
