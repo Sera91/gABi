@@ -22,5 +22,5 @@ This package have the following dependencies:
  - pyarrow
  - Apache arrow
  - pybind11
- - MAGMA
- - Boost
+ - dask
+ - mpi4py
