@@ -2,14 +2,21 @@
 
 import logging
 from itertools import chain, combinations, permutations
-
+import sys
 import networkx as nx
+import numpy as np
+import pickle
+import os
 from joblib import Parallel, delayed
+import scipy.stats as stats
+import dask.dataframe as dd
+from dask.distributed import as_completed
 from tqdm.auto import tqdm
-
 from coreBN.base import PDAG
 from coreBN.estimators import StructureEstimator
-from coreBN.estimators.CITests import chi_square, independence_match, pearsonr
+from coreBN.CItests.CITests import chi_square, independence_match, pearsonr, CItest_c
+from coreBN.CItests import CItest_cycle 
+import gc
 from coreBN.global_vars import SHOW_PROGRESS
 
 
@@ -43,7 +50,10 @@ class PC(StructureEstimator):
         self,
         variant="stable",
         ci_test="chi_square",
-        max_cond_vars=5,
+        iclient=None,
+        N_obs=2000,
+        random_seed=1,
+        #max_cond_vars=5,
         return_type="dag",
         significance_level=0.01,
         n_jobs=-1,
@@ -91,7 +101,7 @@ class PC(StructureEstimator):
             If `return_type=dag`, a fully directed structure is returned if it
                 is possible to orient all the edges.
             If `return_type="skeleton", returns an undirected graph along
-                with the separating sets.
+                with the separating sets.It is the output of the step 1 of the algorithm.
 
         significance_level: float (default: 0.01)
             The statistical tests use this value to compare with the p-value of
@@ -140,12 +150,12 @@ class PC(StructureEstimator):
         [('Z', 'sum'), ('X', 'sum'), ('Y', 'sum')]
         """
         # Step 0: Do checks that the specified parameters are correct, else throw meaningful error.
-        if variant not in ("orig", "stable", "parallel"):
+        if variant not in ("orig", "stable", "parallel", "dask-parallel"):
             raise ValueError(
                 f"variant must be one of: orig, stable, or parallel. Got: {variant}"
             )
         elif (not callable(ci_test)) and (
-            ci_test not in ("chi_square", "independence_match", "pearsonr")
+            ci_test not in ("chi_square", "independence_match", "pearsonr", "Fisher-z")
         ):
             raise ValueError(
                 "ci_test must be a callable or one of: chi_square, pearsonr, independence_match"
@@ -155,13 +165,13 @@ class PC(StructureEstimator):
             raise ValueError(
                 "For using independence_match, independencies argument must be specified"
             )
-        elif (ci_test in ("chi_square", "pearsonr")) and (self.data is None):
+        elif (ci_test in ("chi_square", "pearsonr", "Fisher-z")) and (self.data is None):
             raise ValueError(
-                "For using Chi Square or Pearsonr, data arguement must be specified"
+                "For using Chi Square, Fisher or Pearsonr, data must be specified"
             )
 
         # Step 1: Run the PC algorithm to build the skeleton and get the separating sets.
-        skel, separating_sets = self.build_skeleton( ci_test=ci_test, max_cond_vars=max_cond_vars, significance_level=significance_level,
+        skel, separating_sets = self.build_skeleton( ci_test=ci_test, client=iclient, N_sample=N_obs, rstate=random_seed, significance_level=significance_level,
                                                      variant=variant, n_jobs=n_jobs, show_progress=show_progress, **kwargs,)
 
         if return_type.lower() == "skeleton":
@@ -183,7 +193,9 @@ class PC(StructureEstimator):
     def build_skeleton(
         self,
         ci_test="chi_square",
-        max_cond_vars=5,
+        client=None,
+        N_sample=2000,
+        rstate=1,
         significance_level=0.01,
         variant="stable",
         n_jobs=-1,
@@ -244,11 +256,16 @@ class PC(StructureEstimator):
         """
 
         # Initialize initial values and structures.
-        lim_neighbors = 0
-        separating_sets = dict()
-        if ci_test == "chi_square":
+        #lim_neighbors = 0
+        #separating_sets = dict()
+        if ci_test == "Fisher":
+            sel_method="Fisher"
+            ci_test = CItest_c(method='fisherz') 
+        elif ci_test == "chi_square":
+            sel_method = "chi_square"
             ci_test = chi_square
-        elif ci_test == "pearsonr":
+        elif ci_test == "Pearson":
+            sel_method="Pearson"
             ci_test = pearsonr
         elif ci_test == "independence_match":
             ci_test = independence_match
@@ -257,6 +274,8 @@ class PC(StructureEstimator):
         else:
             raise ValueError( f"ci_test must either be chi_square, pearsonr, independence_match, or a function. Got: {ci_test}")
 
+        max_cond_vars = len(self.variables)-2
+
         if show_progress and SHOW_PROGRESS:
             pbar = tqdm(total=max_cond_vars)
             pbar.set_description("Working for n conditional variables: 0")
@@ -264,11 +283,111 @@ class PC(StructureEstimator):
         # Step 1: Initialize a fully connected undirected graph
         graph = nx.complete_graph(n=self.variables, create_using=nx.Graph)
 
-        # Exit condition: 1. If all the nodes in graph has less than `lim_neighbors` neighbors.
-        #             or  2. `lim_neighbors` is greater than `max_conditional_variables`.
-        while not all(
+        #data=self.data
+
+        print("I am reading the data")
+
+        
+        if self.data_input is not None:
+            if os.path.isdir(self.data_input):
+                data = dd.read_parquet(self.data_input).head(10000)
+                data.sample(frac=1, random_state=rstate).reset_index()
+                data = data.head(N_sample)
+            else:
+                data = dd.read_csv(self.data_input)
+                data.sample(frac=1, random_state=rstate).reset_index()
+                data = data.head(N_sample)
+        else:
+            print('error: missing input file')
+            sys.exit()
+
+
+        if (variant == "dask-parallel"):
+            if (client==None):
+                print("if variant is dask client must be specified")
+                sys.exit()
+
+            client.scatter(data)
+        
+            def parallel_CItest(edge, sep_sets_edge,lim_n):
+                        u,v = edge
+                        print("Kernel CI test pair(", u, v, ")", flush=True)
+                        edge, sep_set, p_value = CItest_cycle(u,v,sep_sets_edge, lim_n, significance_level, data, method=sel_method )
+                        # If a conditioning set exists stores the edge to remove, store the
+                        # separating set and move on to finding conditioning set for next edge
+                        if ( p_value > significance_level) :
+                                               return ([edge, sep_set])
+                        return np.array([None, None])
+
+            lim_neighbors = 0
+        
+            while not all([len(list(graph.neighbors(var))) < lim_neighbors for var in self.variables]) and lim_neighbors <= max_cond_vars:
+
+                # Step 2: Iterate over the edges and find a conditioning set of
+                # size `lim_neighbors` which makes u and v independent.
+                 
+                neighbors = {node: set(graph[node]) for node in graph.nodes()}
+                list_edges = list(graph.edges())
+                print(("edges at step"+str(lim_neighbors)+":"), list_edges)
+                list_results=list([])	
+                if (lim_neighbors > 0):
+                    list_sel_edges=[(u,v) for (u,v) in list_edges if (len(list(neighbors[u]-set([v])))>=lim_neighbors or len(list(neighbors[v]-set([u])))>=lim_neighbors)]
+                else:
+                    list_sel_edges=list_edges
+                
+                #list_sel_edges = list([(u,v) for (u,v) in list_edges if ((len(list(graph.neighbors(u)))>0) or (len(list(graph.neighbors(v)))>0)) ])
+                list_sepsets = list([set(list(chain(combinations( set(neighbors[u]) - set([v]), lim_neighbors), combinations( set(neighbors[v]) - set([u]), lim_neighbors),))) for (u,v) in list_sel_edges])
+                
+
+                list_limns =( np.zeros(len(list_sel_edges), dtype = np.int32) + lim_neighbors).tolist()
+
+                futures = client.map(parallel_CItest, list_sel_edges, list_sepsets, list_limns)
+
+		
+                for future, result in as_completed(futures, with_results=True):
+                    list_results.append(result)
+			
+                for result in list_results:
+                   if result[0] != None:
+                        u, v = result[0]
+                        separating_sets[frozenset((u,v))]= result[1]
+                        graph.remove_edge(u,v)
+
+                file_dictionary='sepset-data-at-step'+str(lim_neighbors)+'_rstate'+str(rstate)+'_allvars_2n.pkl'
+                
+                with open(file_dictionary, 'wb') as fp:
+                    pickle.dump(separating_sets, fp)
+                    print('dictionary saved successfully to file')
+                
+                # Step 3: After iterating over all the edges, expand the search space by increasing the size
+                #         of conditioning set by 1.
+              
+                del file_dictionary, list_limns, list_n_devices, list_sepsets, neighbors
+                gc.collect()
+                lim_neighbors += 1
+
+            
+           
+
+                if show_progress and SHOW_PROGRESS:
+                    pbar.update(1)
+                    pbar.set_description(
+                        f"Working for n conditional variables: {lim_neighbors}"
+                    )
+
+
+        else :
+
+
+
+          lim_neighbors = 0
+          separating_sets = dict()
+
+          # Exit condition: 1. If all the nodes in graph has less than `lim_neighbors` neighbors.
+          #             or  2. `lim_neighbors` is greater than `max_conditional_variables`.
+          while not all(
             [len(list(graph.neighbors(var))) < lim_neighbors for var in self.variables]
-        ):
+          ):
 
             # Step 2: Iterate over the edges and find a conditioning set of
             # size `lim_neighbors` which makes u and v independent.
@@ -315,7 +434,10 @@ class PC(StructureEstimator):
                             separating_sets[frozenset((u, v))] = separating_set
                             graph.remove_edge(u, v)
                             break
-
+            elif variant == "dask-parallel":
+                 neighbors = {node: set(graph[node]) for node in graph.nodes()}
+                 pass
+            	#TODO	   
             elif variant == "parallel":
                 neighbors = {node: set(graph[node]) for node in graph.nodes()}
 
@@ -365,7 +487,7 @@ class PC(StructureEstimator):
                 )
 
         if show_progress and SHOW_PROGRESS:
-            pbar.close()
+              pbar.close()
         return graph, separating_sets
 
     @staticmethod
@@ -411,6 +533,8 @@ class PC(StructureEstimator):
         >>> pdag.edges() # edges: A->C, B->C, A--D (not directed)
         [('B', 'C'), ('A', 'C'), ('A', 'D'), ('D', 'A')]
         """
+
+        #applying function from Networkx library to bidirect the edges in the graph
 
         pdag = skeleton.to_directed()
         node_pairs = list(permutations(pdag.nodes(), 2))
