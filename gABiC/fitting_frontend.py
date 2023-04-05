@@ -14,7 +14,7 @@ Currently, the library supports parameter learning for *discrete* nodes:
 
 from coreBN.estimators import BayesianEstimator
 # from pgmpy.estimators import MaximumLikelihoodEstimator
-import slearn.base as slearn
+import gABiC.base as gABiC
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -83,7 +83,7 @@ def fit(model, df, methodtype='bayes', scoretype='bdeu', smooth=None, n_jobs=-1,
 
     Examples
     --------
-    >>> import slearn as bn
+    >>> import gABiC as bn
     >>>
     >>> df = bn.import_example()
     >>> model = bn.import_DAG('sprinkler', CPD=False)
@@ -106,26 +106,26 @@ def fit(model, df, methodtype='bayes', scoretype='bdeu', smooth=None, n_jobs=-1,
     adjmat = model['adjmat']
 
     if (scoretype=='dirichlet') and (smooth is None):
-        raise Exception('[slearn] >dirichlet requires "smooth" to be not None')
+        raise Exception('[gABiC] >dirichlet requires "smooth" to be not None')
 
     # Check whether all labels in the adjacency matrix are included from the dataframe
     # adjmat, model = _check_adjmat(model, df)
-    df = slearn._filter_df(adjmat, df, verbose=config['verbose'])
+    df = gABiC._filter_df(adjmat, df, verbose=config['verbose'])
 
-    if config['verbose']>=3: print('[slearn] >Parameter learning> Computing parameters using [%s]' %(config['method']))
+    if config['verbose']>=3: print('[gABiC] >Parameter learning> Computing parameters using [%s]' %(config['method']))
     # Extract model
     if isinstance(model, dict):
         model = model['model']
 
     # Convert to BayesianNetwork
     if 'BayesianNetwork' not in str(type(model)):
-        model = slearn.adjmat_to_BN(adjmat, verbose=config['verbose'])
+        model = gABiC.adjmat_to_BN(adjmat, verbose=config['verbose'])
 
     # Learning CPDs using Maximum Likelihood Estimators
     if config['method']=='ml' or config['method']=='maximumlikelihood':
         model.fit(df, estimator=None)  # estimator as None makes it maximum likelihood estimator according pgmpy docs.
         for cpd in model.get_cpds():
-            if config['verbose']>=3: print("[slearn] >CPD of {variable}:".format(variable=cpd.variable))
+            if config['verbose']>=3: print("[gABiC] >CPD of {variable}:".format(variable=cpd.variable))
             if config['verbose']>=3: print(cpd)
 
     #  Learning CPDs using Bayesian Parameter Estimation
@@ -133,7 +133,7 @@ def fit(model, df, methodtype='bayes', scoretype='bdeu', smooth=None, n_jobs=-1,
         model.fit(df, estimator=BayesianEstimator, prior_type=scoretype, equivalent_sample_size=1000, pseudo_counts=smooth, n_jobs=config['n_jobs'])
         # model.fit(df, estimator=BayesianEstimator, prior_type="BDeu", equivalent_sample_size=1000, pseudo_counts=smooth)
         for cpd in model.get_cpds():
-            if config['verbose']>=3: print("[slearn] >CPD of {variable}:".format(variable=cpd.variable))
+            if config['verbose']>=3: print("[gABiC] >CPD of {variable}:".format(variable=cpd.variable))
             if config['verbose']>=3: print(cpd)
 
     out = {}

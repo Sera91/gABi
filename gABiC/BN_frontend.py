@@ -11,7 +11,7 @@ import networkx as nx
 from sklearn.preprocessing import minmax_scale
 from sklearn.preprocessing import MinMaxScaler
 from ismember import ismember
-import slearn.base as slearn
+import gABiC.base as gABiC
 
 # %% Make graph from adjacency matrix
 def adjmat_to_graph(adjmat, verbose=3):
@@ -54,7 +54,7 @@ def adjmat2graph(adjmat):
 
 # %% Compute similarity matrix
 def compute_centrality(G, centrality='betweenness', verbose=3):
-    if verbose>=3: print('[slearn] >Computing centrality %s' %(centrality))
+    if verbose>=3: print('[gABiC] >Computing centrality %s' %(centrality))
 
     if centrality=='betweenness':
         bb=nx.centrality.betweenness_centrality(G)
@@ -85,7 +85,7 @@ def compute_centrality(G, centrality='betweenness', verbose=3):
     elif centrality=='information':
         bb=nx.centrality.information_centrality(G)
     else:
-        print('[slearn] >Error: Centrality <%s> does not exist!' %(centrality))
+        print('[gABiC] >Error: Centrality <%s> does not exist!' %(centrality))
 
     # Set the attributes
     score=np.array([*bb.values()])
@@ -95,7 +95,7 @@ def compute_centrality(G, centrality='betweenness', verbose=3):
 
 # %% compute clusters
 def cluster(G, verbose=3):
-    if verbose>=3: print('[slearn] >Clustering using best partition')
+    if verbose>=3: print('[gABiC] >Clustering using best partition')
     # Partition
     partition=community.best_partition(G)
     # Set property to node
@@ -114,7 +114,7 @@ def cluster_comparison_centralities(G, width=5, height=4, showfig=False, methodt
     config['height']=height
     config['verbose']=verbose
 
-    if verbose>=3: print('[slearn] >Compute a dozen of centralities and clusterlabels')
+    if verbose>=3: print('[gABiC] >Compute a dozen of centralities and clusterlabels')
 
     # compute labx for each of the centralities
     centralities=['betweenness', 'closeness', 'eigenvector', 'degree', 'edge', 'harmonic', 'katz', 'local', 'out_degree', 'percolation', 'second_order', 'subgraph', 'subgraph_exp', 'information']
@@ -142,7 +142,7 @@ def cluster_comparison_centralities(G, width=5, height=4, showfig=False, methodt
     return(G, df)
 
 # %% Make plot
-def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25, 200], alpha=0.8, font_size=18, cmap='Set1', width=40, height=30, pos=None, filename=None, title=None, methodtype=None, layout='spring_layout', verbose=3):
+def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25, 200], alpha=0.8, font_size=18, cmap='Set1', width=40, height=30, pos=None, filename=None, title=None, methodtype='circular', layout='spring_layout', verbose=3):
     # https://networkx.github.io/documentation/networkx-1.7/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html
     config = {}
     config['filename']=filename
@@ -151,11 +151,11 @@ def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25
     config['verbose']=verbose
     config['node_size_scale']=node_size_scale
 
-    if verbose>=3: print('[slearn] >Creating network plot')
+    if verbose>=3: print('[gABiC] >Creating network plot')
 
     ##### DEPRECATED IN LATER VERSION #####
     if methodtype is not None:
-        if verbose>=2: print('[slearn] >Methodtype will be removed in future version. Please use "layout" instead')
+        if verbose>=2: print('[gABiC] >Methodtype will be removed in future version. Please use "layout" instead')
         if methodtype=='circular':
             layout = 'draw_circular'
         elif methodtype=='kawai':
@@ -169,7 +169,7 @@ def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25
 
     # scaling node sizes
     if config['node_size_scale']!=None and 'numpy' in str(type(node_size)):
-        if verbose>=3: print('[slearn] >Scaling node sizes')
+        if verbose>=3: print('[gABiC] >Scaling node sizes')
         node_size=minmax_scale(node_size, feature_range=(node_size_scale[0], node_size_scale[1]))
 
     # Setup figure
@@ -181,7 +181,7 @@ def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25
         layout_func = getattr(nx, layout)
         layout_func(G, labels=node_label, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
     except:
-        if verbose>=2: print('[slearn] >Warning: [%s] layout not found. The [spring_layout] is used instead.' %(layout))
+        if verbose>=2: print('[gABiC] >Warning: [%s] layout not found. The [spring_layout] is used instead.' %(layout))
         nx.spring_layout(G, labels=node_label, pos=pos, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
 
     # if methodtype=='circular':
@@ -197,7 +197,7 @@ def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25
 
     # Savefig
     if not isinstance(config['filename'], type(None)):
-        if verbose>=3: print('[slearn] >Saving figure')
+        if verbose>=3: print('[gABiC] >Saving figure')
         plt.savefig(config['filename'])
 
     return(fig)
@@ -304,7 +304,7 @@ def bokeh(G, node_color=None, node_label=None, node_size=100, node_size_scale=[2
     # Show with Bokeh
     plot = Plot(plot_width=400, plot_height=400,
                 x_range=Range1d(-1.1, 1.1), y_range=Range1d(-1.1, 1.1))
-    plot.title.text = "Graph Interaction Demonstration"
+    plot.title.text = "Interactive DAG"
 
     node_hover_tool = HoverTool(tooltips=[("index", "@index"), ("club", "@club")])
     plot.add_tools(node_hover_tool, BoxZoomTool(), ResetTool())
@@ -339,7 +339,7 @@ def compare_networks(adjmat_true, adjmat_pred, pos=None, showfig=True, width=15,
     y_pred = adjmat_pred.stack().reset_index()[0].values
 
     # Confusion matrix
-    scores=slearn.confmatrix.twoclass(y_true, y_pred, threshold=0.5, classnames=['Disconnected', 'Connected'], title='', cmap=plt.cm.Blues, showfig=1, verbose=0)
+    scores=gABiC.confmatrix.twoclass(y_true, y_pred, threshold=0.5, classnames=['Disconnected', 'Connected'], title='', cmap=plt.cm.Blues, showfig=1, verbose=0)
     #bayes.plot(out_bayes['adjmat'], pos=G['pos'])
 
     # Setup graph
@@ -385,12 +385,12 @@ def graphlayout(G, pos, scale=1, layout='spring_layout', verbose=3):
                 layout_func = getattr(nx, layout)
                 pos = layout_func(G, scale=scale)
             except:
-                if verbose>=2: print('[slearn] >Warning: [%s] layout not found. The layout [spring_layout] is used instead.' %(layout))
+                if verbose>=2: print('[gABiC] >Warning: [%s] layout not found. The layout [spring_layout] is used instead.' %(layout))
                 pos = nx.spring_layout(G, scale=scale)
         else:
             pos = nx.spring_layout(G, scale=scale)
     else:
-        if verbose>=3: print('[slearn] >Existing coordinates from <pos> are used.')
+        if verbose>=3: print('[gABiC] >Existing coordinates from <pos> are used.')
 
     return(pos)
 
@@ -403,7 +403,7 @@ def is_DataFrame(data, verbose=0):
     elif isinstance(data, pd.DataFrame):
         pass
     else:
-        print('[slearn] >Typing should be pd.DataFrame()!')
+        print('[gABiC] >Typing should be pd.DataFrame()!')
         data=None
 
     return(data)

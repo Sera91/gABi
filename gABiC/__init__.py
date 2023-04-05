@@ -1,4 +1,4 @@
-from slearn.base import (
+from gABiC.base import (
     to_bayesiannetwork,
     make_DAG,
     print_CPD,
@@ -27,11 +27,10 @@ from slearn.base import (
 )
 
 # Import function in new level
-import slearn.learning_frontend as structure
-import slearn.fitting_frontend as parameter
-import slearn.cinf as inference
-import slearn.BN_frontend as network
-import slearn.CM as confmatrix
+import gABiC.learning_frontend as structure
+import gABiC.fitting_frontend as parameter
+#import gABiC.cinf as inference
+import gABiC.BN_frontend as network
 import coreBN
 from packaging import version
 
@@ -49,7 +48,7 @@ if not version.parse(nx.__version__) >= version.parse("2.7.1"):
 
 # module level doc-string
 __doc__ = """
-SLEARN - Slearn is a Python package for learning the graphical structure of Bayesian networks, estimate their parameters, perform inference, and comparing networks.
+gABiC - gABiC is a Python package for learning the graphical structure of Bayesian networks, estimate their parameters, perform inference, and comparing networks.
 ================================================================================================================================================================================
 
 Description
@@ -61,14 +60,14 @@ Description
 
 * Structure learning algorithms can be divided into two classes:
         * Score-based structure learning (BIC/BDeu/K2 score; exhaustive search, hill climb/tabu search)
-        * Constraint-based structure learning (here we implement only PC-stable)
+        * Constraint-based structure learning (here we implement PC-stable and kernel-PC)
      
 
 
 Example
 -------
 >>> # Import library
->>> import Slearn as sl
+>>> import gABiC as sl
 >>> model = sl.import_DAG('sprinkler')
 >>> # Print CPDs
 >>> sl.print_CPD(model)
