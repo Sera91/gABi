@@ -3,7 +3,7 @@ import numpy as np
 #import timemory
 import time
 import argparse
-import slearn as sl
+import gABiC as gb
 #from timemory.component import PapiVector
 
 
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     ts = time.perf_counter()
 
-    df = sl.import_example('Asia')
+    df = gb.import_example('Asia')
     
     ts = time.perf_counter() - ts
     print("Elapsed time reading dataset (sec) :  {:12.6f}".format(ts))
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     #model_HC = sl.structure.learn(df, method='hc', verbose=4)
     #sl.plot(model_HC)
 
-    model_PC = sl.structure.learn(df, method='pc', n_jobs=4, verbose=4, variant="parallel")
+    model_PC = gb.structure.learn(df, method='pc', n_jobs=4, verbose=4, variant="parallel")
     #sl.plot(model_PC)#,interactive=True)
     ts2 = time.perf_counter() - t2
     print("Elapsed time PC (sec) :  {:12.6f}".format(ts2))

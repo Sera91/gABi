@@ -19,9 +19,9 @@ from coreBN.CItests import kernel_CItest, kernel_CItest_cycle
 from coreBN.global_vars import SHOW_PROGRESS
 from pygam import LinearGAM, s
 from coreBN.CItests import Hsic_gamma_py
-from coreBN.CItests.hsic_perm import Hsic_perm_or
+#from coreBN.CItests.hsic_perm import Hsic_perm_or
 from coreBN.CItests import Dcov_gamma_py 
-from coreBN.CItests.dcc_perm import Dcov_perm_or
+#from coreBN.CItests.dcc_perm import Dcov_perm_or
 from dask.distributed import as_completed
 #from dask.distributed import Client
 import joblib
@@ -721,18 +721,20 @@ class kPC(StructureEstimator):
 
 
             match sel_method:
-                case 'dcc.perm':    
-                  p_left = Dcov_perm_or(x_left, y_left, index, p)
-                  p_right = Dcov_perm_or(x_right, y_right, index, p)
-                case 'dcc.gamma':    
+                case 'dcc.gamma':
                   p_left = Dcov_gamma_py(x_left, y_left, 0)
                   p_right = Dcov_gamma_py(x_right, y_right, 0)
-                case 'hsic.perm':
-                  p_left = Hsic_perm_or(x_left, y_left, sigma, p, numCol)
-                  p_right = Hsic_perm_or(x_right, y_right, sigma, p, numCol)
+                
                 case 'hsic.gamma':
                   p_left = Hsic_gamma_py(x_left, y_left, 0)
                   p_right = Hsic_gamma_py(x_right, y_right, 0)
+		#case 'hsic.perm':
+                  #p_left = Hsic_perm_or(x_left, y_left, sigma, p, numCol)
+                  #p_right = Hsic_perm_or(x_right, y_right, sigma, p, numCol)
+                #case 'dcc.perm':    
+                  #p_left = Dcov_perm_or(x_left, y_left, index, p)
+                  #p_right = Dcov_perm_or(x_right, y_right, index, p)
+                    
             
             if ((p_left > significance_level) & (p_right < significance_level)):
                 # remove edge from undirected

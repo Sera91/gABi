@@ -288,17 +288,11 @@ class PC(StructureEstimator):
         print("I am reading the data")
 
         
-        if self.data_input is not None:
-            if os.path.isdir(self.data_input):
-                data = dd.read_parquet(self.data_input).head(10000)
-                data.sample(frac=1, random_state=rstate).reset_index()
-                data = data.head(N_sample)
-            else:
-                data = dd.read_csv(self.data_input)
-                data.sample(frac=1, random_state=rstate).reset_index()
+        if self.data is not None:
+                data=self.data
                 data = data.head(N_sample)
         else:
-            print('error: missing input file')
+            print('error: missing input data')
             sys.exit()
 
 
