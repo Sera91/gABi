@@ -6,15 +6,98 @@ import os
 import gc
 import time
 import networkx as nx
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from itertools import chain, combinations, permutations
 from coreBN.utils import GAM_residuals, GAM_residuals_fast
 #import coreBN
 from coreBN.CItests import kernel_CItest_cycle
 from coreBN.base import PDAG
-import params_basic2 as params
+
+import params_basic_1000 as params
 
 
+# %% Make plot
+def plot(G, node_color=None, node_label=None, node_size=100, node_size_scale=[25, 200], alpha=0.8, font_size=18, cmap='Set1', width=40, height=30, pos=None, filename=None, title=None, methodtype='circular', layout='spring_layout', verbose=3):
+    # https://networkx.github.io/documentation/networkx-1.7/reference/generated/networkx.drawing.nx_pylab.draw_networkx.html
+    config = {}
+    config['filename']=filename
+    config['width']=width
+    config['height']=height
+    config['verbose']=verbose
+    config['node_size_scale']=node_size_scale
+
+    if verbose>=3: print('[gABiC] >Creating network plot')
+
+    ##### DEPRECATED IN LATER VERSION #####
+    if methodtype is not None:
+        if verbose>=2: print('[gABiC] >Methodtype will be removed in future version. Please use "layout" instead')
+        if methodtype=='circular':
+            layout = 'draw_circular'
+        elif methodtype=='kawai':
+            layout = 'draw_kamada_kawai'
+        else:
+            layout = 'spring_layout'
+    ##### END BLOCK #####
+
+    if 'pandas' in str(type(node_size)):
+        node_size=node_size.values
+
+    # scaling node sizes
+    if config['node_size_scale']!=None and 'numpy' in str(type(node_size)):
+        if verbose>=3: print('[gABiC] >Scaling node sizes')
+        node_size=minmax_scale(node_size, feature_range=(node_size_scale[0], node_size_scale[1]))
+
+    # Setup figure
+    fig = plt.figure(figsize=(config['width'], config['height']))
+
+    # Make the graph
+    try:
+        # Get the layout
+        layout_func = getattr(nx, layout)
+        layout_func(G, labels=node_label, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
+    except:
+        if verbose>=2: print('[gABiC] >Warning: [%s] layout not found. The [spring_layout] is used instead.' %(layout))
+        nx.spring_layout(G, labels=node_label, pos=pos, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
+
+    # if methodtype=='circular':
+    #     nx.draw_circular(G, labels=node_label, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
+    # elif methodtype=='kawai':
+    #     nx.draw_kamada_kawai(G, labels=node_label, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
+    # else:
+        # nx.draw_networkx(G, labels=node_label, pos=pos, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
+
+    plt.title(title)
+    plt.grid(True)
+    plt.show()
+
+    # Savefig
+    if not isinstance(config['filename'], type(None)):
+        if verbose>=3: print('[gABiC] >Saving figure')
+        plt.savefig(config['filename'])
+
+    return(fig)
+
+# %% Normalize in good d3 range
+def normalize_size(getsizes, minscale=0.1, maxscale=4):
+    getsizes = MinMaxScaler(feature_range=(minscale, maxscale)).fit_transform(getsizes).flatten()
+    return(getsizes)
+
+# %% Convert dataframe to Graph
+def df2G(df_nodes, df_edges, verbose=3):
+    # Put edge information in G
+    #    G = nx.from_pandas_edgelist(df_edges, 'source', 'target', ['weight', 'edge_weight','edge_width','source_label','target_label'])
+
+    colnames=list(df_edges.columns.values[~np.isin(df_edges.columns.values, ['source', 'target'])])
+    G = nx.from_pandas_edgelist(df_edges, 'source', 'target', colnames)
+
+    # Put node info in G
+    getnodes=[*G.nodes]
+    for col in df_nodes.columns:
+        for i in range(0, df_nodes.shape[0]):
+            if np.any(np.isin(getnodes, df_nodes.index.values[i])):
+                G.nodes[df_nodes.index.values[i]][col] = str(df_nodes[col].iloc[i])
+
+    return(G)
 
 
 
@@ -455,17 +538,17 @@ if __name__ == "__main__":
     #reading input data set into pandas dataframe
  
 
-    data_TNG = pd.read_csv(input)
+    data = pd.read_csv(input)
     
-    variables= data_TNG.columns.to_list()
+    variables= data.columns.to_list()
 
     #data_TNG = df_TNG300.compute()
 
 
     #RESHUFFLING DATA
-    data_TNG = data_TNG.sample(frac=1, random_state=random_state).reset_index()
+    data = data.sample(frac=1, random_state=random_state).reset_index()
 
-    data_TNG = data_TNG.head(N_sample)
+    data = data.head(N_sample)
     
 
     #iCI_test = "dcc_gamma"
@@ -474,7 +557,7 @@ if __name__ == "__main__":
     
     ts= time.perf_counter() 
     
-    final_pdag = estimate(data_TNG, variables, ici_test=iCI_test,  random_seed= random_state,significance_level=0.05)
+    final_pdag = estimate(data, variables, ici_test=iCI_test,  random_seed= random_state,significance_level=0.05)
     ts2 = time.perf_counter() - ts
     print("Elapsed time PC (sec) :  {:12.6f}".format(ts2))
 
@@ -483,7 +566,9 @@ if __name__ == "__main__":
     
     G_last = nx.DiGraph()
 
-    G_last.add_edges_from( final_pdag.edges())    
+    G_last.add_edges_from( final_pdag.edges())  
+
+    plot(G_last, filename="base_DAG.png")  
 
     nx.write_adjlist(G_last, file_adjlist)
 
