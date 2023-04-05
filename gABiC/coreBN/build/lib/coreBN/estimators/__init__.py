@@ -8,21 +8,19 @@ from .StructureScore import (
     BDsScore,
     BicScore,
 )
-from .ExhaustiveSearch import ExhaustiveSearch
 from .HillClimbSearch import HillClimbSearch
 from .SEMEstimator import SEMEstimator, IVEstimator
 from .ScoreCache import ScoreCache
-from .MmhcEstimator import MmhcEstimator
 from .EM import ExpectationMaximization
 from .PC import PC
+from .kPC import kPC
 
 __all__ = [
     "BaseEstimator",
-    "ParameterEstimator",
     "MaximumLikelihoodEstimator",
     "BayesianEstimator",
     "StructureEstimator",
-    "ExhaustiveSearch",
+    "ParameterEstimator",
     "HillClimbSearch",
     "StructureScore",
     "K2Score",
@@ -32,7 +30,7 @@ __all__ = [
     "ScoreCache",
     "SEMEstimator",
     "IVEstimator",
-    "MmhcEstimator",
     "PC",
+    "kPC",
     "ExpectationMaximization",
 ]

@@ -26,7 +26,6 @@ coreBN/base/DAG.py
 coreBN/base/UndirectedGraph.py
 coreBN/base/__init__.py
 coreBN/estimators/BayesianEstimator.py
-coreBN/estimators/CITests.py
 coreBN/estimators/EM.py
 coreBN/estimators/Estimator.py
 coreBN/estimators/HillClimbSearch.py
