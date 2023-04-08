@@ -7,14 +7,17 @@ as shown below:
 
 ```
 $ conda env create -f gABI.yml
-
 ```
 
-Then you can install the core of the gABiC package:
+Then you can install the core of the gABiC package, doing:
 
+```
 $ cd gABiC/coreBN
+```
 
+```
 $ python setup.py install
+```
 
 
 
