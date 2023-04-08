@@ -5,7 +5,10 @@ To install in a safe and automatic way all the Python dependencies of gABiC
 you can create a Python environment from the gABi.yml file, using conda,
 as shown below:
 
+```
 $ conda env create -f gABI.yml
+
+```
 
 Then you can install the core of the gABiC package:
 
