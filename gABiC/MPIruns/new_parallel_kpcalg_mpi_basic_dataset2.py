@@ -74,17 +74,18 @@ if __name__ == "__main__":
     iCI_test = "hsic_gamma"
     
     
-    ts= time.perf_counter()   
+    ts= time.perf_counter()  
+ 
 
-    BN = pKC()
+    BN = pKC(data=data_TNG)
 
-  
-    
-    BN.estimate(data_TNG, variables, ci_test=iCI_test, input_client=dask_client, random_seed= random_state,significance_level=0.05)
+
+    pDAG = BN.estimate(variant="dask_parallel", ci_test=iCI_test, random_seed= random_state, dask_client=dask_client, significance_level=0.05)
+
     ts2 = time.perf_counter() - ts
     print("Elapsed time [s] kernel-PC with test {} :  {:12.6f}".format(iCI_test,ts2))
 
-    print(BN.edges())
+    print(pDAG.edges())
 
     
     G_last = nx.DiGraph()
