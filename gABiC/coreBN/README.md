@@ -2,7 +2,7 @@ coreBN
 =====
 
 
-coreBN is a python library for Automatic Structure Learning in the framework of Probabilistic (Causal) Graphical Models. (TO DO: change coreBN in SLEARN)
+coreBN is a python library for Automatic Structure Learning in the framework of Probabilistic (Causal) Graphical Models.
 
 
 Dependencies
@@ -18,7 +18,11 @@ It has following non optional dependencies:
 - tqdm
 - pyparsing
 - statsmodels
+- pickle
 - joblib
+- pyGAM
+- Dask
+
 
 
 Installation
