@@ -11,7 +11,7 @@ from itertools import chain, combinations, permutations
 from coreBN.utils import GAM_residuals, GAM_residuals_fast
 #import coreBN
 from coreBN.CItests import kernel_CItest_cycle
-#from coreBN.estimators.PC import kPC as kPC
+#from coreBN.estimators import kPC as kPC
 from coreBN.base import PDAG
 import params_basic_1000 as params
 
@@ -59,7 +59,7 @@ def plot(G, node_color=None, node_size=1500, node_size_scale=[80, 1000], alpha=0
     except:
         if verbose>=2: print('[gABiC] >Warning: [%s] layout not found. The [spring_layout] is used instead.' %(layout))
         #nx.spring_layout(G, labels=node_label, pos=pos, node_size=node_size, alhpa=alpha, node_color=node_color, cmap=cmap, font_size=font_size, with_labels=True)
-    if methodtype='graphviz':
+    if methodtype=='graphviz':
        pos_viz = nx.nx_agraph.graphviz_layout(G, prog="dot")
        nx.draw(G, pos=pos_viz , node_size=1000, alpha=0.7, node_color='white', edgecolors="black", font_size=16, with_labels=True)
     if methodtype=='spring':
