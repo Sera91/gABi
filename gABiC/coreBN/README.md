@@ -49,11 +49,9 @@ Documentation and usage
 =======================
 
 
-I will use sphinx to build the documentation. To build the documentation on your local system use:
-```
-$ cd /docs
-$ make html
-```
+I will use sphinx to build the documentation. 
+
+
 The generated docs will be in _build/html
 
 
