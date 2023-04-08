@@ -27,7 +27,7 @@ from dask.distributed import as_completed
 import joblib
 
 class kPC(StructureEstimator):
-    def __init__(self, data_file=None, independencies=None, **kwargs):
+    def __init__(self, data=None, independencies=None, **kwargs):
         """
         Class for constraint-based estimation of DAGs using the PC algorithm
         from a given data set.
@@ -51,7 +51,7 @@ class kPC(StructureEstimator):
         [2] Neapolitan, Learning Bayesian Networks, Section 10.1.2 for the PC algorithm (page 550), http://www.cs.technion.ac.il/~dang/books/Learning%20Bayesian%20Networks(Neapolitan,%20Richard).pdf
         """
         super(kPC, self).__init__(
-            data_input=data_file, **kwargs)
+            data=data, **kwargs)
 
     def estimate(
         self,
@@ -300,8 +300,10 @@ class kPC(StructureEstimator):
                 data = dd.read_csv(self.data_input)
                 data.sample(frac=1, random_state=rstate).reset_index()
                 data = data.head(N_sample)
+        if self.data is not None:
+           data=self.data
         else:
-            print('error: missing input file')
+            print('error: missing input data')
             sys.exit()
 
         if show_progress and SHOW_PROGRESS:
@@ -667,10 +669,11 @@ class kPC(StructureEstimator):
     
         #data = pd.read_csv(self.data_input)
 
-        if os.path.isdir(self.data_input):
-                data = dd.read_parquet(self.data_input).head(2000)
-        else:
-                data = dd.read_csv(self.data_input).head(2000)
+        #if os.path.isdir(self.data_input):
+        #        data = dd.read_parquet(self.data_input).head(2000)
+        #else:
+        #        data = dd.read_csv(self.data_input).head(2000)
+	data=self.data
         print("selected method for CI test is:", sel_method)
         residuals_matrix = np.zeros(data.shape, dtype=np.float64)
         # I will use a mapping array to convert string into col index
