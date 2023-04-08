@@ -371,6 +371,10 @@ class kPC(StructureEstimator):
                 del file_dictionary, list_limns, list_n_devices, list_sepsets, neighbors
                 gc.collect()
                 lim_neighbors += 1
+                if show_progress and SHOW_PROGRESS:
+                    pbar.update(1)
+                    pbar.set_description(
+                        f"Working for n conditional variables: {lim_neighbors}"
 
             
             
