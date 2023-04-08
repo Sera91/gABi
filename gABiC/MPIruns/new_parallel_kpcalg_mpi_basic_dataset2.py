@@ -90,7 +90,7 @@ if __name__ == "__main__":
     
     G_last = nx.DiGraph()
 
-    G_last.add_edges_from( BN.edges())    
+    G_last.add_edges_from( pDAG.edges())    
 
     nx.write_adjlist(G_last, file_adjlist)
 
