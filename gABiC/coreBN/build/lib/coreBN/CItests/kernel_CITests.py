@@ -130,8 +130,9 @@ def kernel_CItest( x, y, list_set, data, method='hsic.gamma', p=None, index=1, s
 
         #if dask_cluster!=None:
         #    client = Client(dask_cluster)
-        print("X variable: ", x)
-        print("Y variable:", y)
+        if verbose:
+        	print("X variable: ", x)
+        	print("Y variable:", y)
 
         #data = pd.read_csv(data_input)
         #reading parquet files
@@ -165,13 +166,15 @@ def kernel_CItest( x, y, list_set, data, method='hsic.gamma', p=None, index=1, s
         #p_value=0.0
         N_cond_vars = len(list_set)
         if (N_cond_vars<1):
-                    print("pure independence test")
+                    if verbose:
+                       print("pure independence test")
                     final_x_arr = x_arr
                     final_y_arr = y_arr
         else :
                     
                     list_set = list(list_set)
-                    print("list vars in conditioning set:", list_set)
+                    if verbose:
+                       print("list vars in conditioning set:", list_set)
                     print(type(list_set))
                     data_Sset = (data[list_set]).to_numpy()
                     gam  = LinearGAM(np.sum([s(ii) for ii in range(N_cond_vars)]))
@@ -201,11 +204,13 @@ def kernel_CItest( x, y, list_set, data, method='hsic.gamma', p=None, index=1, s
         else:
             sys.exit()
         
-        print('pval:', p_value)
-
+        
+        if verbose:
+           print('pval:', p_value)
 
         if boolean:
                   if (p_value >= kwargs["significance_level"]):
+                        print('edge ', x+'-'+y,'pval:', p_value)
                         return True
                   else:
                         return False

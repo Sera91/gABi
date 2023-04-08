@@ -210,6 +210,7 @@ class kPC(StructureEstimator):
         variant="stable",
         n_jobs=-1,
         show_progress=True,
+	verbose=False,
         **kwargs,
     ):
         """
@@ -502,7 +503,8 @@ class kPC(StructureEstimator):
                             all_vars = list([u,v])
                             all_vars = all_vars + list(separating_set)
                             data_sel = data[all_vars]
-                            print("I am going to do the test")
+                            if verbose:
+                               print("I am going to do the test")
                             if kernel_CItest(
                                 u,
                                 v,

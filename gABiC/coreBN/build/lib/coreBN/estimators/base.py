@@ -35,7 +35,8 @@ class BaseEstimator(object):
         if self.data is not None:
             self.complete_samples_only = complete_samples_only
 
-            self.variables = list(data.columns.values)
+            self.variables = data.colums.to_list()
+	    print("variables in data:", self.variables)
 
             if not isinstance(state_names, dict):
                 self.state_names = {
