@@ -77,7 +77,7 @@ if __name__ == "__main__":
     ts= time.perf_counter()  
  
 
-    BN = pKC(data=data_TNG)
+    BN = kPC(data=data_TNG)
 
 
     pDAG = BN.estimate(variant="dask_parallel", ci_test=iCI_test, random_seed= random_state, dask_client=dask_client, significance_level=0.05)
