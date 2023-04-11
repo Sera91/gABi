@@ -9,7 +9,7 @@ Dependencies
 =============
 
 It has following non optional dependencies:
-- python 3.8
+- python 3.10
 - networkX
 - scipy 
 - numpy
@@ -22,6 +22,8 @@ It has following non optional dependencies:
 - joblib
 - pyGAM
 - Dask
+- Cupy
+
 
 
 
