@@ -7,9 +7,6 @@ Python package to perform Bayesian causal discovery on data, based on probabilis
 
 This package have the following dependencies:
 
-:::::::::::::: {.columns}
-::: {.column width="40%"}
-
  - decorator 
  - itertools (built-in)
  - matplotlib ( built-in
@@ -19,12 +16,6 @@ This package have the following dependencies:
  - pandas
  - pypickle
  - scipy
- 
- :::::::::::::: {.columns}
-::: {.column width="5%"}
- 
- :::::::::::::: {.columns}
-::: {.column width="40%"}
  - statsmodels
  - tqdm
  - wget
