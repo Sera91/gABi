@@ -2,7 +2,7 @@
 <img src="logo-GABI.png" width="300">
 </h1><br>
 
-# gABiC: graphical Automated Bayesian inference in Cosmology
+# gABiC: graphical Automated Bayesian inference 
 Python package to perform Bayesian causal discovery on data, based on probabilistic graphical models.
 
 This package have the following dependencies:
@@ -26,8 +26,10 @@ This package have the following dependencies:
  - mpi4py
 
 
-At the moment in the package are implemented the following structure learning
+At the moment the gABI package provides the parallel version of the following structure learning
 algorithms:
 
 - PC-stable
 - kernel-PC
+
+The algorithms depends on dask for the parallelization, and can be launched on CPUs and GPUs
