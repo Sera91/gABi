@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="logo-pacchetto-github.png" width="300">
+<img src="logo-GABI.png" width="300">
 </h1><br>
 
 # gABiC: graphical Automated Bayesian inference in Cosmology
