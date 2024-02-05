@@ -9,3 +9,6 @@ statsmodels
 tqdm
 joblib
 opt_einsum
+dask
+rpy2
+

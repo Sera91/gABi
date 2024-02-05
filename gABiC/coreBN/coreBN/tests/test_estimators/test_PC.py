@@ -86,7 +86,67 @@ class TestPCFakeCITest(unittest.TestCase):
 
 
 class TestPCEstimatorFromIndependencies(unittest.TestCase):
-    
+    def test_build_skeleton_from_ind(self):
+        # Specify a set of independencies
+        for variant in ["orig", "stable", "parallel"]:
+            ind = Independencies(["B", "C"], ["A", ["B", "C"], "D"])
+            ind = ind.closure()
+            estimator = PC(independencies=ind)
+            skel, sep_sets = estimator.estimate(
+                variant=variant,
+                ci_test="independence_match",
+                return_type="skeleton",
+                show_progress=False,
+            )
+
+            expected_edges = {("A", "D"), ("B", "D"), ("C", "D")}
+            expected_sepsets = {
+                frozenset(("A", "C")): tuple(),
+                frozenset(("A", "B")): tuple(),
+                frozenset(("C", "B")): tuple(),
+            }
+            for u, v in skel.edges():
+                self.assertTrue(
+                    ((u, v) in expected_edges) or ((v, u) in expected_edges)
+                )
+            self.assertEqual(sep_sets, expected_sepsets)
+
+            # Generate independencies from a model.
+            model = BayesianNetwork([("A", "C"), ("B", "C"), ("B", "D"), ("C", "E")])
+            estimator = PC(independencies=model.get_independencies())
+            skel, sep_sets = estimator.estimate(
+                variant=variant,
+                ci_test="independence_match",
+                return_type="skeleton",
+                show_progress=False,
+            )
+
+            expected_edges = model.edges()
+            expected_sepsets1 = {
+                frozenset(("D", "C")): ("B",),
+                frozenset(("E", "B")): ("C",),
+                frozenset(("A", "D")): tuple(),
+                frozenset(("E", "D")): ("C",),
+                frozenset(("E", "A")): ("C",),
+                frozenset(("A", "B")): tuple(),
+            }
+            expected_sepsets2 = {
+                frozenset(("D", "C")): ("B",),
+                frozenset(("E", "B")): ("C",),
+                frozenset(("A", "D")): tuple(),
+                frozenset(("E", "D")): ("B",),
+                frozenset(("E", "A")): ("C",),
+                frozenset(("A", "B")): tuple(),
+            }
+            for u, v in skel.edges():
+                self.assertTrue(
+                    ((u, v) in expected_edges) or ((v, u) in expected_edges)
+                )
+
+            self.assertTrue(
+                (sep_sets == expected_sepsets1) or (sep_sets == expected_sepsets2)
+            )
+
     def test_skeleton_to_pdag(self):
         skel = nx.Graph([("A", "D"), ("A", "C"), ("B", "C")])
         sep_sets = {
@@ -149,7 +209,34 @@ class TestPCEstimatorFromIndependencies(unittest.TestCase):
             ),
         )
 
+    def test_estimate_dag(self):
+        for variant in ["orig", "stable", "parallel"]:
+            ind = Independencies(["B", "C"], ["A", ["B", "C"], "D"])
+            ind = ind.closure()
+            estimator = PC(independencies=ind)
+            model = estimator.estimate(
+                variant="orig",
+                ci_test="independence_match",
+                return_type="dag",
+                show_progress=False,
+            )
+            expected_edges = {("B", "D"), ("A", "D"), ("C", "D")}
+            self.assertEqual(model.edges(), expected_edges)
 
+            model = BayesianNetwork([("A", "C"), ("B", "C"), ("B", "D"), ("C", "E")])
+            estimator = PC(independencies=model.get_independencies())
+            estimated_model = estimator.estimate(
+                variant="orig",
+                ci_test="independence_match",
+                return_type="dag",
+                show_progress=False,
+            )
+            expected_edges_1 = set(model.edges())
+            expected_edges_2 = {("B", "C"), ("A", "C"), ("C", "E"), ("D", "B")}
+            self.assertTrue(
+                (set(estimated_model.edges()) == expected_edges_1)
+                or (set(estimated_model.edges()) == expected_edges_2)
+            )
 
 
 class TestPCEstimatorFromDiscreteData(unittest.TestCase):

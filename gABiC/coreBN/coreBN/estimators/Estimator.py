@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 from functools import lru_cache
-
+import dask.dataframe as dd
 import pandas as pd
+import os
 
 from coreBN.utils.decorators import convert_args_tuple
 
 
 class BaseEstimator(object):
-    def __init__(self, data=None, state_names=None, complete_samples_only=True):
+    def __init__(self, data_file=None, discrete=False, state_names=None, complete_samples_only=True):
         """
         Base class for estimators in coreBN; `ParameterEstimator`,
         `StructureEstimator` and `StructureScore` derive from this class.
@@ -30,14 +31,26 @@ class BaseEstimator(object):
             This sets the behavior of the `state_count`-method.
         """
 
-        self.data = data
-        # data can be None in the case when learning structre from
+        self.data_input = data_file
+        # data can be None in the case when learning structure from
         # independence conditions. Look into PC.py.
-        if self.data is not None:
-            self.complete_samples_only = complete_samples_only
+        if self.data_input is not None:
+            if os.path.isdir(self.data_input):
+                self.data = dd.read_parquet(self.data_input).head(20)
+            else:
+                self.data = dd.read_csv(self.data_input).head(20)
+            
+        else:
+            self.data = None
+        #self.complete_samples_only = complete_samples_only
 
-            self.variables = list(data.columns.values)
+        self.variables = self.data.columns.to_list()
 
+
+
+        #TODO
+        #add another if to check if data are discrete
+        if discrete:
             if not isinstance(state_names, dict):
                 self.state_names = {
                     var: self._collect_state_names(var) for var in self.variables
@@ -179,7 +192,7 @@ class BaseEstimator(object):
 
 
 class ParameterEstimator(BaseEstimator):
-    def __init__(self, model, data, **kwargs):
+    def __init__(self, model, data_file, **kwargs):
         """
         Base class for parameter estimators in coreBN.
 
@@ -204,6 +217,9 @@ class ParameterEstimator(BaseEstimator):
             every row where neither the variable nor its parents are `np.NaN` is used.
             This sets the behavior of the `state_count`-method.
         """
+        data= pd.read_csv(data_file).head(50)
+
+        self.data = data
 
         if not (set(model.nodes()) - model.latents) <= set(data.columns.values):
             raise ValueError(
@@ -211,7 +227,7 @@ class ParameterEstimator(BaseEstimator):
             )
         self.model = model
 
-        super(ParameterEstimator, self).__init__(data, **kwargs)
+        super(ParameterEstimator, self).__init__(data_file, discrete=True, **kwargs)
 
     def state_counts(self, variable, weighted=False, **kwargs):
         """
@@ -264,13 +280,13 @@ class ParameterEstimator(BaseEstimator):
 
 
 class StructureEstimator(BaseEstimator):
-    def __init__(self, data=None, independencies=None, **kwargs):
+    def __init__(self, data_input=None, independencies=None, **kwargs):
         """
         Base class for structure estimators in coreBN.
 
         Parameters
         ----------
-        data: pandas DataFrame object
+        data_inpput: name of the file containing the dataset, easily convertible into a pandas
             datafame object where each column represents one variable.
             (If some values in the data are missing the data cells should be set to `numpy.NaN`.
             Note that pandas converts each column containing `numpy.NaN`s to dtype `float`.)
@@ -291,7 +307,7 @@ class StructureEstimator(BaseEstimator):
         if self.independencies is not None:
             self.variables = self.independencies.get_all_variables()
 
-        super(StructureEstimator, self).__init__(data=data, **kwargs)
+        super(StructureEstimator, self).__init__(data_file=data_input, **kwargs)
 
     def estimate(self):
         pass

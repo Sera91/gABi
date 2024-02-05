@@ -41,6 +41,9 @@ It has following non optional dependencies:
 - pyparsing
 - statsmodels
 - joblib
+- dask
+- cupy
+- pygam
 
 
 Installation

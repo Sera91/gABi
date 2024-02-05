@@ -19,15 +19,15 @@ from coreBN.CItests import kernel_CItest, kernel_CItest_cycle
 from coreBN.global_vars import SHOW_PROGRESS
 from pygam import LinearGAM, s
 from coreBN.CItests import Hsic_gamma_py
-#from coreBN.CItests.hsic_perm import Hsic_perm_or
+from coreBN.CItests.hsic_perm import Hsic_perm_or
 from coreBN.CItests import Dcov_gamma_py 
-#from coreBN.CItests.dcc_perm import Dcov_perm_or
+from coreBN.CItests.dcc_perm import Dcov_perm_or
 from dask.distributed import as_completed
 #from dask.distributed import Client
 import joblib
 
 class kPC(StructureEstimator):
-    def __init__(self, data=None, independencies=None, **kwargs):
+    def __init__(self, data_file=None, independencies=None, **kwargs):
         """
         Class for constraint-based estimation of DAGs using the PC algorithm
         from a given data set.
@@ -51,7 +51,7 @@ class kPC(StructureEstimator):
         [2] Neapolitan, Learning Bayesian Networks, Section 10.1.2 for the PC algorithm (page 550), http://www.cs.technion.ac.il/~dang/books/Learning%20Bayesian%20Networks(Neapolitan,%20Richard).pdf
         """
         super(kPC, self).__init__(
-            data=data, **kwargs)
+            data_input=data_file, **kwargs)
 
     def estimate(
         self,
@@ -210,7 +210,6 @@ class kPC(StructureEstimator):
         variant="stable",
         n_jobs=-1,
         show_progress=True,
-	verbose=False,
         **kwargs,
     ):
         """
@@ -280,32 +279,29 @@ class kPC(StructureEstimator):
         else:
             raise ValueError(
                 f"ci_test must be either hsic_gamma, hsic_perm or dcc_perm or a function. Got: {ci_test}")
-        variables = self.variables[1:]
         
-        max_cond_vars= len(variables)-2
+        
+        max_cond_vars= len(self.variables)-2
         
         
         print("I have created the moral graph")
         # Step 1: Initialize a fully connected undirected graph
-        graph = nx.complete_graph(n=variables, create_using=nx.Graph)
+        graph = nx.complete_graph(n=self.variables, create_using=nx.Graph)
 
         print("I am reading the data")
 
         
-        #if self.data_input is not None:
-        #    if os.path.isdir(self.data_input):
-        #        data = dd.read_parquet(self.data_input).head(10000)
-        #        data.sample(frac=1, random_state=rstate).reset_index()
-        #        data = data.head(N_sample)
-        #    else:
-        #        data = dd.read_csv(self.data_input)
-        #        data.sample(frac=1, random_state=rstate).reset_index()
-        #        data = data.head(N_sample)
-        if self.data is not None:
-           data=self.data
-           print("variables in data:", variables)
+        if self.data_input is not None:
+            if os.path.isdir(self.data_input):
+                data = dd.read_parquet(self.data_input).head(10000)
+                data.sample(frac=1, random_state=rstate).reset_index()
+                data = data.head(N_sample)
+            else:
+                data = dd.read_csv(self.data_input)
+                data.sample(frac=1, random_state=rstate).reset_index()
+                data = data.head(N_sample)
         else:
-            print('error: missing input data')
+            print('error: missing input file')
             sys.exit()
 
         if show_progress and SHOW_PROGRESS:
@@ -328,7 +324,7 @@ class kPC(StructureEstimator):
 
             lim_neighbors = 0
         
-            while not all([len(list(graph.neighbors(var))) < lim_neighbors for var in variables]) and lim_neighbors <= max_cond_vars:
+            while not all([len(list(graph.neighbors(var))) < lim_neighbors for var in self.variables]) and lim_neighbors <= max_cond_vars:
 
                 # Step 2: Iterate over the edges and find a conditioning set of
                 # size `lim_neighbors` which makes u and v independent.
@@ -375,10 +371,6 @@ class kPC(StructureEstimator):
                 del file_dictionary, list_limns, list_n_devices, list_sepsets, neighbors
                 gc.collect()
                 lim_neighbors += 1
-                if show_progress and SHOW_PROGRESS:
-                    pbar.update(1)
-                    pbar.set_description(
-                        f"Working for n conditional variables: {lim_neighbors}")
 
             
             
@@ -389,7 +381,7 @@ class kPC(StructureEstimator):
             #             or  2. `lim_neighbors` is greater than `max_conditional_variables`.
             while not all(
                 [len(list(graph.neighbors(var))) <
-                 lim_neighbors for var in variables]
+                 lim_neighbors for var in self.variables]
             ):
 
                 def _dask_parallel_fun(u, v):
@@ -459,7 +451,7 @@ class kPC(StructureEstimator):
             # Exit condition: 1. If all the nodes in graph has less than `lim_neighbors` neighbors.
             #             or  2. `lim_neighbors` is greater than `max_conditional_variables`.
             while not all(
-                [len(list(graph.neighbors(var))) < lim_neighbors for var in variables]):
+                [len(list(graph.neighbors(var))) < lim_neighbors for var in self.variables]):
 
                 # Step 2: Iterate over the edges and find a conditioning set of
                 # size `lim_neighbors` which makes u and v independent.
@@ -503,8 +495,7 @@ class kPC(StructureEstimator):
                             all_vars = list([u,v])
                             all_vars = all_vars + list(separating_set)
                             data_sel = data[all_vars]
-                            if verbose:
-                               print("I am going to do the test")
+                            print("I am going to do the test")
                             if kernel_CItest(
                                 u,
                                 v,
@@ -672,11 +663,10 @@ class kPC(StructureEstimator):
     
         #data = pd.read_csv(self.data_input)
 
-        #if os.path.isdir(self.data_input):
-        #        data = dd.read_parquet(self.data_input).head(2000)
-        #else:
-        #        data = dd.read_csv(self.data_input).head(2000)
-        data=self.data
+        if os.path.isdir(self.data_input):
+                data = dd.read_parquet(self.data_input).head(2000)
+        else:
+                data = dd.read_csv(self.data_input).head(2000)
         print("selected method for CI test is:", sel_method)
         residuals_matrix = np.zeros(data.shape, dtype=np.float64)
         # I will use a mapping array to convert string into col index
@@ -731,20 +721,18 @@ class kPC(StructureEstimator):
 
 
             match sel_method:
-                case 'dcc.gamma':
+                case 'dcc.perm':    
+                  p_left = Dcov_perm_or(x_left, y_left, index, p)
+                  p_right = Dcov_perm_or(x_right, y_right, index, p)
+                case 'dcc.gamma':    
                   p_left = Dcov_gamma_py(x_left, y_left, 0)
                   p_right = Dcov_gamma_py(x_right, y_right, 0)
-                
+                case 'hsic.perm':
+                  p_left = Hsic_perm_or(x_left, y_left, sigma, p, numCol)
+                  p_right = Hsic_perm_or(x_right, y_right, sigma, p, numCol)
                 case 'hsic.gamma':
                   p_left = Hsic_gamma_py(x_left, y_left, 0)
                   p_right = Hsic_gamma_py(x_right, y_right, 0)
-		#case 'hsic.perm':
-                  #p_left = Hsic_perm_or(x_left, y_left, sigma, p, numCol)
-                  #p_right = Hsic_perm_or(x_right, y_right, sigma, p, numCol)
-                #case 'dcc.perm':    
-                  #p_left = Dcov_perm_or(x_left, y_left, index, p)
-                  #p_right = Dcov_perm_or(x_right, y_right, index, p)
-                    
             
             if ((p_left > significance_level) & (p_right < significance_level)):
                 # remove edge from undirected

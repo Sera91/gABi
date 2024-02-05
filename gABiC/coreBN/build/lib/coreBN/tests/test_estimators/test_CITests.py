@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from numpy import testing as np_test
 
-from coreBN.estimators.CITests import *
+from coreBN.CItests import pearsonr, chi_square, log_likelihood, g_sq
 
 np.random.seed(42)
 
@@ -160,12 +160,7 @@ class TestChiSquare(unittest.TestCase):
     def test_discrete_tests(self):
         for t in [
             chi_square,
-            g_sq,
-            log_likelihood,
-            freeman_tuckey,
-            modified_log_likelihood,
-            neyman,
-            cressie_read,
+            log_likelihood
         ]:
             self.assertFalse(
                 t(
@@ -239,11 +234,7 @@ class TestChiSquare(unittest.TestCase):
         for t in [
             chi_square,
             g_sq,
-            log_likelihood,
-            freeman_tuckey,
-            modified_log_likelihood,
-            neyman,
-            cressie_read,
+            log_likelihood
         ]:
             stat, p_value, dof = t(X="x", Y="y", Z=[], data=df, boolean=False)
             self.assertEqual(dof, 1)
