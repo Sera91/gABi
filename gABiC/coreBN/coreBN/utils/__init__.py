@@ -4,6 +4,7 @@ from .check_functions import _check_1d_array_object, _check_length_equal
 from .optimizer import optimize, pinverse
 from .utils import get_example_model
 from .GAMfit import GAM_residuals, GAM_residuals_fast
+from .lpb4 import lpb4
 
 
 __all__ = [
@@ -16,5 +17,6 @@ __all__ = [
     "pinverse",
     "get_example_model",
     "GAM_residuals",
-    "GAM_residuals_fast"
+    "GAM_residuals_fast",
+    "lpb4"
 ]
