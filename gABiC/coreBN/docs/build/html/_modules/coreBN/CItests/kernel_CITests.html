@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.CItests.kernel_CITests &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.CItests.kernel_CITests</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.CItests.kernel_CITests</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">from</span> <span class="nn">pygam</span> <span class="kn">import</span> <span class="n">LinearGAM</span><span class="p">,</span> <span class="n">s</span>
+<span class="kn">from</span> <span class="nn">.hsic_gamma_pytorch</span> <span class="kn">import</span> <span class="n">Hsic_gamma_py</span>
+<span class="c1">#from .hsic_perm import Hsic_perm_or</span>
+<span class="c1">#from .dcc_perm import Dcov_perm_or</span>
+<span class="kn">from</span> <span class="nn">.dcc_gamma_pytorch</span> <span class="kn">import</span> <span class="n">Dcov_gamma_py</span>
+<span class="c1">#import dask.dataframe as dd</span>
+<span class="kn">from</span> <span class="nn">coreBN.utils</span> <span class="kn">import</span> <span class="n">GAM_residuals</span><span class="p">,</span> <span class="n">GAM_residuals_fast</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="c1">#from dask.distributed import Client</span>
+
+<div class="viewcode-block" id="kernel_CItest_cycle"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.kernel_CITests.kernel_CItest_cycle">[docs]</a><span class="k">def</span> <span class="nf">kernel_CItest_cycle</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sep_sets</span><span class="p">,</span> <span class="n">l_m</span> <span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">n_device</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;dcc.gamma&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function, implemented for the parallel run of kpc, tests whether x and y are conditionally independent given all the subsets S, unique combination of the remaining nodes, inside the neighborood of x and y,</span>
+<span class="sd">        using two independence criterions: Distance Covariance/HSIC</span>
+<span class="sd">        It takes as arguments:</span>
+<span class="sd">                 </span>
+<span class="sd">                 @str       : x,y (identify vars over whic we test CI, in the dataframe)</span>
+<span class="sd">                 @list of Ssets: list of separating sets, containing each a list of names identifying vars in the conditioning set</span>
+<span class="sd">                 @l_m       : size of each subset</span>
+<span class="sd">                 @dataframe :  data</span>
+<span class="sd">                 @float param: alpha (significance level to test with the p-value test)</span>
+<span class="sd">                 @int param : integer identifying the cuda device over which perform the GPU calculations</span>
+<span class="sd">                 @str  param: method  (Method for the conditional independence test: Distance Covariance (permutation or gamma test), HSIC (permutation or gamma test) or HSIC cluster)</span>
+<span class="sd">                 @int  param: p  (number of permutations for Distance Covariance, HSIC permutation and HSIC cluster tests)</span>
+<span class="sd">                 @int  param: index (power index in (0,2]  for te formula of the distance in the Distance Covariance)</span>
+<span class="sd">                 @float param: sig (Gaussian kernel width for HSIC tests. Default is 1)</span>
+<span class="sd">                 @int  param: numCol (number of columns used in the incomplete Cholesky decomposition. Default is 100)</span>
+<span class="sd">                 @bool param:  verbose (a logical parameter, if None it is setted to False. When True the detailed output is provided)</span>
+<span class="sd">                 </span>
+<span class="sd">        The function returns the  p_value and the corresponding sep_set         </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
+        <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+
+        <span class="c1">#print(&quot; I am inside kernel function&quot;, flush=True)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span><span class="s1">&#39;dcc.gamma&#39;</span><span class="p">):</span>
+            <span class="c1">#print(&quot;selected method:dcc&quot;, flush=True)</span>
+            <span class="kn">from</span> <span class="nn">coreBN.CItests</span> <span class="kn">import</span> <span class="n">Dcov_gamma_py</span> <span class="k">as</span> <span class="n">Itest</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;hsic.gamma&#39;</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">coreBN.CItests</span> <span class="kn">import</span> <span class="n">Hsic_gamma_py</span> <span class="k">as</span> <span class="n">Itest</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wrong method&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+
+
+        <span class="n">l_sets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sep_sets</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;first separating set&quot;</span><span class="p">,</span> <span class="n">l_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                 
+        
+        <span class="k">if</span> <span class="p">(</span><span class="n">l_m</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pure independence test&quot;</span><span class="p">)</span>
+            <span class="n">final_x_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+            <span class="n">final_y_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">])</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+            <span class="n">p_value</span> <span class="o">=</span> <span class="n">Itest</span><span class="p">(</span><span class="n">final_x_arr</span><span class="p">,</span> <span class="n">final_y_arr</span><span class="p">,</span> <span class="n">n_device</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">final_x_arr</span><span class="p">,</span> <span class="n">final_y_arr</span>
+            <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="p">{()},</span> <span class="n">p_value</span>
+        
+        <span class="n">N_sets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">l_sets</span><span class="p">)</span>
+        <span class="n">list_vars</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+        <span class="n">dict_ind</span> <span class="o">=</span> <span class="p">{</span> <span class="n">list_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_vars</span><span class="p">)</span> <span class="p">)</span> <span class="p">}</span>
+        <span class="c1">#x_index = dict_ind[x]</span>
+        <span class="c1">#y_index = dict_ind[y] </span>
+        <span class="n">data_matrix</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">x_arr</span> <span class="o">=</span> <span class="n">data_matrix</span><span class="p">[:,</span> <span class="n">dict_ind</span><span class="p">[</span><span class="n">x</span><span class="p">]]</span>
+        <span class="n">y_arr</span> <span class="o">=</span> <span class="n">data_matrix</span><span class="p">[:,</span> <span class="n">dict_ind</span><span class="p">[</span><span class="n">y</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">l_m</span><span class="o">==</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">Si_sets</span> <span class="o">=</span> <span class="p">[</span><span class="n">dict_ind</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">sep</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">sep</span> <span class="ow">in</span> <span class="n">l_sets</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Si_sets</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">itemgetter</span><span class="p">(</span><span class="o">*</span><span class="n">sep_set</span><span class="p">)(</span><span class="n">dict_ind</span><span class="p">))</span> <span class="k">for</span> <span class="n">sep_set</span> <span class="ow">in</span> <span class="n">sep_sets</span><span class="p">]</span>
+        <span class="c1">#print(&quot;conditioning sets:&quot;, sep_sets, flush=True)   </span>
+        
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;conditioning sets of len:&quot;</span><span class="p">,</span><span class="n">N_sets</span><span class="p">,</span> <span class="n">sep_sets</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   
+        <span class="k">del</span> <span class="n">dict_ind</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">N_sets</span><span class="p">):</span>
+                <span class="n">data_Sset</span><span class="o">=</span> <span class="n">data_matrix</span><span class="p">[:,</span> <span class="n">Si_sets</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                <span class="n">res_x</span> <span class="o">=</span> <span class="n">GAM_residuals_fast</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span> <span class="n">x_arr</span><span class="p">,</span> <span class="n">l_m</span> <span class="p">)</span> 
+                <span class="n">res_y</span> <span class="o">=</span> <span class="n">GAM_residuals_fast</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span> <span class="n">y_arr</span><span class="p">,</span> <span class="n">l_m</span> <span class="p">)</span>
+                <span class="n">p_value</span> <span class="o">=</span> <span class="n">Itest</span><span class="p">(</span><span class="n">res_x</span><span class="p">,</span> <span class="n">res_y</span><span class="p">,</span> <span class="n">n_device</span><span class="p">)</span>  
+                <span class="c1">#p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">p_value</span> <span class="o">&gt;</span> <span class="n">alpha</span><span class="p">)</span> <span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="s1">&#39;-th pval:&#39;</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span>
+                    <span class="n">final_set</span> <span class="o">=</span> <span class="n">l_sets</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">del</span> <span class="n">data_Sset</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">x_arr</span><span class="p">,</span> <span class="n">y_arr</span><span class="p">,</span> <span class="n">Si_sets</span><span class="p">,</span> <span class="n">list_vars</span><span class="p">,</span> <span class="n">l_sets</span><span class="p">,</span> <span class="n">res_x</span><span class="p">,</span> <span class="n">res_y</span>
+                    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">final_set</span><span class="p">,</span> <span class="n">p_value</span>
+        <span class="n">final_set</span> <span class="o">=</span> <span class="n">l_sets</span><span class="p">[(</span><span class="n">N_sets</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="k">del</span> <span class="n">data_Sset</span><span class="p">,</span> <span class="n">data_matrix</span><span class="p">,</span> <span class="n">x_arr</span><span class="p">,</span> <span class="n">y_arr</span><span class="p">,</span> <span class="n">Si_sets</span><span class="p">,</span> <span class="n">list_vars</span><span class="p">,</span> <span class="n">l_sets</span><span class="p">,</span> <span class="n">res_x</span><span class="p">,</span> <span class="n">res_y</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">),</span> <span class="n">final_set</span> <span class="p">,</span> <span class="n">p_value</span></div>
+
+        
+
+<div class="viewcode-block" id="kernel_CItest"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.kernel_CITests.kernel_CItest">[docs]</a><span class="k">def</span> <span class="nf">kernel_CItest</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">list_set</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;hsic.gamma&#39;</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">numCol</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">boolean</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function tests whether x and y are conditionally independent given the subset S of the remaining nodes,</span>
+<span class="sd">        using the independence criterions: Distance Covariance/HSIC</span>
+<span class="sd">        It takes as arguments:</span>
+<span class="sd">                 @dataframe :  data</span>
+<span class="sd">                 @str       : x,y (identify vars over whic we test CI, in the dataframe)</span>
+<span class="sd">                 @list of str: list_set  (list of names identifying vars in the conditioning set)</span>
+<span class="sd">                 @bool param:  verbose (a logical parameter, if None it is setted to False. When True the detailed output is provided).</span>
+<span class="sd">                 @str  param: method  (Method for the conditional independence test: Distance Covariance (permutation or gamma test), HSIC (permutation or gamma test) or HSIC cluster)</span>
+<span class="sd">                 @int  param: p  (number of permutations for Distance Covariance, HSIC permutation and HSIC cluster tests)</span>
+<span class="sd">                 @int  param: index (power index in (0,2]  for te formula of the distance in the Distance Covariance)</span>
+<span class="sd">                 @float param: sig (Gaussian kernel width for HSIC tests. Default is 1)</span>
+<span class="sd">                 @int  param: numCol (number of columns used in the incomplete Cholesky decomposition. Default is 100)</span>
+<span class="sd">                 @int  param: numCluster (number of clusters for kPC clust algorithm)</span>
+<span class="sd">                 @float param: eps   (Normalization parameter for kPC clust. Default is 0.1)</span>
+<span class="sd">                 @int  param: paral (number of cores to use for parallel calculations.)</span>
+<span class="sd"> 		         boolean: bool</span>
+<span class="sd">                 If boolean=True, an additional argument `significance_level` must</span>
+<span class="sd">                 be specified. If p_value of the test is greater than equal to</span>
+<span class="sd">                 `significance_level`, returns True. Otherwise returns False.</span>
+<span class="sd">                If boolean=False, returns the pearson correlation coefficient and p_value</span>
+<span class="sd">                of the test.         </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1">#if dask_cluster!=None:</span>
+        <span class="c1">#    client = Client(dask_cluster)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X variable: &quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Y variable:&quot;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="c1">#data = pd.read_csv(data_input)</span>
+        <span class="c1">#reading parquet files</span>
+        <span class="c1">#ddf = dd.read_parquet(data_input)</span>
+        <span class="c1">#all_vars = list(list_set)</span>
+        <span class="c1">#all_vars.append(x)</span>
+        <span class="c1">#all_vars.append(y)</span>
+
+        <span class="c1">#data = ddf[all_vars].compute()</span>
+        <span class="c1">#data = data.head(1000)</span>
+        <span class="n">x_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="n">y_arr</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">])</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+                 
+        <span class="c1">#if(boolean==True):</span>
+        <span class="c1">#    print(&quot;significance level:&quot;, kwargs[&quot;significance_level&quot;])    </span>
+        <span class="c1">#if debug:</span>
+        <span class="c1">#    print(&quot;Independence criterion method was not provided, using the default method: hsic-gamma&quot;)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="mi">100</span>
+                <span class="c1">#print(&quot;Number of perm not provided. Default is 100&quot;)</span>
+        <span class="c1">#if (index==None):</span>
+        <span class="c1">#        index=1</span>
+                <span class="c1">#print(&quot;index for Dcov not provided. default is 1&quot;)</span>
+        <span class="c1">#if (sig==None):</span>
+        <span class="c1">#        sig=1</span>
+                <span class="c1">#print(&quot;Gaussian kernel width for HSIC tests not provided. Default is 1&quot;)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">numCol</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
+                <span class="c1">#print(&quot;Number of cols to consider in Cholesky decomposition not provided. Default is 100&quot;)</span>
+                <span class="n">numCol</span><span class="o">=</span><span class="mi">100</span>
+
+        <span class="c1">#p_value=0.0</span>
+        <span class="n">N_cond_vars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_set</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">N_cond_vars</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                       <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pure independence test&quot;</span><span class="p">)</span>
+                    <span class="n">final_x_arr</span> <span class="o">=</span> <span class="n">x_arr</span>
+                    <span class="n">final_y_arr</span> <span class="o">=</span> <span class="n">y_arr</span>
+        <span class="k">else</span> <span class="p">:</span>
+                    
+                    <span class="n">list_set</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">list_set</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                       <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;list vars in conditioning set:&quot;</span><span class="p">,</span> <span class="n">list_set</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">list_set</span><span class="p">))</span>
+                    <span class="n">data_Sset</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">list_set</span><span class="p">])</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+                    <span class="n">gam</span>  <span class="o">=</span> <span class="n">LinearGAM</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_cond_vars</span><span class="p">)]))</span>
+                    <span class="n">gam1</span> <span class="o">=</span> <span class="n">LinearGAM</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">ii</span><span class="p">)</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_cond_vars</span><span class="p">)]))</span>
+                    <span class="n">gam</span><span class="o">.</span><span class="n">gridsearch</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span><span class="n">x_arr</span><span class="p">)</span>
+                    <span class="n">res_X</span> <span class="o">=</span> <span class="n">gam</span><span class="o">.</span><span class="n">deviance_residuals</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span><span class="n">x_arr</span><span class="p">)</span>
+                    <span class="n">gam1</span><span class="o">.</span><span class="n">gridsearch</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span><span class="n">y_arr</span><span class="p">)</span>
+                    <span class="n">res_Y</span> <span class="o">=</span> <span class="n">gam1</span><span class="o">.</span><span class="n">deviance_residuals</span><span class="p">(</span><span class="n">data_Sset</span><span class="p">,</span><span class="n">y_arr</span><span class="p">)</span>
+                    <span class="n">final_x_arr</span> <span class="o">=</span> <span class="n">res_X</span>
+                    <span class="n">final_y_arr</span> <span class="o">=</span> <span class="n">res_Y</span>
+                    <span class="k">del</span> <span class="n">data_Sset</span>
+                         
+                    
+        <span class="c1">#match method:</span>
+        <span class="c1">#    case &#39;dcc.perm&#39;:    </span>
+                  
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span><span class="s1">&#39;dcc.gamma&#39;</span><span class="p">:</span>    
+                  <span class="c1">#NEED  to introduce flag for backend here</span>
+                  <span class="c1">#p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)</span>
+                  <span class="n">p_value</span> <span class="o">=</span> <span class="n">Dcov_gamma_py</span><span class="p">(</span><span class="n">final_x_arr</span><span class="p">,</span> <span class="n">final_y_arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1">#elif method == &#39;dcc.perm&#39;:</span>
+        <span class="c1">#          p_value = Dcov_perm_or(final_x_arr, final_y_arr, index, p)</span>
+        <span class="c1">#elif method==&#39;hsic.perm&#39;:</span>
+        <span class="c1">#          p_value = Hsic_perm_or(final_x_arr, final_y_arr,  sig, p, numCol)</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;hsic.gamma&#39;</span><span class="p">:</span>
+                  <span class="n">p_value</span> <span class="o">=</span> <span class="n">Hsic_gamma_py</span><span class="p">(</span><span class="n">final_x_arr</span><span class="p">,</span> <span class="n">final_y_arr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        
+        
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+           <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;pval:&#39;</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">boolean</span><span class="p">:</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="n">p_value</span> <span class="o">&gt;=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;significance_level&quot;</span><span class="p">]):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;edge &#39;</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="s1">&#39;-&#39;</span><span class="o">+</span><span class="n">y</span><span class="p">,</span><span class="s1">&#39;pval:&#39;</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="kc">True</span>
+                  <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+                  <span class="k">return</span> <span class="n">p_value</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

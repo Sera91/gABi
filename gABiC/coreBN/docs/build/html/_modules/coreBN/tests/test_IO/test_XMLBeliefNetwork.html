@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_IO.test_XMLBeliefNetwork &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_IO.test_XMLBeliefNetwork</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.tests.test_IO.test_XMLBeliefNetwork</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.testing</span> <span class="k">as</span> <span class="nn">np_test</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.IO</span> <span class="kn">import</span> <span class="n">XMLBeliefNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to import ElementTree from any known place&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestXBNReader"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader">[docs]</a><span class="k">class</span> <span class="nc">TestXBNReader</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestXBNReader.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;ANALYSISNOTEBOOK NAME=&quot;Notebook.Cancer Example From Neapolitan&quot; ROOT=&quot;Cancer&quot;&gt;</span>
+<span class="s2">                       &lt;BNMODEL NAME=&quot;Cancer&quot;&gt;</span>
+<span class="s2">                          &lt;STATICPROPERTIES&gt;</span>
+<span class="s2">                             &lt;FORMAT VALUE=&quot;MSR DTAS XML&quot;/&gt;</span>
+<span class="s2">                             &lt;VERSION VALUE=&quot;0.2&quot;/&gt;</span>
+<span class="s2">                             &lt;CREATOR VALUE=&quot;Microsoft Research DTAS&quot;/&gt;</span>
+<span class="s2">                          &lt;/STATICPROPERTIES&gt;</span>
+<span class="s2">                          &lt;VARIABLES&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;a&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13495&quot; YPOS=&quot;10465&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(a) Metastatic Cancer&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;b&quot; TYPE=&quot;discrete&quot; XPOS=&quot;11290&quot; YPOS=&quot;11965&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(b) Serum Calcium Increase&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;c&quot; TYPE=&quot;discrete&quot; XPOS=&quot;15250&quot; YPOS=&quot;11935&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(c) Brain Tumor&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;d&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13960&quot; YPOS=&quot;12985&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(d) Coma&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;e&quot; TYPE=&quot;discrete&quot; XPOS=&quot;17305&quot; YPOS=&quot;13240&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(e) Papilledema&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                             &lt;VAR NAME=&quot;f&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13440&quot; YPOS=&quot;10489&quot;&gt;</span>
+<span class="s2">                                &lt;DESCRIPTION&gt;(f) Asthma&lt;/DESCRIPTION&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="s2">                                &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="s2">                             &lt;/VAR&gt;</span>
+<span class="s2">                          &lt;/VARIABLES&gt;</span>
+<span class="s2">                          &lt;STRUCTURE&gt;</span>
+<span class="s2">                             &lt;ARC PARENT=&quot;a&quot; CHILD=&quot;b&quot;/&gt;</span>
+<span class="s2">                             &lt;ARC PARENT=&quot;a&quot; CHILD=&quot;c&quot;/&gt;</span>
+<span class="s2">                             &lt;ARC PARENT=&quot;b&quot; CHILD=&quot;d&quot;/&gt;</span>
+<span class="s2">                             &lt;ARC PARENT=&quot;c&quot; CHILD=&quot;d&quot;/&gt;</span>
+<span class="s2">                             &lt;ARC PARENT=&quot;c&quot; CHILD=&quot;e&quot;/&gt;</span>
+<span class="s2">                          &lt;/STRUCTURE&gt;</span>
+<span class="s2">                          &lt;DISTRIBUTIONS&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;a&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI&gt; 0.2 0.8&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;CONDSET&gt;</span>
+<span class="s2">                                   &lt;CONDELEM NAME=&quot;a&quot;/&gt;</span>
+<span class="s2">                                &lt;/CONDSET&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;b&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.8 0.2&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.2 0.8&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;CONDSET&gt;</span>
+<span class="s2">                                   &lt;CONDELEM NAME=&quot;a&quot;/&gt;</span>
+<span class="s2">                                &lt;/CONDSET&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;c&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.2 0.8&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.05 0.95&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;CONDSET&gt;</span>
+<span class="s2">                                   &lt;CONDELEM NAME=&quot;b&quot;/&gt;</span>
+<span class="s2">                                   &lt;CONDELEM NAME=&quot;c&quot;/&gt;</span>
+<span class="s2">                                &lt;/CONDSET&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;d&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 0 0 &quot;&gt; 0.8 0.2&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 0 1 &quot;&gt; 0.9 0.1&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 1 0 &quot;&gt; 0.7 0.3&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 1 1 &quot;&gt; 0.05 0.95&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;CONDSET&gt;</span>
+<span class="s2">                                   &lt;CONDELEM NAME=&quot;c&quot;/&gt;</span>
+<span class="s2">                                &lt;/CONDSET&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;e&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.8 0.2&lt;/DPI&gt;</span>
+<span class="s2">                                   &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.6 0.4&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                             &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="s2">                                &lt;PRIVATE NAME=&quot;f&quot;/&gt;</span>
+<span class="s2">                                &lt;DPIS&gt;</span>
+<span class="s2">                                   &lt;DPI&gt; 0.3 0.7&lt;/DPI&gt;</span>
+<span class="s2">                                &lt;/DPIS&gt;</span>
+<span class="s2">                             &lt;/DIST&gt;</span>
+<span class="s2">                          &lt;/DISTRIBUTIONS&gt;</span>
+<span class="s2">                       &lt;/BNMODEL&gt;</span>
+<span class="s2">                    &lt;/ANALYSISNOTEBOOK&gt;&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span> <span class="o">=</span> <span class="n">XMLBeliefNetwork</span><span class="o">.</span><span class="n">XBNReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">string</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span> <span class="o">=</span> <span class="n">XMLBeliefNetwork</span><span class="o">.</span><span class="n">XBNReader</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">string</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_init_exception"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_init_exception">[docs]</a>    <span class="k">def</span> <span class="nf">test_init_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">XMLBeliefNetwork</span><span class="o">.</span><span class="n">XBNReader</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_analysis_notebook"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_analysis_notebook">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_analysis_notebook</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_analysisnotebook_values</span><span class="p">()[</span><span class="s2">&quot;NAME&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Notebook.Cancer Example From Neapolitan&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_analysisnotebook_values</span><span class="p">()[</span><span class="s2">&quot;ROOT&quot;</span><span class="p">],</span> <span class="s2">&quot;Cancer&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_analysisnotebook_values</span><span class="p">()[</span><span class="s2">&quot;NAME&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;Notebook.Cancer Example From Neapolitan&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_analysisnotebook_values</span><span class="p">()[</span><span class="s2">&quot;ROOT&quot;</span><span class="p">],</span> <span class="s2">&quot;Cancer&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_bnmodel_name"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_bnmodel_name">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_bnmodel_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_bnmodel_name</span><span class="p">(),</span> <span class="s2">&quot;Cancer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_bnmodel_name</span><span class="p">(),</span> <span class="s2">&quot;Cancer&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_static_properties"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_static_properties">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_static_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_static_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;FORMAT&quot;</span><span class="p">],</span> <span class="s2">&quot;MSR DTAS XML&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;VERSION&quot;</span><span class="p">],</span> <span class="s2">&quot;0.2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;CREATOR&quot;</span><span class="p">],</span> <span class="s2">&quot;Microsoft Research DTAS&quot;</span><span class="p">)</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_static_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;FORMAT&quot;</span><span class="p">],</span> <span class="s2">&quot;MSR DTAS XML&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;VERSION&quot;</span><span class="p">],</span> <span class="s2">&quot;0.2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;CREATOR&quot;</span><span class="p">],</span> <span class="s2">&quot;Microsoft Research DTAS&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_variables"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">())),</span>
+            <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">())),</span>
+            <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">],</span> <span class="s2">&quot;discrete&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;XPOS&quot;</span><span class="p">],</span> <span class="s2">&quot;13495&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;YPOS&quot;</span><span class="p">],</span> <span class="s2">&quot;10465&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;(a) Metastatic Cancer&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;STATES&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">],</span> <span class="s2">&quot;discrete&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;XPOS&quot;</span><span class="p">],</span> <span class="s2">&quot;13495&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;YPOS&quot;</span><span class="p">],</span> <span class="s2">&quot;10465&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;(a) Metastatic Cancer&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;STATES&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_edges"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_edges</span><span class="p">(),</span>
+            <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)],</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_edges</span><span class="p">(),</span>
+            <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)],</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_distribution"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_distribution">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_distributions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">],</span> <span class="s2">&quot;discrete&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">][</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">]]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="n">distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_file</span><span class="o">.</span><span class="n">get_distributions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">],</span> <span class="s2">&quot;discrete&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">][</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">]]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]])</span>
+        <span class="p">)</span>
+        <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="TestXBNReader.test_get_model"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_model">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader_string</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+        <span class="n">node_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(c) Brain Tumor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11935&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;15250&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(a) Metastatic Cancer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;10465&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13495&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(b) Serum Calcium Increase&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11965&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11290&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(e) Papilledema&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13240&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;17305&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(f) Asthma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;10489&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13440&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(d) Coma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;12985&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13960&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">cpds_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]]),</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]]),</span>
+            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]]),</span>
+            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">]]),</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">():</span>
+            <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span> <span class="n">cpds_expected</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="nb">sorted</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">edges</span><span class="p">()),</span>
+            <span class="nb">sorted</span><span class="p">([(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)]),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">),</span> <span class="n">node_expected</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestXBNWriter"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter">[docs]</a><span class="k">class</span> <span class="nc">TestXBNWriter</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestXBNWriter.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(c) Brain Tumor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11935&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;15250&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(a) Metastatic Cancer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;10465&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13495&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(b) Serum Calcium Increase&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11965&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;11290&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(e) Papilledema&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13240&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;17305&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(f) Asthma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;10489&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13440&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Present&quot;</span><span class="p">,</span> <span class="s2">&quot;Absent&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="s2">&quot;(d) Coma&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;12985&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="s2">&quot;13960&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">])</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span>
+            <span class="p">[(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="n">cpd_distribution</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span> <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">]])},</span>
+            <span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]]),</span>
+                <span class="s2">&quot;CONDSET&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;CARDINALITY&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;f&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span> <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]])},</span>
+            <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]]),</span>
+                <span class="s2">&quot;CONDSET&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;CARDINALITY&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+                <span class="s2">&quot;CONDSET&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;CARDINALITY&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;discrete&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DPIS&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+                <span class="s2">&quot;CONDSET&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;CARDINALITY&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+
+        <span class="n">tabular_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">cpd_distribution</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">evidence</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;CONDSET&quot;</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;DPIS&quot;</span><span class="p">]</span>
+            <span class="n">evidence_card</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;CARDINALITY&quot;</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;STATES&quot;</span><span class="p">]</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">var</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">states</span><span class="p">),</span> <span class="n">cpd</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span> <span class="n">evidence_card</span><span class="o">=</span><span class="n">evidence_card</span>
+            <span class="p">)</span>
+            <span class="n">tabular_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">tabular_cpds</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nx</span><span class="o">.</span><span class="n">__version__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="n">nodes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">_node</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxDiff</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">XMLBeliefNetwork</span><span class="o">.</span><span class="n">XBNWriter</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXBNWriter.test_file"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.test_file">[docs]</a>    <span class="nd">@unittest</span><span class="o">.</span><span class="n">skipIf</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">,</span> <span class="s2">&quot;xml ordering different in python 3.8&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expected_xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">XML</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;&lt;ANALYSISNOTEBOOK&gt;</span>
+<span class="sd">  &lt;BNMODEL&gt;</span>
+<span class="sd">    &lt;VARIABLES&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;a&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13495&quot; YPOS=&quot;10465&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(a) Metastatic Cancer&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;b&quot; TYPE=&quot;discrete&quot; XPOS=&quot;11290&quot; YPOS=&quot;11965&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(b) Serum Calcium Increase&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;c&quot; TYPE=&quot;discrete&quot; XPOS=&quot;15250&quot; YPOS=&quot;11935&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(c) Brain Tumor&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;d&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13960&quot; YPOS=&quot;12985&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(d) Coma&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;e&quot; TYPE=&quot;discrete&quot; XPOS=&quot;17305&quot; YPOS=&quot;13240&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(e) Papilledema&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">      &lt;VAR NAME=&quot;f&quot; TYPE=&quot;discrete&quot; XPOS=&quot;13440&quot; YPOS=&quot;10489&quot;&gt;</span>
+<span class="sd">        &lt;DESCRIPTION DESCRIPTION=&quot;(f) Asthma&quot;/&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Present&lt;/STATENAME&gt;</span>
+<span class="sd">        &lt;STATENAME&gt;Absent&lt;/STATENAME&gt;</span>
+<span class="sd">      &lt;/VAR&gt;</span>
+<span class="sd">    &lt;/VARIABLES&gt;</span>
+<span class="sd">    &lt;STRUCTURE&gt;</span>
+<span class="sd">      &lt;ARC CHILD=&quot;b&quot; PARENT=&quot;a&quot;/&gt;</span>
+<span class="sd">      &lt;ARC CHILD=&quot;c&quot; PARENT=&quot;a&quot;/&gt;</span>
+<span class="sd">      &lt;ARC CHILD=&quot;d&quot; PARENT=&quot;b&quot;/&gt;</span>
+<span class="sd">      &lt;ARC CHILD=&quot;d&quot; PARENT=&quot;c&quot;/&gt;</span>
+<span class="sd">      &lt;ARC CHILD=&quot;e&quot; PARENT=&quot;c&quot;/&gt;</span>
+<span class="sd">    &lt;/STRUCTURE&gt;</span>
+<span class="sd">    &lt;DISTRIBUTIONS&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;a&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI&gt; 0.2 0.8 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;b&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.8 0.2 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.2 0.8 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">        &lt;CONDSET&gt;</span>
+<span class="sd">          &lt;CONDELEM NAME=&quot;a&quot;/&gt;</span>
+<span class="sd">        &lt;/CONDSET&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;c&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.2 0.8 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.05 0.95 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">        &lt;CONDSET&gt;</span>
+<span class="sd">          &lt;CONDELEM NAME=&quot;a&quot;/&gt;</span>
+<span class="sd">        &lt;/CONDSET&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;d&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 0 0 &quot;&gt; 0.8 0.2 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 0 1 &quot;&gt; 0.9 0.1 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 1 0 &quot;&gt; 0.7 0.3 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 1 1 &quot;&gt; 0.05 0.95 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">        &lt;CONDSET&gt;</span>
+<span class="sd">          &lt;CONDELEM NAME=&quot;b&quot;/&gt;</span>
+<span class="sd">          &lt;CONDELEM NAME=&quot;c&quot;/&gt;</span>
+<span class="sd">        &lt;/CONDSET&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;e&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 0 &quot;&gt; 0.8 0.2 &lt;/DPI&gt;</span>
+<span class="sd">          &lt;DPI INDEXES=&quot; 1 &quot;&gt; 0.6 0.4 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">        &lt;CONDSET&gt;</span>
+<span class="sd">          &lt;CONDELEM NAME=&quot;c&quot;/&gt;</span>
+<span class="sd">        &lt;/CONDSET&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">      &lt;DIST TYPE=&quot;discrete&quot;&gt;</span>
+<span class="sd">        &lt;PRIVATE NAME=&quot;f&quot;/&gt;</span>
+<span class="sd">        &lt;DPIS&gt;</span>
+<span class="sd">          &lt;DPI&gt; 0.3 0.7 &lt;/DPI&gt;</span>
+<span class="sd">        &lt;/DPIS&gt;</span>
+<span class="sd">      &lt;/DIST&gt;</span>
+<span class="sd">    &lt;/DISTRIBUTIONS&gt;</span>
+<span class="sd">  &lt;/BNMODEL&gt;</span>
+<span class="sd">&lt;/ANALYSISNOTEBOOK&gt;&quot;&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expected_xml</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expected_xml</span><span class="p">))</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

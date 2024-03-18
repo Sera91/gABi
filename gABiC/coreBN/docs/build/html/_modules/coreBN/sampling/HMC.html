@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.sampling.HMC &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.sampling.HMC</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.sampling.HMC</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: UTF-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A collection of methods for sampling from continuous models in coreBN</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.sampling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BaseGradLogPDF</span><span class="p">,</span>
+    <span class="n">BaseSimulateHamiltonianDynamics</span><span class="p">,</span>
+    <span class="n">LeapFrog</span><span class="p">,</span>
+    <span class="n">_return_samples</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">coreBN.utils</span> <span class="kn">import</span> <span class="n">_check_1d_array_object</span><span class="p">,</span> <span class="n">_check_length_equal</span>
+
+
+<div class="viewcode-block" id="HamiltonianMC"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMC">[docs]</a><span class="k">class</span> <span class="nc">HamiltonianMC</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for performing sampling using simple</span>
+<span class="sd">    Hamiltonian Monte Carlo</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: An instance coreBN.models</span>
+<span class="sd">        Model from which sampling has to be done</span>
+
+<span class="sd">    grad_log_pdf: A subclass of coreBN.inference.continuous.BaseGradLogPDF, defaults to None</span>
+<span class="sd">        A class to find log and gradient of log distribution for a given assignment</span>
+<span class="sd">        If None, then will use model.get_gradient_log_pdf</span>
+
+<span class="sd">    simulate_dynamics: A subclass of coreBN.inference.continuous.BaseSimulateHamiltonianDynamics</span>
+<span class="sd">        A class to propose future values of momentum and position in time by simulating</span>
+<span class="sd">        Hamiltonian Dynamics</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import HamiltonianMC as HMC, LeapFrog, GradLogPDFGaussian</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution as JGD</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([-3, 4])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.array([[3, 0.7], [0.7, 5]])</span>
+<span class="sd">    &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; sampler = HMC(model=model, grad_log_pdf=GradLogPDFGaussian, simulate_dynamics=LeapFrog)</span>
+<span class="sd">    &gt;&gt;&gt; samples = sampler.sample(initial_pos=np.array([1, 1]), num_samples = 10000,</span>
+<span class="sd">    ...                          trajectory_length=2, stepsize=0.4, return_type=&#39;recarray&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; samples</span>
+<span class="sd">    rec.array([(1.0, 1.0), (-3.1861687131079086, 3.7940994520145654),</span>
+<span class="sd">     (-1.6920542547310844, 6.347410703806017), ...,</span>
+<span class="sd">     (-1.8093621120575312, 5.940860883943261),</span>
+<span class="sd">     (0.3933248026088032, 6.3853098838119235),</span>
+<span class="sd">     (-0.8654072934719572, 6.023803629334816)],</span>
+<span class="sd">              dtype=[(&#39;x&#39;, &#39;&lt;f8&#39;), (&#39;y&#39;, &#39;&lt;f8&#39;)])</span>
+
+<span class="sd">    &gt;&gt;&gt; samples = np.array([samples[var_name] for var_name in model.variables])</span>
+<span class="sd">    &gt;&gt;&gt; np.cov(samples)</span>
+<span class="sd">    array([[ 3.0352818 ,  0.71379304],</span>
+<span class="sd">           [ 0.71379304,  4.91776713]])</span>
+<span class="sd">    &gt;&gt;&gt; sampler.accepted_proposals</span>
+<span class="sd">    9932.0</span>
+<span class="sd">    &gt;&gt;&gt; sampler.acceptance_rate</span>
+<span class="sd">    0.9932</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    R.Neal. Handbook of Markov Chain Monte Carlo,</span>
+<span class="sd">    chapter 5: MCMC Using Hamiltonian Dynamics.</span>
+<span class="sd">    CRC Press, 2011.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">simulate_dynamics</span><span class="o">=</span><span class="n">LeapFrog</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">BaseGradLogPDF</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;grad_log_pdf must be an instance of &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;coreBN.inference.base_continuous.BaseGradLogPDF&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">simulate_dynamics</span><span class="p">,</span> <span class="n">BaseSimulateHamiltonianDynamics</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;split_time must be an instance of &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;coreBN.inference.base_continuous.BaseSimulateHamiltonianDynamics&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span> <span class="o">=</span> <span class="n">grad_log_pdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulate_dynamics</span> <span class="o">=</span> <span class="n">simulate_dynamics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_acceptance_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the acceptance probability for given new position(position) and momentum</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Parameters to help in evaluating Joint distribution P(position, momentum)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">logp_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position_bar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+
+        <span class="c1"># acceptance_prob = P(position_bar, momentum_bar)/ P(position, momentum)</span>
+        <span class="n">potential_change</span> <span class="o">=</span> <span class="n">logp_bar</span> <span class="o">-</span> <span class="n">logp</span>  <span class="c1"># Negative change</span>
+        <span class="n">kinetic_change</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">momentum_bar</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">momentum</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">momentum</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># acceptance probability</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">potential_change</span> <span class="o">-</span> <span class="n">kinetic_change</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceptance_prob</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Temporary method to fix issue in numpy 0.12 #852</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">acceptance_prob</span><span class="o">**</span><span class="n">a</span><span class="p">)</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">a</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">acceptance_prob</span><span class="o">**</span><span class="n">a</span><span class="p">))</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">a</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_find_reasonable_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">stepsize_app</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method for choosing initial value of stepsize</span>
+
+<span class="sd">        References</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Matthew D. Hoffman, Andrew Gelman, The No-U-Turn Sampler: Adaptively</span>
+<span class="sd">        Setting Path Lengths in Hamiltonian Monte Carlo. Journal of</span>
+<span class="sd">        Machine Learning Research 15 (2014) 1351-1381</span>
+<span class="sd">        Algorithm 4 : Heuristic for choosing an initial value of epsilon</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># momentum = N(0, I)</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">position</span><span class="p">)),</span> <span class="n">position</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># Take a single step in time</span>
+        <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_dynamics</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize_app</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">get_proposed_values</span><span class="p">()</span>
+
+        <span class="n">acceptance_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acceptance_prob</span><span class="p">(</span>
+            <span class="n">position</span><span class="p">,</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">momentum_bar</span>
+        <span class="p">)</span>
+
+        <span class="c1"># a = 2I[acceptance_prob] -1</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">acceptance_prob</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">condition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_condition</span><span class="p">(</span><span class="n">acceptance_prob</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">condition</span><span class="p">:</span>
+            <span class="n">stepsize_app</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">stepsize_app</span>
+
+            <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_dynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize_app</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_proposed_values</span><span class="p">()</span>
+
+            <span class="n">acceptance_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acceptance_prob</span><span class="p">(</span>
+                <span class="n">position</span><span class="p">,</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">momentum_bar</span>
+            <span class="p">)</span>
+
+            <span class="n">condition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_condition</span><span class="p">(</span><span class="n">acceptance_prob</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stepsize_app</span>
+
+    <span class="k">def</span> <span class="nf">_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">lsteps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Runs a single sampling iteration to return a sample</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Resampling momentum</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">position</span><span class="p">)),</span> <span class="n">position</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># position_m here will be the previous sampled value of position</span>
+        <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span> <span class="o">=</span> <span class="n">position</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">momentum</span>
+
+        <span class="c1"># Number of steps L to simulate dynamics</span>
+        <span class="k">if</span> <span class="n">lsteps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">trajectory_length</span> <span class="o">/</span> <span class="n">stepsize</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+
+        <span class="n">grad_bar</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position_bar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lsteps</span><span class="p">):</span>
+            <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">,</span> <span class="n">grad_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_dynamics</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                <span class="n">position_bar</span><span class="p">,</span>
+                <span class="n">momentum_bar</span><span class="p">,</span>
+                <span class="n">stepsize</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">,</span>
+                <span class="n">grad_bar</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_proposed_values</span><span class="p">()</span>
+
+        <span class="n">acceptance_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acceptance_prob</span><span class="p">(</span>
+            <span class="n">position</span><span class="p">,</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">momentum_bar</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Metropolis acceptance probability</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">acceptance_prob</span><span class="p">)</span>
+
+        <span class="c1"># Accept or reject the new proposed value of position, i.e position_bar</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alpha</span><span class="p">:</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">position_bar</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">+=</span> <span class="mf">1.0</span>
+
+        <span class="k">return</span> <span class="n">position</span><span class="p">,</span> <span class="n">alpha</span>
+
+<div class="viewcode-block" id="HamiltonianMC.sample"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMC.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">initial_pos</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">trajectory_length</span><span class="p">,</span>
+        <span class="n">stepsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;dataframe&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to return samples using Hamiltonian Monte Carlo</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initial_pos: A 1d array like object</span>
+<span class="sd">            Vector representing values of parameter position, the starting</span>
+<span class="sd">            state in markov chain.</span>
+
+<span class="sd">        num_samples: int</span>
+<span class="sd">            Number of samples to be generated</span>
+
+<span class="sd">        trajectory_length: int or float</span>
+<span class="sd">            Target trajectory length, stepsize * number of steps(L),</span>
+<span class="sd">            where L is the number of steps taken per HMC iteration,</span>
+<span class="sd">            and stepsize is step size for splitting time method.</span>
+
+<span class="sd">        stepsize: float , defaults to None</span>
+<span class="sd">            The stepsize for proposing new values of position and momentum in simulate_dynamics</span>
+<span class="sd">            If None, then will be chosen suitably</span>
+
+<span class="sd">        return_type: string (dataframe | recarray)</span>
+<span class="sd">            Return type for samples, either of &#39;dataframe&#39; or &#39;recarray&#39;.</span>
+<span class="sd">            Defaults to &#39;dataframe&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sampled: A pandas.DataFrame or a numpy.recarray object depending upon return_type argument</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.sampling import HamiltonianMC as HMC, GradLogPDFGaussian, ModifiedEuler</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution as JGD</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([1, -1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[1, 0.2], [0.2, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; sampler = HMC(model=model, grad_log_pdf=GradLogPDFGaussian, simulate_dynamics=ModifiedEuler)</span>
+<span class="sd">        &gt;&gt;&gt; samples = sampler.sample(np.array([1, 1]), num_samples = 5,</span>
+<span class="sd">        ...                          trajectory_length=6, stepsize=0.25, return_type=&#39;dataframe&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; samples</span>
+<span class="sd">                       x              y</span>
+<span class="sd">        0   1.000000e+00   1.000000e+00</span>
+<span class="sd">        1   1.592133e+00   1.152911e+00</span>
+<span class="sd">        2   1.608700e+00   1.315349e+00</span>
+<span class="sd">        3   1.608700e+00   1.315349e+00</span>
+<span class="sd">        4   6.843856e-01   6.237043e-01</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([4, 1, -1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[1, 0.7 , 0.8], [0.7, 1, 0.2], [0.8, 0.2, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;, &#39;z&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; sampler = HMC(model=model, grad_log_pdf=GLPG)</span>
+<span class="sd">        &gt;&gt;&gt; samples = sampler.sample(np.array([1, 1]), num_samples = 10000,</span>
+<span class="sd">        ...                          trajectory_length=6, stepsize=0.25, return_type=&#39;dataframe&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; np.cov(samples.values.T)</span>
+<span class="sd">        array([[ 1.00795398,  0.71384233,  0.79802097],</span>
+<span class="sd">               [ 0.71384233,  1.00633524,  0.21313767],</span>
+<span class="sd">               [ 0.79802097,  0.21313767,  0.98519017]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">initial_pos</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;model.variables&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_reasonable_stepsize</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[(</span><span class="n">var_name</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">types</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">)</span>
+
+        <span class="c1"># Assigning after converting into tuple because value was being changed after assignment</span>
+        <span class="c1"># Reason for this is unknown</span>
+        <span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+        <span class="n">position_m</span> <span class="o">=</span> <span class="n">initial_pos</span>
+
+        <span class="n">lsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">trajectory_length</span> <span class="o">/</span> <span class="n">stepsize</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)):</span>
+
+            <span class="c1"># Genrating sample</span>
+            <span class="n">position_m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample</span><span class="p">(</span>
+                <span class="n">position_m</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">lsteps</span>
+            <span class="p">)</span>
+            <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">position_m</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">/</span> <span class="n">num_samples</span>
+
+        <span class="k">return</span> <span class="n">_return_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HamiltonianMC.generate_sample"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMC.generate_sample">[docs]</a>    <span class="k">def</span> <span class="nf">generate_sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">initial_pos</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method returns a generator type object whose each iteration yields a sample</span>
+<span class="sd">        using Hamiltonian Monte Carlo</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initial_pos: A 1d array like object</span>
+<span class="sd">            Vector representing values of parameter position, the starting</span>
+<span class="sd">            state in markov chain.</span>
+
+<span class="sd">        num_samples: int</span>
+<span class="sd">            Number of samples to be generated</span>
+
+<span class="sd">        trajectory_length: int or float</span>
+<span class="sd">            Target trajectory length, stepsize * number of steps(L),</span>
+<span class="sd">            where L is the number of steps taken per HMC iteration,</span>
+<span class="sd">            and stepsize is step size for splitting time method.</span>
+
+<span class="sd">        stepsize: float , defaults to None</span>
+<span class="sd">            The stepsize for proposing new values of position and momentum in simulate_dynamics</span>
+<span class="sd">            If None, then will be chosen suitably</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        genrator: yielding a 1d numpy.array type object for a sample</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.sampling import HamiltonianMC as HMC, GradLogPDFGaussian as GLPG</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import GaussianDistribution as JGD</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([4, -1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[3, 0.4], [0.4, 3]])</span>
+<span class="sd">        &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; sampler = HMC(model=model, grad_log_pdf=GLPG)</span>
+<span class="sd">        &gt;&gt;&gt; gen_samples = sampler.generate_sample(np.array([-1, 1]), num_samples = 10000,</span>
+<span class="sd">        ...                                       trajectory_length=2, stepsize=0.25)</span>
+<span class="sd">        &gt;&gt;&gt; samples_array = np.array([sample for sample in gen_samples])</span>
+<span class="sd">        &gt;&gt;&gt; samples_array</span>
+<span class="sd">        array([[ 0.1467264 ,  0.27143857],</span>
+<span class="sd">               [ 4.0371448 ,  0.15871274],</span>
+<span class="sd">               [ 3.24656208, -1.03742621],</span>
+<span class="sd">               ...,</span>
+<span class="sd">               [ 6.45975905,  1.97941306],</span>
+<span class="sd">               [ 4.89007171,  0.15413156],</span>
+<span class="sd">               [ 5.9528083 ,  1.92983158]])</span>
+<span class="sd">        &gt;&gt;&gt; np.cov(samples_array.T)</span>
+<span class="sd">        array([[ 2.95692642,  0.4379419 ],</span>
+<span class="sd">               [ 0.4379419 ,  3.00939434]])</span>
+<span class="sd">        &gt;&gt;&gt; sampler.acceptance_rate</span>
+<span class="sd">        0.9969</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">initial_pos</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;model.variables&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_reasonable_stepsize</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+
+        <span class="n">lsteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">trajectory_length</span> <span class="o">/</span> <span class="n">stepsize</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+        <span class="n">position_m</span> <span class="o">=</span> <span class="n">initial_pos</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+
+            <span class="n">position_m</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample</span><span class="p">(</span>
+                <span class="n">position_m</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">lsteps</span>
+            <span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">position_m</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">/</span> <span class="n">num_samples</span></div></div>
+
+
+<div class="viewcode-block" id="HamiltonianMCDA"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMCDA">[docs]</a><span class="k">class</span> <span class="nc">HamiltonianMCDA</span><span class="p">(</span><span class="n">HamiltonianMC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for performing sampling in Continuous model</span>
+<span class="sd">    using Hamiltonian Monte Carlo with dual averaging for</span>
+<span class="sd">    adaptaion of parameter stepsize.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: An instance coreBN.models</span>
+<span class="sd">        Model from which sampling has to be done</span>
+
+<span class="sd">    grad_log_pdf: A subclass of coreBN.inference.continuous.GradientLogPDF</span>
+<span class="sd">        Class to compute the log and gradient log of distribution</span>
+
+<span class="sd">    simulate_dynamics: A subclass of coreBN.inference.continuous.BaseSimulateHamiltonianDynamics</span>
+<span class="sd">        Class to propose future states of position and momentum in time by simulating</span>
+<span class="sd">        HamiltonianDynamics</span>
+
+<span class="sd">    delta: float (in between 0 and 1), defaults to 0.65</span>
+<span class="sd">        The target HMC acceptance probability</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import HamiltonianMCDA as HMCda, LeapFrog, GradLogPDFGaussian as GLPG</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution as JGD</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([1, 2, 3])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.array([[2, 0.4, 0.5], [0.4, 3, 0.6], [0.5, 0.6, 4]])</span>
+<span class="sd">    &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;, &#39;z&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; sampler = HMCda(model=model, grad_log_pdf=GLPG)</span>
+<span class="sd">    &gt;&gt;&gt; samples = sampler.sample(np.array([0, 0, 0]), num_adapt=10000, num_samples = 10000, trajectory_length=7,</span>
+<span class="sd">    ...                          return_type=&#39;recarray&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; samples_array = np.array([samples[var_name] for var_name in model.variables])</span>
+<span class="sd">    &gt;&gt;&gt; np.cov(samples_array)</span>
+<span class="sd">    array([[ 1.83023816,  0.40449162,  0.51200707],</span>
+<span class="sd">           [ 0.40449162,  2.85863596,  0.76747343],</span>
+<span class="sd">           [ 0.51200707,  0.76747343,  3.87020982]])</span>
+<span class="sd">    &gt;&gt;&gt; sampler.acceptance_rate</span>
+<span class="sd">    0.9929</span>
+
+<span class="sd">    References</span>
+<span class="sd">    -----------</span>
+<span class="sd">    Matthew D. Hoffman, Andrew Gelman, The No-U-Turn Sampler: Adaptively</span>
+<span class="sd">    Setting Path Lengths in Hamiltonian Monte Carlo. Journal of</span>
+<span class="sd">    Machine Learning Research 15 (2014) 1351-1381</span>
+<span class="sd">    Algorithm 5 : Hamiltonian Monte Carlo with dual averaging</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">simulate_dynamics</span><span class="o">=</span><span class="n">LeapFrog</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.65</span>
+    <span class="p">):</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">delta</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;delta should be a floating value in between 0 and 1&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">HamiltonianMCDA</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">simulate_dynamics</span><span class="o">=</span><span class="n">simulate_dynamics</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_adapt_params</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">index_i</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">n_alpha</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run tha adaptation for stepsize for better proposals of position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># free parameter that controls the amount of shrinkage towards mu</span>
+        <span class="n">t0</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># free parameter that stabilizes the initial iterations</span>
+        <span class="n">kappa</span> <span class="o">=</span> <span class="mf">0.75</span>
+        <span class="c1"># See equation (6) section 3.2.1 for details</span>
+
+        <span class="n">estimate</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">index_i</span> <span class="o">+</span> <span class="n">t0</span><span class="p">)</span>
+        <span class="n">h_bar</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">estimate</span><span class="p">)</span> <span class="o">*</span> <span class="n">h_bar</span> <span class="o">+</span> <span class="n">estimate</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">n_alpha</span><span class="p">)</span>
+
+        <span class="n">stepsize</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">index_i</span><span class="p">)</span> <span class="o">/</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">h_bar</span><span class="p">)</span>
+        <span class="n">i_kappa</span> <span class="o">=</span> <span class="n">index_i</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">kappa</span><span class="p">)</span>
+        <span class="n">stepsize_bar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="n">i_kappa</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">stepsize</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">i_kappa</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">stepsize_bar</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span>
+
+<div class="viewcode-block" id="HamiltonianMCDA.sample"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMCDA.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">initial_pos</span><span class="p">,</span>
+        <span class="n">num_adapt</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">,</span>
+        <span class="n">trajectory_length</span><span class="p">,</span>
+        <span class="n">stepsize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;dataframe&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to return samples using Hamiltonian Monte Carlo</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initial_pos: A 1d array like object</span>
+<span class="sd">            Vector representing values of parameter position, the starting</span>
+<span class="sd">            state in markov chain.</span>
+
+<span class="sd">        num_adapt: int</span>
+<span class="sd">            The number of iterations to run the adaptation of stepsize</span>
+
+<span class="sd">        num_samples: int</span>
+<span class="sd">            Number of samples to be generated</span>
+
+<span class="sd">        trajectory_length: int or float</span>
+<span class="sd">            Target trajectory length, stepsize * number of steps(L),</span>
+<span class="sd">            where L is the number of steps taken per HMC iteration,</span>
+<span class="sd">            and stepsize is step size for splitting time method.</span>
+
+<span class="sd">        stepsize: float , defaults to None</span>
+<span class="sd">            The stepsize for proposing new values of position and momentum in simulate_dynamics</span>
+<span class="sd">            If None, then will be chosen suitably</span>
+
+<span class="sd">        return_type: string (dataframe | recarray)</span>
+<span class="sd">            Return type for samples, either of &#39;dataframe&#39; or &#39;recarray&#39;.</span>
+<span class="sd">            Defaults to &#39;dataframe&#39;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sampled: A pandas.DataFrame or a numpy.recarray object depending upon return_type argument</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution as JGD</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([1, 1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[1, 0.7], [0.7, 3]])</span>
+<span class="sd">        &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; sampler = HMCda(model=model, grad_log_pdf=GLPG, simulate_dynamics=LeapFrog)</span>
+<span class="sd">        &gt;&gt;&gt; samples = sampler.sample(np.array([1, 1]), num_adapt=10000, num_samples = 10000,</span>
+<span class="sd">        ...                          trajectory_length=2, stepsize=None, return_type=&#39;recarray&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; samples_array = np.array([samples[var_name] for var_name in model.variables])</span>
+<span class="sd">        &gt;&gt;&gt; np.cov(samples_array)</span>
+<span class="sd">        array([[ 0.98432155,  0.66517394],</span>
+<span class="sd">               [ 0.66517394,  2.95449533]])</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="n">initial_pos</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;model.variables&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_reasonable_stepsize</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_adapt</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Return samples genrated using Simple HMC algorithm</span>
+            <span class="k">return</span> <span class="n">HamiltonianMC</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">initial_pos</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span>
+            <span class="p">)</span>
+
+        <span class="c1"># stepsize is epsilon</span>
+        <span class="c1"># freely chosen point, after each iteration xt(/position) is shrunk towards it</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">stepsize</span><span class="p">)</span>
+        <span class="c1"># log(10 * stepsize) large values to save computation</span>
+        <span class="c1"># stepsize_bar is epsilon_bar</span>
+        <span class="n">stepsize_bar</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">h_bar</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># See equation (6) section 3.2.1 for details</span>
+
+        <span class="n">types</span> <span class="o">=</span> <span class="p">[(</span><span class="n">var_name</span><span class="p">,</span> <span class="s2">&quot;float&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">types</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">)</span>
+        <span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+        <span class="n">position_m</span> <span class="o">=</span> <span class="n">initial_pos</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)):</span>
+
+            <span class="c1"># Genrating sample</span>
+            <span class="n">position_m</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample</span><span class="p">(</span><span class="n">position_m</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
+            <span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">position_m</span><span class="p">)</span>
+
+            <span class="c1"># Adaptation of stepsize till num_adapt iterations</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">num_adapt</span><span class="p">:</span>
+                <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapt_params</span><span class="p">(</span>
+                    <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">alpha</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stepsize</span> <span class="o">=</span> <span class="n">stepsize_bar</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">/</span> <span class="n">num_samples</span>
+
+        <span class="k">return</span> <span class="n">_return_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HamiltonianMCDA.generate_sample"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.HMC.HamiltonianMCDA.generate_sample">[docs]</a>    <span class="k">def</span> <span class="nf">generate_sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">initial_pos</span><span class="p">,</span> <span class="n">num_adapt</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method returns a generator type object whose each iteration yields a sample</span>
+<span class="sd">        using Hamiltonian Monte Carlo</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        initial_pos: A 1d array like object</span>
+<span class="sd">            Vector representing values of parameter position, the starting</span>
+<span class="sd">            state in markov chain.</span>
+
+<span class="sd">        num_adapt: int</span>
+<span class="sd">            The number of iterations to run the adaptation of stepsize</span>
+
+<span class="sd">        num_samples: int</span>
+<span class="sd">            Number of samples to be generated</span>
+
+<span class="sd">        trajectory_length: int or float</span>
+<span class="sd">            Target trajectory length, stepsize * number of steps(L),</span>
+<span class="sd">            where L is the number of steps taken to propose new values of position and momentum</span>
+<span class="sd">            per HMC iteration and stepsize is step size.</span>
+
+<span class="sd">        stepsize: float , defaults to None</span>
+<span class="sd">            The stepsize for proposing new values of position and momentum in simulate_dynamics</span>
+<span class="sd">            If None, then will be chosen suitably</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        genrator: yielding a numpy.array type object for a sample</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.sampling import HamiltonianMCDA as HMCda, GradLogPDFGaussian as GLPG, LeapFrog</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution as JGD</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([1, 1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[1, 0.7], [0.7, 3]])</span>
+<span class="sd">        &gt;&gt;&gt; model = JGD([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; sampler = HMCda(model=model, grad_log_pdf=GLPG, simulate_dynamics=LeapFrog)</span>
+<span class="sd">        &gt;&gt;&gt; gen_samples = sampler.generate_sample(np.array([1, 1]), num_adapt=10000,</span>
+<span class="sd">        ...                                       num_samples = 10000, trajectory_length=2, stepsize=None)</span>
+<span class="sd">        &gt;&gt;&gt; samples_array = np.array([sample for sample in gen_samples])</span>
+<span class="sd">        &gt;&gt;&gt; np.cov(samples_array.T)</span>
+<span class="sd">        array([[ 0.98432155,  0.69517394],</span>
+<span class="sd">               [ 0.69517394,  2.95449533]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">initial_pos</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;initial_pos&quot;</span><span class="p">,</span> <span class="s2">&quot;model.variables&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">stepsize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_reasonable_stepsize</span><span class="p">(</span><span class="n">initial_pos</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">num_adapt</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># return sample generated using Simple HMC algorithm</span>
+            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">HamiltonianMC</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">initial_pos</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span>
+            <span class="p">):</span>
+                <span class="k">yield</span> <span class="n">sample</span>
+            <span class="k">return</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span> <span class="o">*</span> <span class="n">stepsize</span><span class="p">)</span>
+
+        <span class="n">stepsize_bar</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">h_bar</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="n">position_m</span> <span class="o">=</span> <span class="n">initial_pos</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">num_adapt</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+
+            <span class="n">position_m</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample</span><span class="p">(</span><span class="n">position_m</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">num_adapt</span><span class="p">:</span>
+                <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adapt_params</span><span class="p">(</span>
+                    <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">alpha</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stepsize</span> <span class="o">=</span> <span class="n">stepsize_bar</span>
+
+            <span class="k">yield</span> <span class="n">position_m</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acceptance_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_proposals</span> <span class="o">/</span> <span class="n">num_samples</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

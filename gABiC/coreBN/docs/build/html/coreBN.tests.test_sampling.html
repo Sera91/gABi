@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_sampling package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.utils package" href="coreBN.utils.html" />
+    <link rel="prev" title="coreBN.tests.test_models package" href="coreBN.tests.test_models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.tests.html">coreBN.tests package</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_sampling package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.tests.test_sampling.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-tests-test-sampling-package">
+<h1>coreBN.tests.test_sampling package<a class="headerlink" href="#corebn-tests-test-sampling-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.tests.test_sampling.test_Sampling">
+<span id="corebn-tests-test-sampling-test-sampling-module"></span><h2>coreBN.tests.test_sampling.test_Sampling module<a class="headerlink" href="#module-coreBN.tests.test_sampling.test_Sampling" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_Sampling.</span></span><span class="sig-name descname"><span class="pre">TestBayesianModelSampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_forward_sample">
+<span class="sig-name descname"><span class="pre">test_forward_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.test_forward_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_forward_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_init">
+<span class="sig-name descname"><span class="pre">test_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.test_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_likelihood_weighted_sample">
+<span class="sig-name descname"><span class="pre">test_likelihood_weighted_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.test_likelihood_weighted_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_likelihood_weighted_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_rejection_sample_basic">
+<span class="sig-name descname"><span class="pre">test_rejection_sample_basic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestBayesianModelSampling.test_rejection_sample_basic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestBayesianModelSampling.test_rejection_sample_basic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_Sampling.</span></span><span class="sig-name descname"><span class="pre">TestGibbsSampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_generate_sample">
+<span class="sig-name descname"><span class="pre">test_generate_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_generate_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_generate_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_generate_sample_less_arg">
+<span class="sig-name descname"><span class="pre">test_generate_sample_less_arg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_generate_sample_less_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_generate_sample_less_arg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_get_kernel_from_bayesian_model">
+<span class="sig-name descname"><span class="pre">test_get_kernel_from_bayesian_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_get_kernel_from_bayesian_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_get_kernel_from_bayesian_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_get_kernel_from_markov_model">
+<span class="sig-name descname"><span class="pre">test_get_kernel_from_markov_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_get_kernel_from_markov_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_get_kernel_from_markov_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_init_markov_model">
+<span class="sig-name descname"><span class="pre">test_init_markov_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">get_kernel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_init_markov_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_init_markov_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample">
+<span class="sig-name descname"><span class="pre">test_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample_less_arg">
+<span class="sig-name descname"><span class="pre">test_sample_less_arg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_sample_less_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample_less_arg" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample_limit">
+<span class="sig-name descname"><span class="pre">test_sample_limit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_Sampling.html#TestGibbsSampling.test_sample_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_Sampling.TestGibbsSampling.test_sample_limit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_sampling.test_base_continuous">
+<span id="corebn-tests-test-sampling-test-base-continuous-module"></span><h2>coreBN.tests.test_sampling.test_base_continuous module<a class="headerlink" href="#module-coreBN.tests.test_sampling.test_base_continuous" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_base_continuous.</span></span><span class="sig-name descname"><span class="pre">TestGradLogPDFGaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestGradLogPDFGaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestGradLogPDFGaussian.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.test_error">
+<span class="sig-name descname"><span class="pre">test_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestGradLogPDFGaussian.test_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.test_error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.test_gradient">
+<span class="sig-name descname"><span class="pre">test_gradient</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestGradLogPDFGaussian.test_gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestGradLogPDFGaussian.test_gradient" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_base_continuous.</span></span><span class="sig-name descname"><span class="pre">TestLeapFrog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestLeapFrog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestLeapFrog.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestLeapFrog.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.test_errors">
+<span class="sig-name descname"><span class="pre">test_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestLeapFrog.test_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.test_errors" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.test_leapfrog_methods">
+<span class="sig-name descname"><span class="pre">test_leapfrog_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestLeapFrog.test_leapfrog_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestLeapFrog.test_leapfrog_methods" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_base_continuous.</span></span><span class="sig-name descname"><span class="pre">TestModifiedEuler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestModifiedEuler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestModifiedEuler.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestModifiedEuler.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.test_modified_euler_methods">
+<span class="sig-name descname"><span class="pre">test_modified_euler_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_base_continuous.html#TestModifiedEuler.test_modified_euler_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_base_continuous.TestModifiedEuler.test_modified_euler_methods" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_sampling.test_continuous_sampling">
+<span id="corebn-tests-test-sampling-test-continuous-sampling-module"></span><h2>coreBN.tests.test_sampling.test_continuous_sampling module<a class="headerlink" href="#module-coreBN.tests.test_sampling.test_continuous_sampling" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_continuous_sampling.</span></span><span class="sig-name descname"><span class="pre">TestHMCInference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_acceptance_prob">
+<span class="sig-name descname"><span class="pre">test_acceptance_prob</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.test_acceptance_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_acceptance_prob" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_adapt_params">
+<span class="sig-name descname"><span class="pre">test_adapt_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.test_adapt_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_adapt_params" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_errors">
+<span class="sig-name descname"><span class="pre">test_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.test_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_errors" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_find_resonable_stepsize">
+<span class="sig-name descname"><span class="pre">test_find_resonable_stepsize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.test_find_resonable_stepsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_find_resonable_stepsize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_sample">
+<span class="sig-name descname"><span class="pre">test_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestHMCInference.test_sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_sample" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_sampling.test_continuous_sampling.</span></span><span class="sig-name descname"><span class="pre">TestNUTSInference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestNUTSInference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestNUTSInference.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestNUTSInference.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_errors">
+<span class="sig-name descname"><span class="pre">test_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestNUTSInference.test_errors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_errors" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_sampling">
+<span class="sig-name descname"><span class="pre">test_sampling</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_sampling/test_continuous_sampling.html#TestNUTSInference.test_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_sampling" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_sampling">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.tests.test_sampling" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.tests.test_models.html" class="btn btn-neutral float-left" title="coreBN.tests.test_models package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.utils.html" class="btn btn-neutral float-right" title="coreBN.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

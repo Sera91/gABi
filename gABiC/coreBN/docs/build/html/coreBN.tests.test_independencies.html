@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_independencies package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.tests.test_inference package" href="coreBN.tests.test_inference.html" />
+    <link rel="prev" title="coreBN.tests.test_factors.test_discrete package" href="coreBN.tests.test_factors.test_discrete.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.tests.html">coreBN.tests package</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_independencies package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.tests.test_independencies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-tests-test-independencies-package">
+<h1>coreBN.tests.test_independencies package<a class="headerlink" href="#corebn-tests-test-independencies-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.tests.test_independencies.test_Independencies">
+<span id="corebn-tests-test-independencies-test-independencies-module"></span><h2>coreBN.tests.test_independencies.test_Independencies module<a class="headerlink" href="#module-coreBN.tests.test_independencies.test_Independencies" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_independencies.test_Independencies.</span></span><span class="sig-name descname"><span class="pre">TestIndependeciesAssertionEq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq1">
+<span class="sig-name descname"><span class="pre">test_eq1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq.test_eq1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq2">
+<span class="sig-name descname"><span class="pre">test_eq2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq.test_eq2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq3">
+<span class="sig-name descname"><span class="pre">test_eq3</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependeciesAssertionEq.test_eq3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_independencies.test_Independencies.</span></span><span class="sig-name descname"><span class="pre">TestIndependenceAssertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_get_assertion">
+<span class="sig-name descname"><span class="pre">test_get_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.test_get_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_get_assertion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init">
+<span class="sig-name descname"><span class="pre">test_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.test_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init_exceptions">
+<span class="sig-name descname"><span class="pre">test_init_exceptions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.test_init_exceptions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init_exceptions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_return_list_if_not_collection">
+<span class="sig-name descname"><span class="pre">test_return_list_if_not_collection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependenceAssertion.test_return_list_if_not_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_return_list_if_not_collection" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_independencies.test_Independencies.</span></span><span class="sig-name descname"><span class="pre">TestIndependencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_add_assertions">
+<span class="sig-name descname"><span class="pre">test_add_assertions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_add_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_add_assertions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_closure">
+<span class="sig-name descname"><span class="pre">test_closure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_closure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_closure" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_entails">
+<span class="sig-name descname"><span class="pre">test_entails</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_entails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_entails" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_eq">
+<span class="sig-name descname"><span class="pre">test_eq</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_eq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_eq" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_all_variables">
+<span class="sig-name descname"><span class="pre">test_get_all_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_get_all_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_all_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_assertions">
+<span class="sig-name descname"><span class="pre">test_get_assertions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_get_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_assertions" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_init">
+<span class="sig-name descname"><span class="pre">test_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_is_equivalent">
+<span class="sig-name descname"><span class="pre">test_is_equivalent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_independencies/test_Independencies.html#TestIndependencies.test_is_equivalent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_is_equivalent" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_independencies">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.tests.test_independencies" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.tests.test_factors.test_discrete.html" class="btn btn-neutral float-left" title="coreBN.tests.test_factors.test_discrete package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.tests.test_inference.html" class="btn btn-neutral float-right" title="coreBN.tests.test_inference package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

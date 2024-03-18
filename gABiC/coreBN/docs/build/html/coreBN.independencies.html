@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.independencies package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.inference package" href="coreBN.inference.html" />
+    <link rel="prev" title="coreBN.factors.distributions package" href="coreBN.factors.distributions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+      <li class="breadcrumb-item active">coreBN.independencies package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.independencies.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-independencies-package">
+<h1>coreBN.independencies package<a class="headerlink" href="#corebn-independencies-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.independencies.Independencies">
+<span id="corebn-independencies-independencies-module"></span><h2>coreBN.independencies.Independencies module<a class="headerlink" href="#module-coreBN.independencies.Independencies" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.IndependenceAssertion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.independencies.Independencies.</span></span><span class="sig-name descname"><span class="pre">IndependenceAssertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.IndependenceAssertion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents Conditional Independence or Independence assertion.</p>
+<p>Each assertion has 3 attributes: event1, event2, event3.
+The attributes for</p>
+<div class="math notranslate nohighlight">
+\[U \perp X, Y | Z\]</div>
+<p>is read as: Random Variable U is independent of X and Y given Z would be:</p>
+<p>event1 = {U}</p>
+<p>event2 = {X, Y}</p>
+<p>event3 = {Z}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event1</strong> (<em>String</em><em> or </em><em>List</em><em> of </em><em>strings</em>) -- Random Variable which is independent.</p></li>
+<li><p><strong>event2</strong> (<em>String</em><em> or </em><em>list</em><em> of </em><em>strings.</em>) -- Random Variables from which event1 is independent</p></li>
+<li><p><strong>event3</strong> (<em>String</em><em> or </em><em>list</em><em> of </em><em>strings.</em>) -- Random Variables given which event1 is independent of event2.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">([</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<section id="public-methods">
+<h3>Public Methods<a class="headerlink" href="#public-methods" title="Permalink to this heading"></a></h3>
+<p>get_assertion</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.IndependenceAssertion.get_assertion">
+<span class="sig-name descname"><span class="pre">get_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion.get_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.IndependenceAssertion.get_assertion" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a tuple of the attributes: variable, independent_of, given.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">asser</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">asser</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.IndependenceAssertion.latex_string">
+<span class="sig-name descname"><span class="pre">latex_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion.latex_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.IndependenceAssertion.latex_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.independencies.Independencies.</span></span><span class="sig-name descname"><span class="pre">Independencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">assertions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for independencies.
+independencies class represents a set of Conditional Independence
+assertions (eg: &quot;X is independent of Y given Z&quot; where X, Y and Z
+are random variables) or Independence assertions (eg: &quot;X is
+independent of Y&quot; where X and Y are random variables).
+Initialize the independencies Class with Conditional Independence
+assertions or Independence assertions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertions</strong> (<em>Lists</em><em> or </em><em>Tuples</em>) -- Each assertion is a list or tuple of the form: [event1,
+event2 and event3]
+eg: assertion ['X', 'Y', 'Z'] would be X is independent
+of Y given Z.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating an independencies object with one independence assertion:
+Random Variable X is independent of Y</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Creating an independencies object with three conditional
+independence assertions:
+First assertion is Random Variable X is independent of Y given Z.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<section id="id1">
+<h3>Public Methods<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<p>add_assertions
+get_assertions
+get_factorized_product
+closure
+entails
+is_equivalent</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.add_assertions">
+<span class="sig-name descname"><span class="pre">add_assertions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">assertions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.add_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.add_assertions" title="Permalink to this definition"></a></dt>
+<dd><p>Adds assertions to independencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertions</strong> (<em>Lists</em><em> or </em><em>Tuples</em>) -- Each assertion is a list or tuple of variable, independent_of and given.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">add_assertions</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">add_assertions</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.closure">
+<span class="sig-name descname"><span class="pre">closure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.closure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.closure" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a new <cite>Independencies()</cite>-object that additionally contains those <cite>IndependenceAssertions</cite>
+that are implied by the the current independencies (using with the <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Conditional_independence&amp;oldid=708760689#Rules_of_conditional_independence">semi-graphoid axioms</a>;
+see (Pearl, 1989, <a class="reference external" href="http://www.cs.technion.ac.il/~dang/journal_papers/pearl1989conditional.pdf">Conditional Independence and its representations</a>)).</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="s1">&#39;D&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span>
+<span class="go">(A ⟂ B | D, C)</span>
+<span class="go">(A ⟂ B, C | D)</span>
+<span class="go">(A ⟂ B | D)</span>
+<span class="go">(A ⟂ C | D, B)</span>
+<span class="go">(A ⟂ C | D)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span>
+<span class="go">(W ⟂ Y)</span>
+<span class="go">(W ⟂ Y | X)</span>
+<span class="go">(W ⟂ Z | Y)</span>
+<span class="go">(W ⟂ Z, X, Y)</span>
+<span class="go">(W ⟂ Z)</span>
+<span class="go">(W ⟂ Z, X)</span>
+<span class="go">(W ⟂ X, Y)</span>
+<span class="go">(W ⟂ Z | X)</span>
+<span class="go">(W ⟂ Z, Y | X)</span>
+<span class="go">[..]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.contains">
+<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">assertion</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.contains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.contains" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <cite>True</cite> if <cite>assertion</cite> is contained in this <cite>Independencies</cite>-object,
+otherwise <cite>False</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertion</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.IndependenceAssertion" title="coreBN.independencies.Independencies.IndependenceAssertion"><em>IndependenceAssertion</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span><span class="p">,</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span> <span class="ow">in</span> <span class="n">ind</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># does not depend on variable order:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">])</span> <span class="ow">in</span> <span class="n">ind</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but does not check entailment:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.entails">
+<span class="sig-name descname"><span class="pre">entails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entailed_independencies</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.entails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.entails" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <cite>True</cite> if the <cite>entailed_independencies</cite> are implied by this <cite>Independencies</cite>-object, otherwise <cite>False</cite>.
+Entailment is checked using the semi-graphoid axioms.</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entailed_independencies</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.Independencies" title="coreBN.independencies.Independencies.Independencies"><em>Independencies</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">],</span> <span class="s1">&#39;E&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind1</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.get_all_variables">
+<span class="sig-name descname"><span class="pre">get_all_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_all_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.get_all_variables" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a set of all the variables in all the independence assertions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.get_assertions">
+<span class="sig-name descname"><span class="pre">get_assertions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.get_assertions" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the independencies object which is a set of IndependenceAssertion objects.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.get_factorized_product">
+<span class="sig-name descname"><span class="pre">get_factorized_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_factorized_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.get_factorized_product" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.is_equivalent">
+<span class="sig-name descname"><span class="pre">is_equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.is_equivalent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.is_equivalent" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the two Independencies-objects are equivalent, otherwise False.
+(i.e. any Bayesian Network that satisfies the one set
+of conditional independencies also satisfies the other).</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.Independencies" title="coreBN.independencies.Independencies.Independencies"><em>Independencies</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">],</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind3</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.latex_string">
+<span class="sig-name descname"><span class="pre">latex_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.latex_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.latex_string" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of string.
+Each string represents the IndependenceAssertion in latex.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.Independencies.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.Independencies.reduce" title="Permalink to this definition"></a></dt>
+<dd><p>Add function to remove duplicate Independence Assertions</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+<section id="module-coreBN.independencies">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.independencies" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.independencies.IndependenceAssertion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.independencies.</span></span><span class="sig-name descname"><span class="pre">IndependenceAssertion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.IndependenceAssertion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents Conditional Independence or Independence assertion.</p>
+<p>Each assertion has 3 attributes: event1, event2, event3.
+The attributes for</p>
+<div class="math notranslate nohighlight">
+\[U \perp X, Y | Z\]</div>
+<p>is read as: Random Variable U is independent of X and Y given Z would be:</p>
+<p>event1 = {U}</p>
+<p>event2 = {X, Y}</p>
+<p>event3 = {Z}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event1</strong> (<em>String</em><em> or </em><em>List</em><em> of </em><em>strings</em>) -- Random Variable which is independent.</p></li>
+<li><p><strong>event2</strong> (<em>String</em><em> or </em><em>list</em><em> of </em><em>strings.</em>) -- Random Variables from which event1 is independent</p></li>
+<li><p><strong>event3</strong> (<em>String</em><em> or </em><em>list</em><em> of </em><em>strings.</em>) -- Random Variables given which event1 is independent of event2.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;X&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">([</span><span class="s1">&#39;U&#39;</span><span class="p">,</span> <span class="s1">&#39;V&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<section id="id2">
+<h3>Public Methods<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<p>get_assertion</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.IndependenceAssertion.get_assertion">
+<span class="sig-name descname"><span class="pre">get_assertion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion.get_assertion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.IndependenceAssertion.get_assertion" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a tuple of the attributes: variable, independent_of, given.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">asser</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">asser</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.IndependenceAssertion.latex_string">
+<span class="sig-name descname"><span class="pre">latex_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#IndependenceAssertion.latex_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.IndependenceAssertion.latex_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.independencies.</span></span><span class="sig-name descname"><span class="pre">Independencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">assertions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for independencies.
+independencies class represents a set of Conditional Independence
+assertions (eg: &quot;X is independent of Y given Z&quot; where X, Y and Z
+are random variables) or Independence assertions (eg: &quot;X is
+independent of Y&quot; where X and Y are random variables).
+Initialize the independencies Class with Conditional Independence
+assertions or Independence assertions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertions</strong> (<em>Lists</em><em> or </em><em>Tuples</em>) -- Each assertion is a list or tuple of the form: [event1,
+event2 and event3]
+eg: assertion ['X', 'Y', 'Z'] would be X is independent
+of Y given Z.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating an independencies object with one independence assertion:
+Random Variable X is independent of Y</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Creating an independencies object with three conditional
+independence assertions:
+First assertion is Random Variable X is independent of Y given Z.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">],</span>
+<span class="gp">... </span>            <span class="p">[</span><span class="s1">&#39;l&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<section id="id3">
+<h3>Public Methods<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<p>add_assertions
+get_assertions
+get_factorized_product
+closure
+entails
+is_equivalent</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.add_assertions">
+<span class="sig-name descname"><span class="pre">add_assertions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">assertions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.add_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.add_assertions" title="Permalink to this definition"></a></dt>
+<dd><p>Adds assertions to independencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertions</strong> (<em>Lists</em><em> or </em><em>Tuples</em>) -- Each assertion is a list or tuple of variable, independent_of and given.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">add_assertions</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">add_assertions</span><span class="p">([</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.closure">
+<span class="sig-name descname"><span class="pre">closure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.closure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.closure" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a new <cite>Independencies()</cite>-object that additionally contains those <cite>IndependenceAssertions</cite>
+that are implied by the the current independencies (using with the <a class="reference external" href="https://en.wikipedia.org/w/index.php?title=Conditional_independence&amp;oldid=708760689#Rules_of_conditional_independence">semi-graphoid axioms</a>;
+see (Pearl, 1989, <a class="reference external" href="http://www.cs.technion.ac.il/~dang/journal_papers/pearl1989conditional.pdf">Conditional Independence and its representations</a>)).</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="s1">&#39;D&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span>
+<span class="go">(A ⟂ B | D, C)</span>
+<span class="go">(A ⟂ B, C | D)</span>
+<span class="go">(A ⟂ B | D)</span>
+<span class="go">(A ⟂ C | D, B)</span>
+<span class="go">(A ⟂ C | D)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span>
+<span class="go">(W ⟂ Y)</span>
+<span class="go">(W ⟂ Y | X)</span>
+<span class="go">(W ⟂ Z | Y)</span>
+<span class="go">(W ⟂ Z, X, Y)</span>
+<span class="go">(W ⟂ Z)</span>
+<span class="go">(W ⟂ Z, X)</span>
+<span class="go">(W ⟂ X, Y)</span>
+<span class="go">(W ⟂ Z | X)</span>
+<span class="go">(W ⟂ Z, Y | X)</span>
+<span class="go">[..]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.contains">
+<span class="sig-name descname"><span class="pre">contains</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">assertion</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.contains"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.contains" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <cite>True</cite> if <cite>assertion</cite> is contained in this <cite>Independencies</cite>-object,
+otherwise <cite>False</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>assertion</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.IndependenceAssertion" title="coreBN.independencies.Independencies.IndependenceAssertion"><em>IndependenceAssertion</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span><span class="p">,</span> <span class="n">IndependenceAssertion</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">])</span> <span class="ow">in</span> <span class="n">ind</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># does not depend on variable order:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">])</span> <span class="ow">in</span> <span class="n">ind</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but does not check entailment:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.entails">
+<span class="sig-name descname"><span class="pre">entails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entailed_independencies</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.entails"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.entails" title="Permalink to this definition"></a></dt>
+<dd><p>Returns <cite>True</cite> if the <cite>entailed_independencies</cite> are implied by this <cite>Independencies</cite>-object, otherwise <cite>False</cite>.
+Entailment is checked using the semi-graphoid axioms.</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>entailed_independencies</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.Independencies" title="coreBN.independencies.Independencies.Independencies"><em>Independencies</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">],</span> <span class="s1">&#39;E&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind1</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.get_all_variables">
+<span class="sig-name descname"><span class="pre">get_all_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_all_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.get_all_variables" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a set of all the variables in all the independence assertions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.get_assertions">
+<span class="sig-name descname"><span class="pre">get_assertions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_assertions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.get_assertions" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the independencies object which is a set of IndependenceAssertion objects.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">independencies</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.get_factorized_product">
+<span class="sig-name descname"><span class="pre">get_factorized_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.get_factorized_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.get_factorized_product" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.is_equivalent">
+<span class="sig-name descname"><span class="pre">is_equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.is_equivalent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.is_equivalent" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the two Independencies-objects are equivalent, otherwise False.
+(i.e. any Bayesian Network that satisfies the one set
+of conditional independencies also satisfies the other).</p>
+<p>Might be very slow if more than six variables are involved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.independencies.Independencies.Independencies" title="coreBN.independencies.Independencies.Independencies"><em>Independencies</em></a><em>(</em><em>)</em><em>-object</em>) -- </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">],</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;W&#39;</span><span class="p">,</span><span class="s1">&#39;Z&#39;</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind2</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind3</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.latex_string">
+<span class="sig-name descname"><span class="pre">latex_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.latex_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.latex_string" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of string.
+Each string represents the IndependenceAssertion in latex.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.independencies.Independencies.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/independencies/Independencies.html#Independencies.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.independencies.Independencies.reduce" title="Permalink to this definition"></a></dt>
+<dd><p>Add function to remove duplicate Independence Assertions</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.factors.distributions.html" class="btn btn-neutral float-left" title="coreBN.factors.distributions package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.inference.html" class="btn btn-neutral float-right" title="coreBN.inference package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

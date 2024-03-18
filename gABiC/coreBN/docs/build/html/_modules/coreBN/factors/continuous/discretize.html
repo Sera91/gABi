@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.factors.continuous.discretize &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.factors.continuous.discretize</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.factors.continuous.discretize</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">integrate</span>
+
+
+<div class="viewcode-block" id="BaseDiscretizer"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.BaseDiscretizer">[docs]</a><span class="k">class</span> <span class="nc">BaseDiscretizer</span><span class="p">(</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for the discretizer classes in coreBN. The discretizer</span>
+<span class="sd">    classes are used to discretize a continuous random variable</span>
+<span class="sd">    distribution into discrete probability masses.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factor: A ContinuousNode or a ContinuousFactor object</span>
+<span class="sd">        the continuous node or factor representing the distribution</span>
+<span class="sd">        to be discretized.</span>
+
+<span class="sd">    low, high: float</span>
+<span class="sd">        the range over which the function will be discretized.</span>
+
+<span class="sd">    cardinality: int</span>
+<span class="sd">        the number of states required in the discretized output.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from scipy.stats import norm</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import ContinuousNode</span>
+<span class="sd">    &gt;&gt;&gt; normal = ContinuousNode(norm(0, 1).pdf)</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.discretize import BaseDiscretizer</span>
+<span class="sd">    &gt;&gt;&gt; class ChildDiscretizer(BaseDiscretizer):</span>
+<span class="sd">    ...     def get_discrete_values(self):</span>
+<span class="sd">    ...         pass</span>
+<span class="sd">    &gt;&gt;&gt; discretizer = ChildDiscretizer(normal, -3, 3, 10)</span>
+<span class="sd">    &gt;&gt;&gt; discretizer.factor</span>
+<span class="sd">    &lt;core.factors.continuous.ContinuousNode.ContinuousNode object at 0x04C98190&gt;</span>
+<span class="sd">    &gt;&gt;&gt; discretizer.cardinality</span>
+<span class="sd">    10</span>
+<span class="sd">    &gt;&gt;&gt; discretizer.get_labels()</span>
+<span class="sd">    [&#39;x=-3.0&#39;, &#39;x=-2.4&#39;, &#39;x=-1.8&#39;, &#39;x=-1.2&#39;, &#39;x=-0.6&#39;, &#39;x=0.0&#39;, &#39;x=0.6&#39;, &#39;x=1.2&#39;, &#39;x=1.8&#39;, &#39;x=2.4&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factor</span> <span class="o">=</span> <span class="n">factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">=</span> <span class="n">high</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">=</span> <span class="n">cardinality</span>
+
+<div class="viewcode-block" id="BaseDiscretizer.get_discrete_values"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.BaseDiscretizer.get_discrete_values">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method implements the algorithm to discretize the given</span>
+<span class="sd">        continuous distribution.</span>
+
+<span class="sd">        It must be implemented by all the subclasses of BaseDiscretizer.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of discrete values or a DiscreteFactor object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDiscretizer.get_labels"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.BaseDiscretizer.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of strings representing the values about</span>
+<span class="sd">        which the discretization method calculates the probability</span>
+<span class="sd">        masses.</span>
+
+<span class="sd">        Default value is the points -</span>
+<span class="sd">        [low, low+step, low+2*step, ......... , high-step]</span>
+<span class="sd">        unless the method is overridden by a subclass.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import ContinuousNode</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.discretize import BaseDiscretizer</span>
+<span class="sd">        &gt;&gt;&gt; class ChildDiscretizer(BaseDiscretizer):</span>
+<span class="sd">        ...     def get_discrete_values(self):</span>
+<span class="sd">        ...         pass</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import norm</span>
+<span class="sd">        &gt;&gt;&gt; node = ContinuousNode(norm(0).pdf)</span>
+<span class="sd">        &gt;&gt;&gt; child = ChildDiscretizer(node, -5, 5, 20)</span>
+<span class="sd">        &gt;&gt;&gt; chld.get_labels()</span>
+<span class="sd">        [&#39;x=-5.0&#39;, &#39;x=-4.5&#39;, &#39;x=-4.0&#39;, &#39;x=-3.5&#39;, &#39;x=-3.0&#39;, &#39;x=-2.5&#39;,</span>
+<span class="sd">         &#39;x=-2.0&#39;, &#39;x=-1.5&#39;, &#39;x=-1.0&#39;, &#39;x=-0.5&#39;, &#39;x=0.0&#39;, &#39;x=0.5&#39;, &#39;x=1.0&#39;,</span>
+<span class="sd">         &#39;x=1.5&#39;, &#39;x=2.0&#39;, &#39;x=2.5&#39;, &#39;x=3.0&#39;, &#39;x=3.5&#39;, &#39;x=4.0&#39;, &#39;x=4.5&#39;]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">&quot;x=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="n">step</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">labels</span></div></div>
+
+
+<div class="viewcode-block" id="RoundingDiscretizer"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.RoundingDiscretizer">[docs]</a><span class="k">class</span> <span class="nc">RoundingDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class uses the rounding method for discretizing the</span>
+<span class="sd">    given continuous distribution.</span>
+
+<span class="sd">    For the rounding method,</span>
+
+<span class="sd">    The probability mass is,</span>
+<span class="sd">    cdf(x+step/2)-cdf(x), for x = low</span>
+
+<span class="sd">    cdf(x+step/2)-cdf(x-step/2), for low &lt; x &lt;= high</span>
+
+<span class="sd">    where, cdf is the cumulative density function of the distribution</span>
+<span class="sd">    and step = (high-low)/cardinality.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import ContinuousNode</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import RoundingDiscretizer</span>
+<span class="sd">    &gt;&gt;&gt; std_normal_pdf = lambda x : np.exp(-x*x/2) / (np.sqrt(2*np.pi))</span>
+<span class="sd">    &gt;&gt;&gt; std_normal = ContinuousNode(std_normal_pdf)</span>
+<span class="sd">    &gt;&gt;&gt; std_normal.discretize(RoundingDiscretizer, low=-3, high=3,</span>
+<span class="sd">    ...                       cardinality=12)</span>
+<span class="sd">    [0.001629865203424451, 0.009244709419989363, 0.027834684208773178,</span>
+<span class="sd">     0.065590616803038182, 0.120977578710013, 0.17466632194020804,</span>
+<span class="sd">     0.19741265136584729, 0.17466632194020937, 0.12097757871001302,</span>
+<span class="sd">     0.065590616803036905, 0.027834684208772664, 0.0092447094199902269]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RoundingDiscretizer.get_discrete_values"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.RoundingDiscretizer.get_discrete_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span>
+
+        <span class="c1"># for x=[low]</span>
+        <span class="n">discrete_values</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># for x=[low+step, low+2*step, ........., high-step]</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="n">step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="n">step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">discrete_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">points</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">discrete_values</span></div></div>
+
+
+<div class="viewcode-block" id="UnbiasedDiscretizer"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.UnbiasedDiscretizer">[docs]</a><span class="k">class</span> <span class="nc">UnbiasedDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class uses the unbiased method for discretizing the</span>
+<span class="sd">    given continuous distribution.</span>
+
+<span class="sd">    The unbiased method for discretization is the matching of the</span>
+<span class="sd">    first moment method. It involves calculating the first order</span>
+<span class="sd">    limited moment of the distribution which is done by the _lim_moment</span>
+<span class="sd">    method.</span>
+
+<span class="sd">    For this method,</span>
+
+<span class="sd">    The probability mass is,</span>
+<span class="sd">    (E(x) - E(x + step))/step + 1 - cdf(x), for x = low</span>
+
+<span class="sd">    (2 * E(x) - E(x - step) - E(x + step))/step, for low &lt; x &lt; high</span>
+
+<span class="sd">    (E(x) - E(x - step))/step - 1 + cdf(x), for x = high</span>
+
+<span class="sd">    where, E(x) is the first limiting moment of the distribution</span>
+<span class="sd">    about the point x, cdf is the cumulative density function</span>
+<span class="sd">    and step = (high-low)/cardinality.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Klugman, S. A., Panjer, H. H. and Willmot, G. E.,</span>
+<span class="sd">    Loss Models, From Data to Decisions, Fourth Edition,</span>
+<span class="sd">    Wiley, section 9.6.5.2 (Method of local moment matching) and</span>
+<span class="sd">    exercise 9.41.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import ContinuousNode</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import UnbiasedDiscretizer</span>
+<span class="sd">    # exponential distribution with rate = 2</span>
+<span class="sd">    &gt;&gt;&gt; exp_pdf = lambda x: 2*np.exp(-2*x) if x&gt;=0 else 0</span>
+<span class="sd">    &gt;&gt;&gt; exp_node = ContinuousNode(exp_pdf)</span>
+<span class="sd">    &gt;&gt;&gt; exp_node.discretize(UnbiasedDiscretizer, low=0, high=5, cardinality=10)</span>
+<span class="sd">    [0.39627368905806137, 0.4049838434034298, 0.13331784003148325,</span>
+<span class="sd">     0.043887287876647259, 0.014447413395300212, 0.0047559685431339703,</span>
+<span class="sd">     0.0015656350182896128, 0.00051540201980112557, 0.00016965346326140994,</span>
+<span class="sd">     3.7867260839208328e-05]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UnbiasedDiscretizer.get_discrete_values"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_discrete_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">lev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lim_moment</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># for x=[low]</span>
+        <span class="n">discrete_values</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">lev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">-</span> <span class="n">lev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="n">step</span><span class="p">))</span> <span class="o">/</span> <span class="n">step</span>
+            <span class="o">+</span> <span class="mi">1</span>
+            <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">)</span>
+        <span class="p">]</span>
+
+        <span class="c1"># for x=[low+step, low+2*step, ........., high-step]</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span> <span class="o">+</span> <span class="n">step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="n">step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">discrete_values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lev</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">-</span> <span class="n">lev</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">step</span><span class="p">)</span> <span class="o">-</span> <span class="n">lev</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">step</span><span class="p">))</span> <span class="o">/</span> <span class="n">step</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">points</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># for x=[high]</span>
+        <span class="n">discrete_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">lev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span> <span class="o">-</span> <span class="n">lev</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span> <span class="o">-</span> <span class="n">step</span><span class="p">))</span> <span class="o">/</span> <span class="n">step</span>
+            <span class="o">-</span> <span class="mi">1</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">discrete_values</span></div>
+
+    <span class="k">def</span> <span class="nf">_lim_moment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method calculates the kth order limiting moment of</span>
+<span class="sd">        the distribution. It is given by -</span>
+
+<span class="sd">        E(u) = Integral (-inf to u) [ (x^k)*pdf(x) dx ] + (u^k)(1-cdf(u))</span>
+
+<span class="sd">        where, pdf is the probability density function and cdf is the</span>
+<span class="sd">        cumulative density function of the distribution.</span>
+
+<span class="sd">        Reference</span>
+<span class="sd">        ---------</span>
+<span class="sd">        Klugman, S. A., Panjer, H. H. and Willmot, G. E.,</span>
+<span class="sd">        Loss Models, From Data to Decisions, Fourth Edition,</span>
+<span class="sd">        Wiley, definition 3.5 and equation 3.8.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u: float</span>
+<span class="sd">            The point at which the moment is to be calculated.</span>
+
+<span class="sd">        order: int</span>
+<span class="sd">            The order of the moment, default is first order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">fun</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">integrate</span><span class="o">.</span><span class="n">quad</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">u</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">factor</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="UnbiasedDiscretizer.get_labels"><a class="viewcode-back" href="../../../../coreBN.factors.continuous.html#coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;x=</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">labels</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

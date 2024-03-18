@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.estimators.Estimator &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.estimators.Estimator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.estimators.Estimator</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">lru_cache</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.utils.decorators</span> <span class="kn">import</span> <span class="n">convert_args_tuple</span>
+
+
+<div class="viewcode-block" id="BaseEstimator"><a class="viewcode-back" href="../../../coreBN.estimators.html#coreBN.estimators.Estimator.BaseEstimator">[docs]</a><span class="k">class</span> <span class="nc">BaseEstimator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">state_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">complete_samples_only</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base class for estimators in coreBN; `ParameterEstimator`,</span>
+<span class="sd">        `StructureEstimator` and `StructureScore` derive from this class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: pandas DataFrame object datafame object where each column represents one variable.</span>
+<span class="sd">            (If some values in the data are missing the data cells should be set to `numpy.NaN`.</span>
+<span class="sd">            Note that pandas converts each column containing `numpy.NaN`s to dtype `float`.)</span>
+
+<span class="sd">        state_names: dict (optional)</span>
+<span class="sd">            A dict indicating, for each variable, the discrete set of states (or values)</span>
+<span class="sd">            that the variable can take. If unspecified, the observed values in the data set</span>
+<span class="sd">            are taken to be the only possible states.</span>
+
+<span class="sd">        complete_samples_only: bool (optional, default `True`)</span>
+<span class="sd">            Specifies how to deal with missing data, if present. If set to `True` all rows</span>
+<span class="sd">            that contain `np.Nan` somewhere are ignored. If `False` then, for each variable,</span>
+<span class="sd">            every row where neither the variable nor its parents are `np.NaN` is used.</span>
+<span class="sd">            This sets the behavior of the `state_count`-method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="c1"># data can be None in the case when learning structre from</span>
+        <span class="c1"># independence conditions. Look into PC.py.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">complete_samples_only</span> <span class="o">=</span> <span class="n">complete_samples_only</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state_names</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">var</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_state_names</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">state_names</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_collect_state_names</span><span class="p">(</span><span class="n">var</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span>
+                            <span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                        <span class="p">):</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Data contains unexpected states for variable: </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">.&quot;</span>
+                            <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_collect_state_names</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_collect_state_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="s2">&quot;Return a list of states that the variable takes in the data.&quot;</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">states</span>
+
+    <span class="nd">@convert_args_tuple</span>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">2048</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">state_counts</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="p">[],</span> <span class="n">complete_samples_only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weighted</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return counts how often each state of &#39;variable&#39; occurred in the data.</span>
+<span class="sd">        If a list of parents is provided, counting is done conditionally</span>
+<span class="sd">        for each state configuration of the parents.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: string</span>
+<span class="sd">            Name of the variable for which the state count is to be done.</span>
+
+<span class="sd">        parents: list</span>
+<span class="sd">            Optional list of variable parents, if conditional counting is desired.</span>
+<span class="sd">            Order of parents in list is reflected in the returned DataFrame</span>
+
+<span class="sd">        complete_samples_only: bool</span>
+<span class="sd">            Specifies how to deal with missing data, if present. If set to `True` all rows</span>
+<span class="sd">            that contain `np.NaN` somewhere are ignored. If `False` then</span>
+<span class="sd">            every row where neither the variable nor its parents are `np.NaN` is used.</span>
+<span class="sd">            Desired default behavior can be passed to the class constructor.</span>
+
+<span class="sd">        weighted: bool</span>
+<span class="sd">            If True, data must have a `_weight` column specifying the weight of the</span>
+<span class="sd">            datapoint (row). If False, each datapoint has a weight of `1`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        state_counts: pandas.DataFrame</span>
+<span class="sd">            Table with state counts for &#39;variable&#39;</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.estimators import BaseEstimator</span>
+<span class="sd">        &gt;&gt;&gt; data = pd.DataFrame(data={&#39;A&#39;: [&#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;],</span>
+<span class="sd">                                      &#39;B&#39;: [&#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;],</span>
+<span class="sd">                                      &#39;C&#39;: [&#39;c1&#39;, &#39;c1&#39;, &#39;c2&#39;]})</span>
+<span class="sd">        &gt;&gt;&gt; estimator = BaseEstimator(data)</span>
+<span class="sd">        &gt;&gt;&gt; estimator.state_counts(&#39;A&#39;)</span>
+<span class="sd">            A</span>
+<span class="sd">        a1  2</span>
+<span class="sd">        a2  1</span>
+<span class="sd">        &gt;&gt;&gt; estimator.state_counts(&#39;C&#39;, parents=[&#39;A&#39;, &#39;B&#39;])</span>
+<span class="sd">        A  a1      a2</span>
+<span class="sd">        B  b1  b2  b1  b2</span>
+<span class="sd">        C</span>
+<span class="sd">        c1  1   1   0   0</span>
+<span class="sd">        c2  0   0   1   0</span>
+<span class="sd">        &gt;&gt;&gt; estimator.state_counts(&#39;C&#39;, parents=[&#39;A&#39;])</span>
+<span class="sd">        A    a1   a2</span>
+<span class="sd">        C</span>
+<span class="sd">        c1  2.0  0.0</span>
+<span class="sd">        c2  0.0  1.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">parents</span><span class="p">)</span>
+
+        <span class="c1"># default for how to deal with missing data can be set in class constructor</span>
+        <span class="k">if</span> <span class="n">complete_samples_only</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">complete_samples_only</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_samples_only</span>
+        <span class="c1"># ignores either any row containing NaN, or only those where the variable or its parents is NaN</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">complete_samples_only</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">+</span> <span class="n">parents</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weighted</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;_weight&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data must contain a `_weight` column if weighted=True&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parents</span><span class="p">:</span>
+            <span class="c1"># count how often each state of &#39;variable&#39; occured</span>
+            <span class="k">if</span> <span class="n">weighted</span><span class="p">:</span>
+                <span class="n">state_count_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">variable</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()[</span><span class="s2">&quot;_weight&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">state_count_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+
+            <span class="n">state_counts</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">state_count_data</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parents_states</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span> <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">]</span>
+            <span class="c1"># count how often each state of &#39;variable&#39; occured, conditional on parents&#39; states</span>
+            <span class="k">if</span> <span class="n">weighted</span><span class="p">:</span>
+                <span class="n">state_count_data</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">variable</span><span class="p">]</span> <span class="o">+</span> <span class="n">parents</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()[</span><span class="s2">&quot;_weight&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">parents</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">state_count_data</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">variable</span><span class="p">]</span> <span class="o">+</span> <span class="n">parents</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">parents</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state_count_data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">):</span>
+                <span class="n">state_count_data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">state_count_data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="c1"># reindex rows &amp; columns to sort them and to add missing ones</span>
+            <span class="c1"># missing row    = some state of &#39;variable&#39; did not occur in data</span>
+            <span class="c1"># missing column = some state configuration of current &#39;variable&#39;s parents</span>
+            <span class="c1">#                  did not occur in data</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+            <span class="n">column_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_product</span><span class="p">(</span><span class="n">parents_states</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">parents</span><span class="p">)</span>
+            <span class="n">state_counts</span> <span class="o">=</span> <span class="n">state_count_data</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">row_index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">column_index</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">state_counts</span></div>
+
+
+<div class="viewcode-block" id="ParameterEstimator"><a class="viewcode-back" href="../../../coreBN.estimators.html#coreBN.estimators.Estimator.ParameterEstimator">[docs]</a><span class="k">class</span> <span class="nc">ParameterEstimator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base class for parameter estimators in coreBN.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: coreBN.models.BayesianNetwork or coreBN.models.MarkovNetwork or coreBN.models.NoisyOrModel model</span>
+<span class="sd">            for which parameter estimation is to be done.</span>
+
+<span class="sd">        data: pandas DataFrame object</span>
+<span class="sd">            datafame object with column names identical to the variable names of the model.</span>
+<span class="sd">            (If some values in the data are missing the data cells should be set to `numpy.NaN`.</span>
+<span class="sd">            Note that pandas converts each column containing `numpy.NaN`s to dtype `float`.)</span>
+
+<span class="sd">        state_names: dict (optional)</span>
+<span class="sd">            A dict indicating, for each variable, the discrete set of states (or values)</span>
+<span class="sd">            that the variable can take. If unspecified, the observed values in the data set</span>
+<span class="sd">            are taken to be the only possible states.</span>
+
+<span class="sd">        complete_samples_only: bool (optional, default `True`)</span>
+<span class="sd">            Specifies how to deal with missing data, if present. If set to `True` all rows</span>
+<span class="sd">            that contain `np.Nan` somewhere are ignored. If `False` then, for each variable,</span>
+<span class="sd">            every row where neither the variable nor its parents are `np.NaN` is used.</span>
+<span class="sd">            This sets the behavior of the `state_count`-method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">latents</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;variable names of the model must be identical to column names in data&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParameterEstimator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParameterEstimator.state_counts"><a class="viewcode-back" href="../../../coreBN.estimators.html#coreBN.estimators.Estimator.ParameterEstimator.state_counts">[docs]</a>    <span class="k">def</span> <span class="nf">state_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">weighted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return counts how often each state of &#39;variable&#39; occurred in the data.</span>
+<span class="sd">        If the variable has parents, counting is done conditionally</span>
+<span class="sd">        for each state configuration of the parents.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: string</span>
+<span class="sd">            Name of the variable for which the state count is to be done.</span>
+
+<span class="sd">        complete_samples_only: bool</span>
+<span class="sd">            Specifies how to deal with missing data, if present. If set to `True` all rows</span>
+<span class="sd">            that contain `np.NaN` somewhere are ignored. If `False` then</span>
+<span class="sd">            every row where neither the variable nor its parents are `np.NaN` is used.</span>
+<span class="sd">            Desired default behavior can be passed to the class constructor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        state_counts: pandas.DataFrame</span>
+<span class="sd">            Table with state counts for &#39;variable&#39;</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.estimators import ParameterEstimator</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;C&#39;), (&#39;B&#39;, &#39;C&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; data = pd.DataFrame(data={&#39;A&#39;: [&#39;a1&#39;, &#39;a1&#39;, &#39;a2&#39;],</span>
+<span class="sd">                                      &#39;B&#39;: [&#39;b1&#39;, &#39;b2&#39;, &#39;b1&#39;],</span>
+<span class="sd">                                      &#39;C&#39;: [&#39;c1&#39;, &#39;c1&#39;, &#39;c2&#39;]})</span>
+<span class="sd">        &gt;&gt;&gt; estimator = ParameterEstimator(model, data)</span>
+<span class="sd">        &gt;&gt;&gt; estimator.state_counts(&#39;A&#39;)</span>
+<span class="sd">            A</span>
+<span class="sd">        a1  2</span>
+<span class="sd">        a2  1</span>
+<span class="sd">        &gt;&gt;&gt; estimator.state_counts(&#39;C&#39;)</span>
+<span class="sd">        A  a1      a2</span>
+<span class="sd">        B  b1  b2  b1  b2</span>
+<span class="sd">        C</span>
+<span class="sd">        c1  1   1   0   0</span>
+<span class="sd">        c2  0   0   1   0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">parents</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">variable</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">ParameterEstimator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">state_counts</span><span class="p">(</span>
+            <span class="n">variable</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="n">parents</span><span class="p">,</span> <span class="n">weighted</span><span class="o">=</span><span class="n">weighted</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StructureEstimator"><a class="viewcode-back" href="../../../coreBN.estimators.html#coreBN.estimators.Estimator.StructureEstimator">[docs]</a><span class="k">class</span> <span class="nc">StructureEstimator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">independencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base class for structure estimators in coreBN.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: pandas DataFrame object</span>
+<span class="sd">            datafame object where each column represents one variable.</span>
+<span class="sd">            (If some values in the data are missing the data cells should be set to `numpy.NaN`.</span>
+<span class="sd">            Note that pandas converts each column containing `numpy.NaN`s to dtype `float`.)</span>
+
+<span class="sd">        state_names: dict (optional)</span>
+<span class="sd">            A dict indicating, for each variable, the discrete set of states (or values)</span>
+<span class="sd">            that the variable can take. If unspecified, the observed values in the data set</span>
+<span class="sd">            are taken to be the only possible states.</span>
+
+<span class="sd">        complete_samples_only: bool (optional, default `True`)</span>
+<span class="sd">            Specifies how to deal with missing data, if present. If set to `True` all rows</span>
+<span class="sd">            that contain `np.Nan` somewhere are ignored. If `False` then, for each variable,</span>
+<span class="sd">            every row where neither the variable nor its parents are `np.NaN` is used.</span>
+<span class="sd">            This sets the behavior of the `state_count`-method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span> <span class="o">=</span> <span class="n">independencies</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="o">.</span><span class="n">get_all_variables</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">StructureEstimator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StructureEstimator.estimate"><a class="viewcode-back" href="../../../coreBN.estimators.html#coreBN.estimators.Estimator.StructureEstimator.estimate">[docs]</a>    <span class="k">def</span> <span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

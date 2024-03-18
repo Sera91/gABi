@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.factors.discrete.CPD &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.factors.discrete.CPD</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.factors.discrete.CPD</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;Contains the different formats of CPDs used in PGM&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">get_terminal_size</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.extern</span> <span class="kn">import</span> <span class="n">tabulate</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">DiscreteFactor</span>
+
+
+<div class="viewcode-block" id="TabularCPD"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD">[docs]</a><span class="k">class</span> <span class="nc">TabularCPD</span><span class="p">(</span><span class="n">DiscreteFactor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Defines the conditional probability distribution table (CPD table)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variable: int, string (any hashable python object)</span>
+<span class="sd">        The variable whose CPD is defined.</span>
+
+<span class="sd">    variable_card: integer</span>
+<span class="sd">        Cardinality/no. of states of `variable`</span>
+
+<span class="sd">    values: 2D array, 2D list or 2D tuple</span>
+<span class="sd">        Values for the CPD table. Please refer the example for the</span>
+<span class="sd">        exact format needed.</span>
+
+<span class="sd">    evidence: array-like</span>
+<span class="sd">        List of variables in evidences(if any) w.r.t. which CPD is defined.</span>
+
+<span class="sd">    evidence_card: array-like</span>
+<span class="sd">        cardinality/no. of states of variables in `evidence`(if any)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    For a distribution of P(grade|diff, intel)</span>
+
+<span class="sd">    +-------+--------------------+------------------+</span>
+<span class="sd">    |diff   |      easy          |    hard          |</span>
+<span class="sd">    +-------+-----+------+-------+------+----+------+</span>
+<span class="sd">    |intel  |dumb |  avg | smart | dumb |avg |smart |</span>
+<span class="sd">    +-------+-----+------+-------+------+----+------+</span>
+<span class="sd">    |gradeA |0.1  |  0.1 |  0.1  | 0.1  |0.1 | 0.1  |</span>
+<span class="sd">    +-------+-----+------+-------+------+----+------+</span>
+<span class="sd">    |gradeB |0.1  |  0.1 |  0.1  | 0.1  |0.1 | 0.1  |</span>
+<span class="sd">    +-------+-----+------+-------+------+----+------+</span>
+<span class="sd">    |gradeC |0.8  |  0.8 |  0.8  | 0.8  |0.8 | 0.8  |</span>
+<span class="sd">    +-------+-----+------+-------+------+----+------+</span>
+
+<span class="sd">    values should be</span>
+<span class="sd">    [[0.1,0.1,0.1,0.1,0.1,0.1],</span>
+<span class="sd">    [0.1,0.1,0.1,0.1,0.1,0.1],</span>
+<span class="sd">    [0.8,0.8,0.8,0.8,0.8,0.8]]</span>
+
+<span class="sd">    &gt;&gt;&gt; cpd = TabularCPD(&#39;grade&#39;,3,[[0.1,0.1,0.1,0.1,0.1,0.1],</span>
+<span class="sd">    ...                             [0.1,0.1,0.1,0.1,0.1,0.1],</span>
+<span class="sd">    ...                             [0.8,0.8,0.8,0.8,0.8,0.8]],</span>
+<span class="sd">    ...                             evidence=[&#39;diff&#39;, &#39;intel&#39;], evidence_card=[2,3])</span>
+<span class="sd">    &gt;&gt;&gt; print(cpd)</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    | diff    | diff_0  | diff_0  | diff_0  | diff_1  | diff_1  | diff_1  |</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    | intel   | intel_0 | intel_1 | intel_2 | intel_0 | intel_1 | intel_2 |</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    | grade_0 | 0.1     | 0.1     | 0.1     | 0.1     | 0.1     | 0.1     |</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    | grade_1 | 0.1     | 0.1     | 0.1     | 0.1     | 0.1     | 0.1     |</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    | grade_2 | 0.8     | 0.8     | 0.8     | 0.8     | 0.8     | 0.8     |</span>
+<span class="sd">    +---------+---------+---------+---------+---------+---------+---------+</span>
+<span class="sd">    &gt;&gt;&gt; cpd.values</span>
+<span class="sd">    array([[[ 0.1,  0.1,  0.1],</span>
+<span class="sd">            [ 0.1,  0.1,  0.1]],</span>
+<span class="sd">           [[ 0.1,  0.1,  0.1],</span>
+<span class="sd">            [ 0.1,  0.1,  0.1]],</span>
+<span class="sd">           [[ 0.8,  0.8,  0.8],</span>
+<span class="sd">            [ 0.8,  0.8,  0.8]]])</span>
+<span class="sd">    &gt;&gt;&gt; cpd.variables</span>
+<span class="sd">    [&#39;grade&#39;, &#39;diff&#39;, &#39;intel&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; cpd.cardinality</span>
+<span class="sd">    array([3, 2, 3])</span>
+<span class="sd">    &gt;&gt;&gt; cpd.variable</span>
+<span class="sd">    &#39;grade&#39;</span>
+<span class="sd">    &gt;&gt;&gt; cpd.variable_card</span>
+<span class="sd">    3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variable</span><span class="p">,</span>
+        <span class="n">variable_card</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">evidence_card</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">state_names</span><span class="o">=</span><span class="p">{},</span>
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable</span> <span class="o">=</span> <span class="n">variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variable_card</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Event cardinality must be an integer&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span> <span class="o">=</span> <span class="n">variable_card</span>
+
+        <span class="n">cardinality</span> <span class="o">=</span> <span class="p">[</span><span class="n">variable_card</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">evidence_card</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Real</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Evidence card must be a list of numbers&quot;</span><span class="p">)</span>
+            <span class="n">cardinality</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Evidence must be list, tuple or array of strings.&quot;</span><span class="p">)</span>
+            <span class="n">variables</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">evidence</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Length of evidence_card doesn&#39;t match length of evidence&quot;</span>
+                <span class="p">)</span>
+
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Values must be a 2D list/array&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">expected_cpd_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">variable_card</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expected_cpd_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">variable_card</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">values</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">expected_cpd_shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;values must be of shape </span><span class="si">{</span><span class="n">expected_cpd_shape</span><span class="si">}</span><span class="s2">. Got shape: </span><span class="si">{</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state_names</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;state_names must be of type dict. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">state_names</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">TabularCPD</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">variables</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="n">state_names</span><span class="o">=</span><span class="n">state_names</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">var_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;TabularCPD representing P(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">evidence_card</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">evidence</span><span class="p">:</span>
+            <span class="n">evidence_str</span> <span class="o">=</span> <span class="s2">&quot; | &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">card</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">card</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="n">evidence_card</span><span class="p">)]</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">evidence_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">var_str</span> <span class="o">+</span> <span class="n">evidence_str</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;) at </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+<div class="viewcode-block" id="TabularCPD.get_values"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the values of the CPD as a 2-D array. The order of the</span>
+<span class="sd">        parents is the same as provided in evidence.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd = TabularCPD(&#39;grade&#39;, 3, [[0.1, 0.1],</span>
+<span class="sd">        ...                               [0.1, 0.1],</span>
+<span class="sd">        ...                               [0.8, 0.8]],</span>
+<span class="sd">        ...                  evidence=&#39;evi1&#39;, evidence_card=2)</span>
+<span class="sd">        &gt;&gt;&gt; cpd.get_values()</span>
+<span class="sd">        array([[ 0.1,  0.1],</span>
+<span class="sd">               [ 0.1,  0.1],</span>
+<span class="sd">               [ 0.8,  0.8]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_table_str</span><span class="p">(</span><span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;grid&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi_or_p</span><span class="o">=</span><span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;fancy_grid&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">TabularCPD</span><span class="p">)</span><span class="o">.</span><span class="n">_str</span><span class="p">(</span><span class="n">phi_or_p</span><span class="p">,</span> <span class="n">tablefmt</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_table_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="s2">&quot;fancy_grid&quot;</span><span class="p">,</span> <span class="n">print_state_names</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">headers_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Build column headers</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">evidence_card</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">evidence</span><span class="p">:</span>
+            <span class="n">col_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">evidence_card</span><span class="p">])))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="ow">and</span> <span class="n">print_state_names</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)):</span>
+                    <span class="n">column_header</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">evidence</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">+</span> <span class="p">[</span>
+                        <span class="s2">&quot;</span><span class="si">{var}</span><span class="s2">(</span><span class="si">{state}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="n">var</span><span class="o">=</span><span class="n">evidence</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">evidence</span><span class="p">[</span><span class="n">i</span><span class="p">]][</span><span class="n">d</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">col_indexes</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">]</span>
+                    <span class="n">headers_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_header</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)):</span>
+                    <span class="n">column_header</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">evidence</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="o">+</span> <span class="p">[</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evidence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">col_indexes</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">]</span>
+                    <span class="n">headers_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_header</span><span class="p">)</span>
+
+        <span class="c1"># Build row headers</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="ow">and</span> <span class="n">print_state_names</span><span class="p">:</span>
+            <span class="n">variable_array</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">[</span>
+                    <span class="s2">&quot;</span><span class="si">{var}</span><span class="s2">(</span><span class="si">{state}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">variable_array</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span><span class="p">)]</span>
+            <span class="p">]</span>
+        <span class="c1"># Stack with data</span>
+        <span class="n">labeled_rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">variable_array</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">())</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="c1"># No support for multi-headers in tabulate</span>
+        <span class="n">cdf_str</span> <span class="o">=</span> <span class="n">tabulate</span><span class="p">(</span><span class="n">headers_list</span> <span class="o">+</span> <span class="n">labeled_rows</span><span class="p">,</span> <span class="n">tablefmt</span><span class="o">=</span><span class="n">tablefmt</span><span class="p">)</span>
+
+        <span class="n">cdf_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncate_strtable</span><span class="p">(</span><span class="n">cdf_str</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cdf_str</span>
+
+    <span class="k">def</span> <span class="nf">_truncate_strtable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cdf_str</span><span class="p">):</span>
+        <span class="n">terminal_width</span><span class="p">,</span> <span class="n">terminal_height</span> <span class="o">=</span> <span class="n">get_terminal_size</span><span class="p">()</span>
+
+        <span class="n">list_rows_str</span> <span class="o">=</span> <span class="n">cdf_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">table_width</span><span class="p">,</span> <span class="n">table_height</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_rows_str</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_rows_str</span><span class="p">)</span>
+
+        <span class="n">colstr_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">pos</span> <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">char</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">list_rows_str</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">table_width</span> <span class="o">&gt;</span> <span class="n">terminal_width</span><span class="p">:</span>
+            <span class="n">half_width</span> <span class="o">=</span> <span class="n">terminal_width</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">3</span>
+
+            <span class="n">left_i</span> <span class="o">=</span> <span class="n">colstr_i</span><span class="p">[</span><span class="n">colstr_i</span> <span class="o">&lt;</span> <span class="n">half_width</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">right_i</span> <span class="o">=</span> <span class="n">colstr_i</span><span class="p">[(</span><span class="n">table_width</span> <span class="o">-</span> <span class="n">colstr_i</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">half_width</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">new_cdf_str</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">temp_row_str</span> <span class="ow">in</span> <span class="n">list_rows_str</span><span class="p">:</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="n">temp_row_str</span><span class="p">[:</span> <span class="n">left_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">right</span> <span class="o">=</span> <span class="n">temp_row_str</span><span class="p">[</span><span class="n">right_i</span><span class="p">:]</span>
+                <span class="k">if</span> <span class="n">temp_row_str</span><span class="p">[</span><span class="n">left_i</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+                    <span class="n">joiner</span> <span class="o">=</span> <span class="s2">&quot;-----&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">joiner</span> <span class="o">=</span> <span class="s2">&quot; ... &quot;</span>
+                <span class="n">new_cdf_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">joiner</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span>
+
+            <span class="n">cdf_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_cdf_str</span><span class="p">)</span>
+
+        <span class="c1"># TODO: vertical limitator</span>
+        <span class="c1"># if table_height &gt; terminal_height:</span>
+        <span class="c1">#     half_height = terminal_height // 2</span>
+
+        <span class="k">return</span> <span class="n">cdf_str</span>
+
+<div class="viewcode-block" id="TabularCPD.copy"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the `TabularCPD` object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd = TabularCPD(&#39;grade&#39;, 2,</span>
+<span class="sd">        ...                  [[0.7, 0.6, 0.6, 0.2],[0.3, 0.4, 0.4, 0.8]],</span>
+<span class="sd">        ...                  [&#39;intel&#39;, &#39;diff&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; copy = cpd.copy()</span>
+<span class="sd">        &gt;&gt;&gt; copy.variable</span>
+<span class="sd">        &#39;grade&#39;</span>
+<span class="sd">        &gt;&gt;&gt; copy.variable_card</span>
+<span class="sd">        2</span>
+<span class="sd">        &gt;&gt;&gt; copy.evidence</span>
+<span class="sd">        [&#39;intel&#39;, &#39;diff&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; copy.values</span>
+<span class="sd">        array([[[ 0.7,  0.6],</span>
+<span class="sd">                [ 0.6,  0.2]],</span>
+<span class="sd">               [[ 0.3,  0.4],</span>
+<span class="sd">                [ 0.4,  0.8]]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">evidence_card</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">TabularCPD</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variable</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span>
+            <span class="n">evidence</span><span class="p">,</span>
+            <span class="n">evidence_card</span><span class="p">,</span>
+            <span class="n">state_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularCPD.normalize"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalizes the cpd table. The method modifies each column of values such</span>
+<span class="sd">        that it sums to 1 without changing the proportion between states.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the CPD itself, else would return</span>
+<span class="sd">            a new CPD</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table = TabularCPD(&#39;grade&#39;, 2,</span>
+<span class="sd">        ...                        [[0.7, 0.2, 0.6, 0.2],[0.4, 0.4, 0.4, 0.8]],</span>
+<span class="sd">        ...                        [&#39;intel&#39;, &#39;diff&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.normalize()</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.get_values()</span>
+<span class="sd">        array([[ 0.63636364,  0.33333333,  0.6       ,  0.2       ],</span>
+<span class="sd">               [ 0.36363636,  0.66666667,  0.4       ,  0.8       ]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tabular_cpd</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">cpd</span> <span class="o">=</span> <span class="n">tabular_cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="n">tabular_cpd</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="p">(</span><span class="n">cpd</span> <span class="o">/</span> <span class="n">cpd</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tabular_cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tabular_cpd</span></div>
+
+<div class="viewcode-block" id="TabularCPD.marginalize"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modifies the CPD table with marginalized values. Marginalization refers to</span>
+<span class="sd">        summing out variables, hence that variable would no longer appear in the</span>
+<span class="sd">        CPD.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list, array-like</span>
+<span class="sd">            list of variable to be marginalized</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the CPD itself, else would return</span>
+<span class="sd">            a new CPD</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table = TabularCPD(&#39;grade&#39;, 2,</span>
+<span class="sd">        ...                        [[0.7, 0.6, 0.6, 0.2],[0.3, 0.4, 0.4, 0.8]],</span>
+<span class="sd">        ...                        [&#39;intel&#39;, &#39;diff&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.marginalize([&#39;diff&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.get_values()</span>
+<span class="sd">        array([[ 0.65,  0.4 ],</span>
+<span class="sd">               [ 0.35,  0.6 ]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Marginalization not allowed on the variable on which CPD is defined&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">tabular_cpd</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">TabularCPD</span><span class="p">,</span> <span class="n">tabular_cpd</span><span class="p">)</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">tabular_cpd</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tabular_cpd</span></div>
+
+<div class="viewcode-block" id="TabularCPD.reduce"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reduces the cpd table to the context of given variable values. Reduce fixes the</span>
+<span class="sd">        state of given variable to specified value. The reduced variables will no longer</span>
+<span class="sd">        appear in the CPD.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        values: list, array-like</span>
+<span class="sd">            A list of tuples of the form (variable_name, variable_state).</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the factor itself, else would return</span>
+<span class="sd">            a new factor.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table = TabularCPD(&#39;grade&#39;, 2,</span>
+<span class="sd">        ...                        [[0.7, 0.6, 0.6, 0.2],[0.3, 0.4, 0.4, 0.8]],</span>
+<span class="sd">        ...                        [&#39;intel&#39;, &#39;diff&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.reduce([(&#39;diff&#39;, 0)])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_table.get_values()</span>
+<span class="sd">        array([[ 0.7,  0.6],</span>
+<span class="sd">               [ 0.3,  0.4]])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable</span> <span class="ow">in</span> <span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Reduce not allowed on the variable on which CPD is defined&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">tabular_cpd</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">TabularCPD</span><span class="p">,</span> <span class="n">tabular_cpd</span><span class="p">)</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">show_warnings</span><span class="o">=</span><span class="n">show_warnings</span><span class="p">)</span>
+        <span class="n">tabular_cpd</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tabular_cpd</span></div>
+
+<div class="viewcode-block" id="TabularCPD.to_factor"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.to_factor">[docs]</a>    <span class="k">def</span> <span class="nf">to_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an equivalent factor with the same variables, cardinality, values as that of the CPD.</span>
+<span class="sd">        Since factor doesn&#39;t distinguish between conditional and non-conditional distributions,</span>
+<span class="sd">        evidence information will be lost.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; cpd = TabularCPD(&#39;grade&#39;, 3, [[0.1, 0.1],</span>
+<span class="sd">        ...                               [0.1, 0.1],</span>
+<span class="sd">        ...                               [0.8, 0.8]],</span>
+<span class="sd">        ...                  evidence=&#39;evi1&#39;, evidence_card=2)</span>
+<span class="sd">        &gt;&gt;&gt; factor = cpd.to_factor()</span>
+<span class="sd">        &gt;&gt;&gt; factor</span>
+<span class="sd">        &lt;DiscreteFactor representing phi(grade:3, evi1:2) at 0x7f847a4f2d68&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DiscreteFactor</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">cardinality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">state_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularCPD.reorder_parents"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.reorder_parents">[docs]</a>    <span class="k">def</span> <span class="nf">reorder_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_order</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a new cpd table according to provided parent/evidence order.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_order: list</span>
+<span class="sd">            list of new ordering of variables</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace == True it will modify the CPD itself</span>
+<span class="sd">            otherwise new value will be returned without affecting old values</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+
+<span class="sd">        Consider a CPD P(grade| diff, intel)</span>
+
+<span class="sd">        &gt;&gt;&gt; cpd = TabularCPD(&#39;grade&#39;,3,[[0.1,0.1,0.0,0.4,0.2,0.1],</span>
+<span class="sd">        ...                             [0.3,0.2,0.1,0.4,0.3,0.2],</span>
+<span class="sd">        ...                             [0.6,0.7,0.9,0.2,0.5,0.7]],</span>
+<span class="sd">        ...                  evidence=[&#39;diff&#39;, &#39;intel&#39;], evidence_card=[2,3])</span>
+<span class="sd">       </span>
+<span class="sd">        &gt;&gt;&gt; cpd.values</span>
+<span class="sd">        array([[[ 0.1,  0.1,  0. ],</span>
+<span class="sd">                [ 0.4,  0.2,  0.1]],</span>
+<span class="sd">               [[ 0.3,  0.2,  0.1],</span>
+<span class="sd">                [ 0.4,  0.3,  0.2]],</span>
+<span class="sd">               [[ 0.6,  0.7,  0.9],</span>
+<span class="sd">                [ 0.2,  0.5,  0.7]]])</span>
+<span class="sd">        &gt;&gt;&gt; cpd.variables</span>
+<span class="sd">        [&#39;grade&#39;, &#39;diff&#39;, &#39;intel&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; cpd.cardinality</span>
+<span class="sd">        array([3, 2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; cpd.variable</span>
+<span class="sd">        &#39;grade&#39;</span>
+<span class="sd">        &gt;&gt;&gt; cpd.variable_card</span>
+<span class="sd">        3</span>
+<span class="sd">        &gt;&gt;&gt; cpd.reorder_parents([&#39;intel&#39;, &#39;diff&#39;])</span>
+<span class="sd">        array([[0.1, 0.4, 0.1, 0.2, 0. , 0.1],</span>
+<span class="sd">               [0.3, 0.4, 0.2, 0.3, 0.1, 0.2],</span>
+<span class="sd">               [0.6, 0.2, 0.7, 0.5, 0.9, 0.7]])</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; cpd.variables</span>
+<span class="sd">        [&#39;grade&#39;, &#39;intel&#39;, &#39;diff&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; cpd.cardinality</span>
+<span class="sd">        array([3, 3, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd.variable</span>
+<span class="sd">        &#39;grade&#39;</span>
+<span class="sd">        &gt;&gt;&gt; cpd.variable_card</span>
+<span class="sd">        3</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">new_order</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">new_order</span><span class="p">))</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;New order either has missing or extra arguments&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">new_order</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">evidence_card</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">card_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="n">evidence_card</span><span class="p">))</span>
+                <span class="n">old_pos_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">evidence</span><span class="p">))))</span>
+                <span class="n">trans_ord</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">old_pos_map</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">new_order</span><span class="p">]</span>
+                <span class="n">new_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">trans_ord</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                    <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">new_order</span>
+                    <span class="n">cardinality</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_card</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+                        <span class="n">card_map</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">new_order</span>
+                    <span class="p">]</span>
+                    <span class="nb">super</span><span class="p">(</span><span class="n">TabularCPD</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+                        <span class="n">variables</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">new_values</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">new_values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">card_map</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">new_order</span><span class="p">]),</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Same ordering provided as current&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TabularCPD.get_evidence"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.get_evidence">[docs]</a>    <span class="k">def</span> <span class="nf">get_evidence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the evidence variables of the CPD.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TabularCPD.get_random"><a class="viewcode-back" href="../../../../coreBN.factors.discrete.html#coreBN.factors.discrete.CPD.TabularCPD.get_random">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_random</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">state_names</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a TabularCPD instance with random values on `variable` with</span>
+<span class="sd">        parents/evidence `evidence` with cardinality/number of states as given</span>
+<span class="sd">        in `cardinality`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: str, int or any hashable python object.</span>
+<span class="sd">            The variable on which to define the TabularCPD.</span>
+
+<span class="sd">        evidence: list, array-like</span>
+<span class="sd">            A list of variable names which are the parents/evidence of `variable`.</span>
+
+<span class="sd">        cardinality: dict (default: None)</span>
+<span class="sd">            A dict of the form {var_name: card} specifying the number of states/</span>
+<span class="sd">            cardinality of each of the variables. If None, assigns each variable</span>
+<span class="sd">            2 states.</span>
+
+<span class="sd">        state_names: dict (default: {})</span>
+<span class="sd">            A dict of the form {var_name: list of states} to specify the state names</span>
+<span class="sd">            for the variables in the CPD. If state_names=None, integral state names</span>
+<span class="sd">            starting from 0 is assigned.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Random CPD: coreBN.factors.discrete.TabularCPD</span>
+<span class="sd">            A TabularCPD object on `variable` with `evidence` as evidence with random values.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; TabularCPD(variable=&#39;A&#39;, evidence=[&#39;C&#39;, &#39;D&#39;],</span>
+<span class="sd">        ...            cardinality={&#39;A&#39;: 3, &#39;B&#39;: 2, &#39;C&#39;: 4})</span>
+<span class="sd">        &lt;TabularCPD representing P(A:3 | C:4, B:2) at 0x7f95e22b8040&gt;</span>
+<span class="sd">        &gt;&gt;&gt; TabularCPD(variable=&#39;A&#39;, evidence=[&#39;C&#39;, &#39;D&#39;],</span>
+<span class="sd">        ...            cardinality={&#39;A&#39;: 2, &#39;B&#39;: 2, &#39;C&#39;: 2},</span>
+<span class="sd">        ...            state_names={&#39;A&#39;: [&#39;a1&#39;, &#39;a2&#39;],</span>
+<span class="sd">        ...                         &#39;B&#39;: [&#39;b1&#39;, &#39;b2&#39;],</span>
+<span class="sd">        ...                         &#39;C&#39;: [&#39;c1&#39;, &#39;c2&#39;]})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">evidence</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">cardinality</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cardinality</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">([</span><span class="n">variable</span><span class="p">],</span> <span class="n">evidence</span><span class="p">)}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">([</span><span class="n">variable</span><span class="p">],</span> <span class="n">evidence</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cardinality</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cardinality for variable: </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> not specified.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">cardinality</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">node_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+                <span class="n">variable_card</span><span class="o">=</span><span class="n">cardinality</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">state_names</span><span class="o">=</span><span class="n">state_names</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">parent_card</span> <span class="o">=</span> <span class="p">[</span><span class="n">cardinality</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">evidence</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">cardinality</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">parent_card</span><span class="p">))</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">values</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">node_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">variable</span><span class="o">=</span><span class="n">variable</span><span class="p">,</span>
+                <span class="n">variable_card</span><span class="o">=</span><span class="n">cardinality</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+                <span class="n">evidence_card</span><span class="o">=</span><span class="n">parent_card</span><span class="p">,</span>
+                <span class="n">state_names</span><span class="o">=</span><span class="n">state_names</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">node_cpd</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

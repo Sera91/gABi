@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_base package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.tests.test_estimators package" href="coreBN.tests.test_estimators.html" />
+    <link rel="prev" title="coreBN.tests.test_IO package" href="coreBN.tests.test_IO.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.tests.html">coreBN.tests package</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_base package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.tests.test_base.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-tests-test-base-package">
+<h1>coreBN.tests.test_base package<a class="headerlink" href="#corebn-tests-test-base-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.tests.test_base.test_DAG">
+<span id="corebn-tests-test-base-test-dag-module"></span><h2>coreBN.tests.test_base.test_DAG module<a class="headerlink" href="#module-coreBN.tests.test_base.test_DAG" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_DAG.</span></span><span class="sig-name descname"><span class="pre">TestDAGCreation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_edge_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edge_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_string">
+<span class="sig-name descname"><span class="pre">test_add_edge_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edge_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_weight">
+<span class="sig-name descname"><span class="pre">test_add_edge_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edge_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edge_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_edges_from_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edges_from_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_string">
+<span class="sig-name descname"><span class="pre">test_add_edges_from_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edges_from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_weight">
+<span class="sig-name descname"><span class="pre">test_add_edges_from_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_edges_from_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_edges_from_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_node_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_node_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_string">
+<span class="sig-name descname"><span class="pre">test_add_node_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_node_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_weight">
+<span class="sig-name descname"><span class="pre">test_add_node_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_node_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_node_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_non_string">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_non_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_nodes_from_non_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_non_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_string">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_nodes_from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_weight">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_add_nodes_from_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_add_nodes_from_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_class_init_with_data_string">
+<span class="sig-name descname"><span class="pre">test_class_init_with_data_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_class_init_with_data_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_class_init_with_data_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_class_init_without_data">
+<span class="sig-name descname"><span class="pre">test_class_init_without_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_class_init_without_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_class_init_without_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_ancestral_graph">
+<span class="sig-name descname"><span class="pre">test_get_ancestral_graph</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_get_ancestral_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_ancestral_graph" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_leaves">
+<span class="sig-name descname"><span class="pre">test_get_leaves</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_get_leaves"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_leaves" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_roots">
+<span class="sig-name descname"><span class="pre">test_get_roots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_get_roots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_get_roots" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_init_with_cycle">
+<span class="sig-name descname"><span class="pre">test_init_with_cycle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_init_with_cycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_init_with_cycle" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_minimal_dseparator">
+<span class="sig-name descname"><span class="pre">test_minimal_dseparator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_minimal_dseparator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_minimal_dseparator" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_random_dag">
+<span class="sig-name descname"><span class="pre">test_random_dag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_random_dag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_random_dag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_to_daft">
+<span class="sig-name descname"><span class="pre">test_to_daft</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_to_daft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_to_daft" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_update_node_parents">
+<span class="sig-name descname"><span class="pre">test_update_node_parents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_update_node_parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_update_node_parents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGCreation.test_update_node_parents_bm_constructor">
+<span class="sig-name descname"><span class="pre">test_update_node_parents_bm_constructor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGCreation.test_update_node_parents_bm_constructor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGCreation.test_update_node_parents_bm_constructor" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_DAG.</span></span><span class="sig-name descname"><span class="pre">TestDAGMoralization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_get_children">
+<span class="sig-name descname"><span class="pre">test_get_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.test_get_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_get_children" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_get_parents">
+<span class="sig-name descname"><span class="pre">test_get_parents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.test_get_parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_get_parents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_moralize">
+<span class="sig-name descname"><span class="pre">test_moralize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.test_moralize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_moralize" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_moralize_disconnected">
+<span class="sig-name descname"><span class="pre">test_moralize_disconnected</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDAGMoralization.test_moralize_disconnected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDAGMoralization.test_moralize_disconnected" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDoOperator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_DAG.</span></span><span class="sig-name descname"><span class="pre">TestDoOperator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDoOperator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDoOperator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDoOperator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDoOperator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDoOperator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestDoOperator.test_do">
+<span class="sig-name descname"><span class="pre">test_do</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestDoOperator.test_do"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestDoOperator.test_do" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestPDAG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_DAG.</span></span><span class="sig-name descname"><span class="pre">TestPDAG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestPDAG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestPDAG" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestPDAG.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestPDAG.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestPDAG.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestPDAG.test_copy">
+<span class="sig-name descname"><span class="pre">test_copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestPDAG.test_copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestPDAG.test_copy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestPDAG.test_init_normal">
+<span class="sig-name descname"><span class="pre">test_init_normal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestPDAG.test_init_normal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestPDAG.test_init_normal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_DAG.TestPDAG.test_pdag_to_dag">
+<span class="sig-name descname"><span class="pre">test_pdag_to_dag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_DAG.html#TestPDAG.test_pdag_to_dag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_DAG.TestPDAG.test_pdag_to_dag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_base.test_UndirectedGraph">
+<span id="corebn-tests-test-base-test-undirectedgraph-module"></span><h2>coreBN.tests.test_base.test_UndirectedGraph module<a class="headerlink" href="#module-coreBN.tests.test_base.test_UndirectedGraph" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_UndirectedGraph.</span></span><span class="sig-name descname"><span class="pre">TestUndirectedGraphCreation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edge_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_edge_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_edge_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edge_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edge_string">
+<span class="sig-name descname"><span class="pre">test_add_edge_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_edge_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edge_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edges_from_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_edges_from_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_edges_from_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edges_from_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edges_from_string">
+<span class="sig-name descname"><span class="pre">test_add_edges_from_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_edges_from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_edges_from_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_nonstring">
+<span class="sig-name descname"><span class="pre">test_add_node_nonstring</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_node_nonstring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_nonstring" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_string">
+<span class="sig-name descname"><span class="pre">test_add_node_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_node_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_with_weight">
+<span class="sig-name descname"><span class="pre">test_add_node_with_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_node_with_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_node_with_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_non_string">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_non_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_nodes_from_non_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_non_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_string">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_nodes_from_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_with_weight">
+<span class="sig-name descname"><span class="pre">test_add_nodes_from_with_weight</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_add_nodes_from_with_weight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_add_nodes_from_with_weight" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_class_init_with_data_string">
+<span class="sig-name descname"><span class="pre">test_class_init_with_data_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_class_init_with_data_string"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_class_init_with_data_string" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_class_init_without_data">
+<span class="sig-name descname"><span class="pre">test_class_init_without_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_class_init_without_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_class_init_without_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_number_of_neighbors">
+<span class="sig-name descname"><span class="pre">test_number_of_neighbors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphCreation.test_number_of_neighbors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphCreation.test_number_of_neighbors" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_base.test_UndirectedGraph.</span></span><span class="sig-name descname"><span class="pre">TestUndirectedGraphMethods</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphMethods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods.test_is_clique">
+<span class="sig-name descname"><span class="pre">test_is_clique</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphMethods.test_is_clique"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods.test_is_clique" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods.test_is_triangulated">
+<span class="sig-name descname"><span class="pre">test_is_triangulated</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_base/test_UndirectedGraph.html#TestUndirectedGraphMethods.test_is_triangulated"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_base.test_UndirectedGraph.TestUndirectedGraphMethods.test_is_triangulated" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_base">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.tests.test_base" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.tests.test_IO.html" class="btn btn-neutral float-left" title="coreBN.tests.test_IO package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.tests.test_estimators.html" class="btn btn-neutral float-right" title="coreBN.tests.test_estimators package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

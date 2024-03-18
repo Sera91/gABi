@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.CItests.hsic_gamma_pytorch &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.CItests.hsic_gamma_pytorch</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.CItests.hsic_gamma_pytorch</h1><div class="highlight"><pre>
+<span></span><span class="c1">#Hilber Schmidt Independence Criterion gamma test</span>
+<span class="c1">#&#39;</span>
+<span class="c1">#&#39; Test to check the independence between two variables x and y using HSIC.</span>
+<span class="c1">#&#39; The hsic.gamma() function, uses Hilbert-Schmidt independence criterion to test for independence between</span>
+<span class="c1">#&#39; random variables.</span>
+<span class="c1">#&#39;</span>
+
+<span class="c1">#&#39; @param x data of first sample</span>
+<span class="c1">#&#39; @param y data of second sample</span>
+<span class="c1">#&#39; @param sig inverse Width of Gaussian kernel. Default is 1</span>
+<span class="c1">#&#39; @param numCol maximum number of columns that we use for the incomplete Cholesky decomposition</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">factorial</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">ceil</span><span class="p">,</span> <span class="nb">pow</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gamma</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">njit</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse.linalg</span> <span class="kn">import</span> <span class="n">svds</span>
+<span class="kn">from</span> <span class="nn">sklearn.gaussian_process.kernels</span> <span class="kn">import</span> <span class="n">RBF</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.dlpack</span> <span class="kn">import</span> <span class="n">from_dlpack</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+
+
+
+<div class="viewcode-block" id="rSubset"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.rSubset">[docs]</a><span class="k">def</span> <span class="nf">rSubset</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+  
+    <span class="c1"># return list of all subsets of length r</span>
+    <span class="c1"># to deal with duplicate subsets use </span>
+    <span class="c1"># set(list(combinations(arr, r)))</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">r</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="CPU_kernel_matrix"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.CPU_kernel_matrix">[docs]</a><span class="nd">@njit</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">CPU_kernel_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">n</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this function build the kernel matrix</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sigma</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                <span class="c1">#print(&quot;K(&quot;,i,j,&quot;)=&quot;, out[i,j])</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+
+<div class="viewcode-block" id="kernel_matrix_scipy"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.kernel_matrix_scipy">[docs]</a><span class="k">def</span> <span class="nf">kernel_matrix_scipy</span><span class="p">(</span><span class="n">x_arr</span><span class="p">,</span> <span class="n">sig</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;rbf kernel depend on the l param, that is related to the sigma of rbfdot</span>
+<span class="sd">	from the formula sigma = 1/2 * l**2 &quot;&quot;&quot;</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">sig</span><span class="p">))</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="n">RBF</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">kernel</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">x_arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="svd_wrapper"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.svd_wrapper">[docs]</a><span class="k">def</span> <span class="nf">svd_wrapper</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">k_input</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">u_K</span><span class="p">,</span> <span class="n">s_K</span><span class="p">,</span> <span class="n">vT_K</span><span class="o">=</span> <span class="n">svds</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k_input</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;LM&#39;</span><span class="p">)</span> 
+    <span class="k">return</span> <span class="n">u_K</span><span class="p">,</span> <span class="n">s_K</span><span class="p">,</span> <span class="n">vT_K</span></div>
+
+
+<div class="viewcode-block" id="H_matrix_cpu"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.H_matrix_cpu">[docs]</a><span class="k">def</span> <span class="nf">H_matrix_cpu</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">H</span></div>
+
+<div class="viewcode-block" id="H_matrix"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.H_matrix">[docs]</a><span class="k">def</span> <span class="nf">H_matrix</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">input_device</span><span class="p">,</span> <span class="n">tensor_type</span><span class="p">):</span>  
+    <span class="c1">#H = cu.eye(n,n) - (1.0/n)*cu.ones((n,n))</span>
+	<span class="n">H</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span> <span class="n">tensor_type</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">input_device</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tensor_type</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">input_device</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">H</span></div>
+
+<div class="viewcode-block" id="coeff_tuple"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.coeff_tuple">[docs]</a><span class="k">def</span> <span class="nf">coeff_tuple</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">n</span><span class="p">:</span>
+       <span class="k">return</span> <span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">/</span><span class="n">factorial</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: k should be less than n&quot;</span><span class="p">)</span>
+       <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="trace_matrix"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.trace_matrix">[docs]</a><span class="k">def</span> <span class="nf">trace_matrix</span><span class="p">(</span><span class="n">M</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">M</span><span class="p">))</span></div>
+
+
+
+<span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">cuda</span>
+    <span class="kn">import</span> <span class="nn">cupy</span> <span class="k">as</span> <span class="nn">cu</span>
+<div class="viewcode-block" id="GPU_kernel_matrix"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.GPU_kernel_matrix">[docs]</a>    <span class="nd">@cuda</span><span class="o">.</span><span class="n">jit</span>
+    <span class="k">def</span> <span class="nf">GPU_kernel_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;=</span><span class="n">j</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">)</span> <span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sigma</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>    </div>
+
+
+<div class="viewcode-block" id="Hsic_gamma_py"><a class="viewcode-back" href="../../../coreBN.CItests.html#coreBN.CItests.hsic_gamma_pytorch.Hsic_gamma_py">[docs]</a><span class="k">def</span> <span class="nf">Hsic_gamma_py</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_device</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">gpu_selected</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    
+    <span class="c1">#&#39; @details Let x and y be two samples of length n. </span>
+    <span class="c1">#Gram matrices K and L are defined as: K_{i,j} =exp(-sig^2 (x_i-x_j)^2)   (\eqn{K_{i,j} = \exp{- \sigma (x_i-x_j)^2}})</span>
+    <span class="c1">#                                      L_{i,j} =exp(-sig^2 (y_i-y_j)^2)}. </span>
+    <span class="c1">#Defining H Matrix with elements : \eqn{H_{i,j} = \delta_{i,j} - \frac{1}{n}. </span>
+    <span class="c1">#Let \eqn{A=HKH} and \eqn{B=HLH}, then \eqn{HSIC(x,y)=\frac{1}{n^2}Tr(AB)}. </span>
+    <span class="c1">#Gamma test compares HSIC(x,y) with the alpha quantile of the gamma distribution with mean and variance such as HSIC under independence hypothesis.</span>
+
+    <span class="c1">#tensor_device = torch.device(&quot;cpu&quot;)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: the sample size of arrays is different!!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+	
+    <span class="c1">#if (index &lt; 0 or index &gt; 2):</span>
+    <span class="c1">#    print(&quot;ERROR: index must be in the interval [0,2)!&quot;)</span>
+    <span class="c1">#    return 0</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Data contains missing or infinite values&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()):</span> 
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Data contains missing or infinite values&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">cuda_string</span><span class="o">=</span> <span class="s2">&quot;cuda:&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">n_device</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">gpu_selected</span><span class="p">:</span>
+        <span class="n">go_gpu</span><span class="o">=</span><span class="kc">True</span>
+    <span class="k">else</span> <span class="p">:</span>
+        <span class="n">go_gpu</span><span class="o">=</span><span class="kc">False</span>
+
+    <span class="n">N_obs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">tensor_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">cuda_string</span> <span class="k">if</span> <span class="n">go_gpu</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">tensor_type</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tensor_type</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+        <span class="n">string_Ttype</span> <span class="o">=</span> <span class="s1">&#39;float32&#39;</span>
+        
+    <span class="k">elif</span> <span class="p">(</span><span class="n">tensor_type</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">):</span>
+        <span class="n">string_Ttype</span> <span class="o">=</span> <span class="s1">&#39;float64&#39;</span>
+
+    
+    <span class="k">if</span> <span class="n">go_gpu</span><span class="p">:</span>
+        <span class="n">dev</span> <span class="o">=</span> <span class="n">cu</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">Device</span><span class="p">(</span><span class="n">n_device</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">dev</span><span class="o">.</span><span class="n">use</span><span class="p">():</span>
+            <span class="n">gpu_x_arr</span> <span class="o">=</span> <span class="n">cu</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">gpu_y_arr</span> <span class="o">=</span> <span class="n">cu</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">threadsperblock</span> <span class="o">=</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="n">blockspergrid_x</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">N_obs</span> <span class="o">/</span> <span class="n">threadsperblock</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">blockspergrid_y</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="n">N_obs</span> <span class="o">/</span> <span class="n">threadsperblock</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">blockspergrid</span> <span class="o">=</span> <span class="p">(</span><span class="n">blockspergrid_x</span><span class="p">,</span> <span class="n">blockspergrid_y</span><span class="p">)</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">cu</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">N_obs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">GPU_kernel_matrix</span><span class="p">[</span><span class="n">blockspergrid</span><span class="p">,</span> <span class="n">threadsperblock</span><span class="p">](</span><span class="n">gpu_x_arr</span><span class="p">,</span><span class="n">N_obs</span><span class="p">,</span><span class="n">K</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="n">cu</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">N_obs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float64&#39;</span><span class="p">)</span>
+            <span class="n">GPU_kernel_matrix</span><span class="p">[</span><span class="n">blockspergrid</span><span class="p">,</span> <span class="n">threadsperblock</span><span class="p">](</span><span class="n">gpu_y_arr</span><span class="p">,</span><span class="n">N_obs</span><span class="p">,</span><span class="n">L</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="k">del</span>  <span class="n">gpu_x_arr</span><span class="p">,</span> <span class="n">gpu_y_arr</span>
+            <span class="n">tensor_K</span> <span class="o">=</span><span class="n">from_dlpack</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">toDlpack</span><span class="p">())</span>
+            <span class="n">tensor_K</span> <span class="o">=</span> <span class="n">tensor_K</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">tensor_type</span><span class="p">)</span>
+            <span class="n">tensor_L</span> <span class="o">=</span><span class="n">from_dlpack</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">toDlpack</span><span class="p">())</span>
+            <span class="n">tensor_L</span> <span class="o">=</span> <span class="n">tensor_L</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">tensor_type</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span>
+            <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+            
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#building Kernel matrix (using RBF gaussian kernel)</span>
+        <span class="n">kernel_K</span> <span class="o">=</span> <span class="n">CPU_kernel_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">tensor_K</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">kernel_K</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">string_Ttype</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tensor_device</span><span class="p">)</span>
+        <span class="n">kernel_L</span> <span class="o">=</span> <span class="n">CPU_kernel_matrix</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">tensor_L</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">kernel_L</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">string_Ttype</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tensor_device</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">kernel_K</span><span class="p">,</span> <span class="n">kernel_L</span>
+
+    
+    <span class="c1">#H_mat = H_matrix_cpu(N_obs)</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">H_matrix</span><span class="p">(</span><span class="n">N_obs</span><span class="p">,</span><span class="n">tensor_device</span><span class="p">,</span><span class="n">tensor_type</span><span class="p">)</span>
+    <span class="c1">#H = torch.from_numpy(H_mat.astype(string_Ttype)).to(tensor_device)</span>
+    <span class="c1">#Gram centered matrices</span>
+    <span class="n">Kc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">H</span><span class="p">,</span><span class="n">tensor_K</span><span class="p">),</span> <span class="n">H</span><span class="p">)</span> <span class="c1">#Note: these are slightly biased estimates of centred Gram matrices</span>
+    <span class="n">Lc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">tensor_L</span><span class="p">),</span> <span class="n">H</span><span class="p">)</span>
+    
+    <span class="n">factor</span><span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">N_obs</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">mu_K</span> <span class="o">=</span> <span class="p">(</span><span class="n">factor</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tensor_K</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">tensor_K</span><span class="p">)</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tensor_device</span><span class="p">)))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">mu_L</span> <span class="o">=</span> <span class="p">(</span><span class="n">factor</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tensor_L</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">tensor_L</span><span class="p">)</span><span class="o">*</span><span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N_obs</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">tensor_device</span><span class="p">)))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="c1">#HSIC_testStat = torch.sum(torch.multiply(torch.t(Kc), Lc))/N_obs</span>
+    <span class="c1">#if debug:</span>
+    <span class="c1">#    print(&quot;hsic&quot;, HSIC_testStat)</span>
+    <span class="n">HSIC_testStat</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">Kc</span><span class="p">),</span> <span class="n">Lc</span><span class="p">)))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">*</span><span class="n">N_obs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hsic stat :&quot;</span><span class="p">,</span> <span class="n">HSIC_testStat</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mux:&quot;</span><span class="p">,</span> <span class="n">mu_K</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;muy:&quot;</span><span class="p">,</span> <span class="n">mu_L</span><span class="p">)</span>
+    <span class="n">mean_HSIC</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">N_obs</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">mu_K</span><span class="o">*</span><span class="n">mu_L</span> <span class="o">-</span> <span class="n">mu_K</span> <span class="o">-</span> <span class="n">mu_L</span> <span class="p">)</span> <span class="c1"># meand under H0</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;mean HSIC:&quot;</span><span class="p">,</span> <span class="n">mean_HSIC</span><span class="p">)</span>
+    <span class="n">varHSIC</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">pow</span><span class="p">((</span><span class="mi">1</span><span class="o">/</span><span class="mf">6.0</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">Kc</span><span class="p">,</span> <span class="n">Lc</span><span class="p">)),</span><span class="mf">2.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;varHSIC:&quot;</span><span class="p">,</span> <span class="n">varHSIC</span><span class="p">)</span>
+  
+    <span class="n">Var_HSIC</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">N_obs</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span> <span class="p">(</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">varHSIC</span><span class="p">)</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">varHSIC</span><span class="p">))</span> 
+    <span class="n">Var_HSIC</span> <span class="o">=</span> <span class="p">((</span><span class="mi">72</span><span class="o">*</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="n">N_obs</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">N_obs</span><span class="o">-</span><span class="mi">3</span><span class="p">))</span>  <span class="o">*</span>  <span class="n">Var_HSIC</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1">#variance under H0</span>
+
+    
+    <span class="k">del</span> <span class="n">tensor_K</span><span class="p">,</span> <span class="n">tensor_L</span><span class="p">,</span> <span class="n">Kc</span><span class="p">,</span> <span class="n">Lc</span><span class="p">,</span> <span class="n">H</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">go_gpu</span><span class="p">:</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">debug</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;variance HSIC:&quot;</span><span class="p">,</span> <span class="n">Var_HSIC</span><span class="p">)</span>
+    
+    <span class="n">alpha</span> <span class="o">=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">mean_HSIC</span><span class="p">,</span><span class="mf">2.0</span><span class="p">)</span><span class="o">/</span> <span class="n">Var_HSIC</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">Var_HSIC</span><span class="o">/</span><span class="n">mean_HSIC</span>
+
+
+
+    <span class="c1">#print(alpha)</span>
+    <span class="c1">#print(beta)</span>
+    <span class="n">p_value</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">HSIC_testStat</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">beta</span><span class="p">)</span> 
+    <span class="k">return</span> <span class="n">p_value</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

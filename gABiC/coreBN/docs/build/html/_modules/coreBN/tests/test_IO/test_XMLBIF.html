@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_IO.test_XMLBIF &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_IO.test_XMLBIF</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.tests.test_IO.test_XMLBIF</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.testing</span> <span class="k">as</span> <span class="nn">np_test</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.IO</span> <span class="kn">import</span> <span class="n">XMLBIFReader</span><span class="p">,</span> <span class="n">XMLBIFWriter</span>
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Failed to import ElementTree from any known place&quot;</span><span class="p">)</span>
+
+<span class="n">TEST_FILE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+
+
+<span class="s2">&lt;!--</span>
+<span class="s2">    Bayesian network in XMLBIF v0.3 (BayesNet Interchange Format)</span>
+<span class="s2">    Produced by JavaBayes (http://www.cs.cmu.edu/~javabayes/</span>
+<span class="s2">    Output created Mon Aug 01 10:33:28 AEST 2016</span>
+<span class="s2">--&gt;</span>
+
+
+
+<span class="s2">&lt;!-- DTD for the XMLBIF 0.3 format --&gt;</span>
+<span class="s2">&lt;!DOCTYPE BIF [</span>
+<span class="s2">    &lt;!ELEMENT BIF ( NETWORK )*&gt;</span>
+<span class="s2">          &lt;!ATTLIST BIF VERSION CDATA #REQUIRED&gt;</span>
+<span class="s2">    &lt;!ELEMENT NETWORK ( NAME, ( PROPERTY | VARIABLE | DEFINITION )* )&gt;</span>
+<span class="s2">    &lt;!ELEMENT NAME (#PCDATA)&gt;</span>
+<span class="s2">    &lt;!ELEMENT VARIABLE ( NAME, ( OUTCOME |  PROPERTY )* ) &gt;</span>
+<span class="s2">          &lt;!ATTLIST VARIABLE TYPE (nature|decision|utility) &quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;!ELEMENT OUTCOME (#PCDATA)&gt;</span>
+<span class="s2">    &lt;!ELEMENT DEFINITION ( FOR | GIVEN | TABLE | PROPERTY )* &gt;</span>
+<span class="s2">    &lt;!ELEMENT FOR (#PCDATA)&gt;</span>
+<span class="s2">    &lt;!ELEMENT GIVEN (#PCDATA)&gt;</span>
+<span class="s2">    &lt;!ELEMENT TABLE (#PCDATA)&gt;</span>
+<span class="s2">    &lt;!ELEMENT PROPERTY (#PCDATA)&gt;</span>
+<span class="s2">]&gt;</span>
+
+
+<span class="s2">&lt;BIF VERSION=&quot;0.3&quot;&gt;</span>
+<span class="s2">&lt;NETWORK&gt;</span>
+<span class="s2">&lt;NAME&gt;Dog_Problem&lt;/NAME&gt;</span>
+
+<span class="s2">&lt;!-- Variables --&gt;</span>
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;kid&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (100, 165)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;light_on&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (73, 165)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;bowel_problem&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (190, 69)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;dog_out&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (155, 165)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;hear_bark&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (154, 241)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+<span class="s2">&lt;VARIABLE TYPE=&quot;nature&quot;&gt;</span>
+<span class="s2">    &lt;NAME&gt;family_out&lt;/NAME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;true&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;OUTCOME&gt;false&lt;/OUTCOME&gt;</span>
+<span class="s2">    &lt;PROPERTY&gt;position = (112, 69)&lt;/PROPERTY&gt;</span>
+<span class="s2">&lt;/VARIABLE&gt;</span>
+
+
+<span class="s2">&lt;!-- Probability distributions --&gt;</span>
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;kid&lt;/FOR&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.3 0.7 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;light_on&lt;/FOR&gt;</span>
+<span class="s2">    &lt;GIVEN&gt;family_out&lt;/GIVEN&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.6 0.4 0.05 0.95 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;bowel_problem&lt;/FOR&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.01 0.99 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;dog_out&lt;/FOR&gt;</span>
+<span class="s2">    &lt;GIVEN&gt;bowel_problem&lt;/GIVEN&gt;</span>
+<span class="s2">    &lt;GIVEN&gt;family_out&lt;/GIVEN&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.99 0.01 0.97 0.03 0.9 0.1 0.3 0.7 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;hear_bark&lt;/FOR&gt;</span>
+<span class="s2">    &lt;GIVEN&gt;dog_out&lt;/GIVEN&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.7 0.3 0.01 0.99 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+<span class="s2">&lt;DEFINITION&gt;</span>
+<span class="s2">    &lt;FOR&gt;family_out&lt;/FOR&gt;</span>
+<span class="s2">    &lt;TABLE&gt;0.15 0.85 &lt;/TABLE&gt;</span>
+<span class="s2">&lt;/DEFINITION&gt;</span>
+
+
+<span class="s2">&lt;/NETWORK&gt;</span>
+<span class="s2">&lt;/BIF&gt;&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods">[docs]</a><span class="k">class</span> <span class="nc">TestXMLBIFReaderMethods</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">XMLBIFReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">TEST_FILE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_variables"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">var_expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="n">var_expected</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_states"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_states">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">states_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_states</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">states_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">states_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">states</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_parents"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parents_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span> <span class="s2">&quot;family_out&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_parents</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">parents_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">parents_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">parents</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_edges"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">edges_expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">,</span> <span class="s2">&quot;light_on&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;dog_out&quot;</span><span class="p">,</span> <span class="s2">&quot;hear_bark&quot;</span><span class="p">],</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">edge_list</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges_expected</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_values"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_values">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cpd_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.01</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.99</span><span class="p">]]),</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.97</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">]]),</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.15</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">]]),</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">]]),</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]]),</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+        <span class="p">}</span>
+        <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_CPD</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">cpd_expected</span><span class="p">:</span>
+            <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">cpd_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">cpd</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_get_property"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_property">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">property_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (190, 69)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (155, 165)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (112, 69)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (154, 241)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (100, 165)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (73, 165)&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_property</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">property_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">property_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">prop</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.test_model"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_model">[docs]</a>    <span class="k">def</span> <span class="nf">test_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span><span class="o">.</span><span class="n">check_model</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethods.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span></div></div>
+
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile">[docs]</a><span class="k">class</span> <span class="nc">TestXMLBIFReaderMethodsFile</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dog_problem.xml&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">TEST_FILE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">XMLBIFReader</span><span class="p">(</span><span class="s2">&quot;dog_problem.xml&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_variables"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">var_expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="n">var_expected</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_states"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_states">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">states_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_states</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">states_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">states_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">states</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_parents"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parents_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span> <span class="s2">&quot;family_out&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_parents</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">parents_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">parents_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">parents</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_edges"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">edges_expected</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;bowel_problem&quot;</span><span class="p">,</span> <span class="s2">&quot;dog_out&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;family_out&quot;</span><span class="p">,</span> <span class="s2">&quot;light_on&quot;</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;dog_out&quot;</span><span class="p">,</span> <span class="s2">&quot;hear_bark&quot;</span><span class="p">],</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">edge_list</span><span class="p">),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">edges_expected</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_values"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_values">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cpd_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.01</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.99</span><span class="p">]]),</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.99</span><span class="p">,</span> <span class="mf">0.97</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">]]),</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.15</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.85</span><span class="p">]]),</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">]]),</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">]]),</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">]]),</span>
+        <span class="p">}</span>
+        <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_CPD</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">cpd_expected</span><span class="p">:</span>
+            <span class="n">np_test</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">cpd_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">cpd</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_get_property"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_property">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">property_expected</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;bowel_problem&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (190, 69)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;dog_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (155, 165)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;family_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (112, 69)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;hear_bark&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (154, 241)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (100, 165)&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;light_on&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;position = (73, 165)&quot;</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="n">prop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">variable_property</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">property_expected</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="n">property_expected</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">prop</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.test_model"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_model">[docs]</a>    <span class="k">def</span> <span class="nf">test_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span><span class="o">.</span><span class="n">check_model</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFReaderMethodsFile.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;dog_problem.xml&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestXMLBIFWriterMethodsString"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString">[docs]</a><span class="k">class</span> <span class="nc">TestXMLBIFWriterMethodsString</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestXMLBIFWriterMethodsString.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">XMLBIFReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">TEST_FILE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expected_model</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">XMLBIFWriter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expected_model</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_stateless</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">(</span>
+            <span class="p">[(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;G&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;G&quot;</span><span class="p">,</span> <span class="s2">&quot;L&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpd_d</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="n">variable_card</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpd_i</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span><span class="n">variable</span><span class="o">=</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="n">variable_card</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.7</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">]])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpd_g</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;G&quot;</span><span class="p">,</span>
+            <span class="n">variable_card</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[</span>
+                <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span>
+                <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
+            <span class="p">],</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">],</span>
+            <span class="n">evidence_card</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpd_l</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">,</span>
+            <span class="n">variable_card</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">]],</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;G&quot;</span><span class="p">],</span>
+            <span class="n">evidence_card</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpd_s</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+            <span class="n">variable</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">,</span>
+            <span class="n">variable_card</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]],</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;I&quot;</span><span class="p">],</span>
+            <span class="n">evidence_card</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_stateless</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cpd_d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_g</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_s</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer_stateless</span> <span class="o">=</span> <span class="n">XMLBIFWriter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_stateless</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFWriterMethodsString.test_write_xmlbif_statefull"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_statefull">[docs]</a>    <span class="k">def</span> <span class="nf">test_write_xmlbif_statefull</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">write_xmlbif</span><span class="p">(</span><span class="s2">&quot;dog_problem_output.xbif&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dog_problem_output.xbif&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">file_text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">XMLBIFReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">file_text</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">state_name_type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_models_equivelent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expected_model</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;dog_problem_output.xbif&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFWriterMethodsString.test_write_xmlbif_stateless"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_stateless">[docs]</a>    <span class="k">def</span> <span class="nf">test_write_xmlbif_stateless</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer_stateless</span><span class="o">.</span><span class="n">write_xmlbif</span><span class="p">(</span><span class="s2">&quot;grade_problem_output.xbif&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;grade_problem_output.xbif&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">reader</span> <span class="o">=</span> <span class="n">XMLBIFReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">state_name_type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assert_models_equivelent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_stateless</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertDictEqual</span><span class="p">({</span><span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]},</span> <span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">state_names</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;grade_problem_output.xbif&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestXMLBIFWriterMethodsString.assert_models_equivelent"><a class="viewcode-back" href="../../../../coreBN.tests.test_IO.html#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.assert_models_equivelent">[docs]</a>    <span class="k">def</span> <span class="nf">assert_models_equivelent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">got</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">nodes</span><span class="p">()),</span> <span class="nb">set</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">nodes</span><span class="p">()))</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+                <span class="nb">sorted</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">node</span><span class="p">)),</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">got</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">cpds_expected</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">cpds_got</span> <span class="o">=</span> <span class="n">got</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">cpds_expected</span><span class="p">,</span> <span class="n">cpds_got</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

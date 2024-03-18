@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_sampling.test_continuous_sampling &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_sampling.test_continuous_sampling</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.tests.test_sampling.test_continuous_sampling</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors.distributions</span> <span class="kn">import</span> <span class="n">GaussianDistribution</span> <span class="k">as</span> <span class="n">JGD</span>
+<span class="kn">from</span> <span class="nn">coreBN.sampling</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HamiltonianMC</span> <span class="k">as</span> <span class="n">HMC</span><span class="p">,</span>
+    <span class="n">HamiltonianMCDA</span> <span class="k">as</span> <span class="n">HMCda</span><span class="p">,</span>
+    <span class="n">GradLogPDFGaussian</span><span class="p">,</span>
+    <span class="n">NoUTurnSampler</span> <span class="k">as</span> <span class="n">NUTS</span><span class="p">,</span>
+    <span class="n">NoUTurnSamplerDA</span> <span class="k">as</span> <span class="n">NUTSda</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestHMCInference"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference">[docs]</a><span class="k">class</span> <span class="nc">TestHMCInference</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestHMCInference.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span> <span class="o">=</span> <span class="n">JGD</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="n">mean</span><span class="p">,</span> <span class="n">covariance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span> <span class="o">=</span> <span class="n">HMCda</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">GradLogPDFGaussian</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.test_errors"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_errors">[docs]</a>    <span class="k">def</span> <span class="nf">test_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">HMCda</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">HMCda</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span>
+                <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">GradLogPDFGaussian</span><span class="p">,</span>
+                <span class="n">simulate_dynamics</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">HMCda</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">delta</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">HMC</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">HMC</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">)</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.test_acceptance_prob"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_acceptance_prob">[docs]</a>    <span class="k">def</span> <span class="nf">test_acceptance_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">acceptance_probability</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">_acceptance_prob</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">acceptance_probability</span><span class="p">,</span> <span class="mf">0.0347363</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.test_find_resonable_stepsize"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_find_resonable_stepsize">[docs]</a>    <span class="k">def</span> <span class="nf">test_find_resonable_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">987654321</span><span class="p">)</span>
+        <span class="n">stepsize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">_find_reasonable_stepsize</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">stepsize</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.test_adapt_params"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_adapt_params">[docs]</a>    <span class="k">def</span> <span class="nf">test_adapt_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">stepsize</span><span class="p">,</span> <span class="n">stepsize_bar</span><span class="p">,</span> <span class="n">h_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">_adapt_params</span><span class="p">(</span>
+            <span class="mf">0.0025</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.025</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">stepsize</span><span class="p">,</span> <span class="mf">3.13439452e-13</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">stepsize_bar</span><span class="p">,</span> <span class="mf">3.6742481e-08</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span><span class="n">h_bar</span><span class="p">,</span> <span class="mf">0.8875</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.test_sample"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.test_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Seeding is done for _find_reasonable_stepsize method</span>
+        <span class="c1"># Testing sample method simple HMC</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3124141</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
+            <span class="n">num_adapt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># Testing sample of method of HMCda</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3124141</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span>
+            <span class="n">num_adapt</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># Testing generate_sample method of simple HMC</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3124141</span><span class="p">)</span>
+        <span class="n">gen_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span>
+            <span class="n">num_adapt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">gen_samples</span><span class="p">])</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="c1"># Testing sample of method of HMCda</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">3124141</span><span class="p">)</span>
+        <span class="n">gen_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span>
+            <span class="n">num_adapt</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">trajectory_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">gen_samples</span><span class="p">])</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestHMCInference.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestHMCInference.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">hmc_sampler</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span></div></div>
+
+
+<div class="viewcode-block" id="TestNUTSInference"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference">[docs]</a><span class="k">class</span> <span class="nc">TestNUTSInference</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestNUTSInference.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="n">covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span> <span class="o">=</span> <span class="n">JGD</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="n">mean</span><span class="p">,</span> <span class="n">covariance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span> <span class="o">=</span> <span class="n">NUTSda</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">GradLogPDFGaussian</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestNUTSInference.test_errors"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_errors">[docs]</a>    <span class="k">def</span> <span class="nf">test_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">JGD</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span>
+                <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span>
+                <span class="n">grad_log_pdf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">simulate_dynamics</span><span class="o">=</span><span class="n">GradLogPDFGaussian</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">delta</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="o">=</span><span class="n">GradLogPDFGaussian</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">TypeError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+            <span class="n">NUTSda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="p">,</span> <span class="n">GradLogPDFGaussian</span><span class="p">)</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+                <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestNUTSInference.test_sampling"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.test_sampling">[docs]</a>    <span class="nd">@unittest</span><span class="o">.</span><span class="n">skipIf</span><span class="p">(</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;win&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;darwin&quot;</span><span class="p">),</span>
+        <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Failing on Win and Mac&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1010101</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">],</span>
+            <span class="n">num_adapt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">return_type</span><span class="o">=</span><span class="s2">&quot;recarray&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">samples</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">sample_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">sample_array</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sample_covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span>
+        <span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1210161</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">3.6</span><span class="p">],</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span>
+        <span class="p">)</span>
+        <span class="n">samples_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">])</span>
+        <span class="n">sample_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sample_covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span>
+        <span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">12313131</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">],</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">10000</span>
+        <span class="p">)</span>
+        <span class="n">sample_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sample_covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.4</span>
+        <span class="p">)</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">921312312</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span><span class="o">.</span><span class="n">generate_sample</span><span class="p">(</span>
+            <span class="n">initial_pos</span><span class="o">=</span><span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">],</span> <span class="n">num_adapt</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">30000</span>
+        <span class="p">)</span>
+        <span class="n">samples_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sample</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">])</span>
+        <span class="n">sample_covariance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">samples_array</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">sample_covariance</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span><span class="o">.</span><span class="n">covariance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.4</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestNUTSInference.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_sampling.html#coreBN.tests.test_sampling.test_continuous_sampling.TestNUTSInference.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_model</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">nuts_sampler</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

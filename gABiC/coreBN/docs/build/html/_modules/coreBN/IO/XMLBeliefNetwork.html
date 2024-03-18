@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.IO.XMLBeliefNetwork &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.IO.XMLBeliefNetwork</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.IO.XMLBeliefNetwork</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="c1"># try:</span>
+        <span class="c1">#    import xml.etree.cElementTree as etree</span>
+        <span class="c1"># except ImportError:</span>
+        <span class="c1"># commented out as causing problem with dictionary attributes</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to import ElementTree from any known place&quot;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span>
+
+
+<div class="viewcode-block" id="XBNReader"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader">[docs]</a><span class="k">class</span> <span class="nc">XBNReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for reading XML Belief Network File Format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializer for XBNReader class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path: str or file</span>
+<span class="sd">            Path of the file containing XBN data.</span>
+
+<span class="sd">        string: str</span>
+<span class="sd">            String of XBN data</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        reader = XBNReader(&#39;test_XBN.xml&#39;)</span>
+
+<span class="sd">        Reference</span>
+<span class="sd">        ---------</span>
+<span class="sd">        http://xml.coverpages.org/xbn-MSdefault19990414.html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either path or string&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;BNMODEL&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysisnotebook</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_analysisnotebook_values</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bnmodel_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_static_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_edges</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_CPD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distributions</span><span class="p">()</span>
+
+<div class="viewcode-block" id="XBNReader.get_analysisnotebook_values"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_analysisnotebook_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_analysisnotebook_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary of the attributes of ANALYSISNOTEBOOK tag</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_analysisnotebook_values()</span>
+<span class="sd">        {&#39;NAME&#39;: &quot;Notebook.Cancer Example From Neapolitan&quot;,</span>
+<span class="sd">         &#39;ROOT&#39;: &quot;Cancer&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_bnmodel_name"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_bnmodel_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_bnmodel_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the name of the BNMODEL.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_bnmodel_name()</span>
+<span class="sd">        &#39;Cancer&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;BNMODEL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_static_properties"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_static_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_static_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary of STATICPROPERTIES</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_static_properties()</span>
+<span class="sd">        {&#39;FORMAT&#39;: &#39;MSR DTAS XML&#39;, &#39;VERSION&#39;: &#39;0.2&#39;, &#39;CREATOR&#39;: &#39;Microsoft Research DTAS&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">tags</span><span class="o">.</span><span class="n">tag</span><span class="p">:</span> <span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;VALUE&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tags</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;STATICPROPERTIES&quot;</span><span class="p">)</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of variables.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_variables()</span>
+<span class="sd">        {&#39;a&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;XPOS&#39;: &#39;13495&#39;,</span>
+<span class="sd">               &#39;YPOS&#39;: &#39;10465&#39;, &#39;DESCRIPTION&#39;: &#39;(a) Metastatic Cancer&#39;,</span>
+<span class="sd">               &#39;STATES&#39;: [&#39;Present&#39;, &#39;Absent&#39;]}</span>
+<span class="sd">        &#39;b&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;XPOS&#39;: &#39;11290&#39;,</span>
+<span class="sd">               &#39;YPOS&#39;: &#39;11965&#39;, &#39;DESCRIPTION&#39;: &#39;(b) Serum Calcium Increase&#39;,</span>
+<span class="sd">               &#39;STATES&#39;: [&#39;Present&#39;, &#39;Absent&#39;]},</span>
+<span class="sd">        &#39;c&#39;: {....},</span>
+<span class="sd">        &#39;d&#39;: {....},</span>
+<span class="sd">        &#39;e&#39;: {....}</span>
+<span class="sd">        }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;VARIABLES&quot;</span><span class="p">):</span>
+            <span class="n">variables</span><span class="p">[</span><span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TYPE&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;XPOS&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;YPOS&quot;</span><span class="p">),</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="n">variable</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                <span class="s2">&quot;STATES&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">state</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;STATENAME&quot;</span><span class="p">)],</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">variables</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_edges"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of tuples. Each tuple contains two elements (parent, child) for each edge.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_edges()</span>
+<span class="sd">        [(&#39;a&#39;, &#39;b&#39;), (&#39;a&#39;, &#39;c&#39;), (&#39;b&#39;, &#39;d&#39;), (&#39;c&#39;, &#39;d&#39;), (&#39;c&#39;, &#39;e&#39;)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">arc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;PARENT&quot;</span><span class="p">),</span> <span class="n">arc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CHILD&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">arc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;STRUCTURE&quot;</span><span class="p">)</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_distributions"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_distributions">[docs]</a>    <span class="k">def</span> <span class="nf">get_distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a dictionary of name and its distribution. Distribution is a ndarray.</span>
+
+<span class="sd">        The ndarray is stored in the standard way such that the rightmost variable</span>
+<span class="sd">        changes most often. Consider a CPD of variable &#39;d&#39; which has parents &#39;b&#39; and</span>
+<span class="sd">        &#39;c&#39; (distribution[&#39;CONDSET&#39;] = [&#39;b&#39;, &#39;c&#39;])</span>
+
+<span class="sd">                  |  d_0     d_1</span>
+<span class="sd">        ---------------------------</span>
+<span class="sd">        b_0, c_0  |  0.8     0.2</span>
+<span class="sd">        b_0, c_1  |  0.9     0.1</span>
+<span class="sd">        b_1, c_0  |  0.7     0.3</span>
+<span class="sd">        b_1, c_1  |  0.05    0.95</span>
+
+<span class="sd">        The value of distribution[&#39;d&#39;][&#39;DPIS&#39;] for the above example will be:</span>
+<span class="sd">        array([[ 0.8 ,  0.2 ], [ 0.9 ,  0.1 ], [ 0.7 ,  0.3 ], [ 0.05,  0.95]])</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XBNReader(&#39;xbn_test.xml&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_distributions()</span>
+<span class="sd">        {&#39;a&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;DPIS&#39;: array([[ 0.2,  0.8]])},</span>
+<span class="sd">         &#39;e&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;DPIS&#39;: array([[ 0.8,  0.2],</span>
+<span class="sd">                 [ 0.6,  0.4]]), &#39;CONDSET&#39;: [&#39;c&#39;], &#39;CARDINALITY&#39;: [2]},</span>
+<span class="sd">         &#39;b&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;DPIS&#39;: array([[ 0.8,  0.2],</span>
+<span class="sd">                 [ 0.2,  0.8]]), &#39;CONDSET&#39;: [&#39;a&#39;], &#39;CARDINALITY&#39;: [2]},</span>
+<span class="sd">         &#39;c&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;DPIS&#39;: array([[ 0.2 ,  0.8 ],</span>
+<span class="sd">                 [ 0.05,  0.95]]), &#39;CONDSET&#39;: [&#39;a&#39;], &#39;CARDINALITY&#39;: [2]},</span>
+<span class="sd">         &#39;d&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;DPIS&#39;: array([[ 0.8 ,  0.2 ],</span>
+<span class="sd">                 [ 0.9 ,  0.1 ],</span>
+<span class="sd">                 [ 0.7 ,  0.3 ],</span>
+<span class="sd">                 [ 0.05,  0.95]]), &#39;CONDSET&#39;: [&#39;b&#39;, &#39;c&#39;]}, &#39;CARDINALITY&#39;: [2, 2]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distribution</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;DISTRIBUTIONS&quot;</span><span class="p">):</span>
+            <span class="n">variable_name</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;PRIVATE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TYPE&quot;</span><span class="p">)}</span>
+            <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">distribution</span><span class="p">[</span><span class="n">variable_name</span><span class="p">][</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">var</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dist</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;CONDELEM&quot;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="n">distribution</span><span class="p">[</span><span class="n">variable_name</span><span class="p">][</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="nb">len</span><span class="p">(</span>
+                            <span class="nb">set</span><span class="p">(</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                                    <span class="p">[</span>
+                                        <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">dpi</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INDEXES&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+                                        <span class="k">for</span> <span class="n">dpi</span> <span class="ow">in</span> <span class="n">dist</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;DPIS&quot;</span><span class="p">)</span>
+                                    <span class="p">]</span>
+                                <span class="p">)[:,</span> <span class="n">i</span><span class="p">]</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">distribution</span><span class="p">[</span><span class="n">variable_name</span><span class="p">][</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">]))</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="n">distribution</span><span class="p">[</span><span class="n">variable_name</span><span class="p">][</span><span class="s2">&quot;DPIS&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">dpi</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span> <span class="k">for</span> <span class="n">dpi</span> <span class="ow">in</span> <span class="n">dist</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;DPIS&quot;</span><span class="p">)]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">distribution</span></div>
+
+<div class="viewcode-block" id="XBNReader.get_model"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNReader.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an instance of Bayesian Model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span>
+
+        <span class="n">tabular_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_CPD</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">evidence</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;CONDSET&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;CONDSET&quot;</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;DPIS&quot;</span><span class="p">]</span>
+            <span class="n">evidence_card</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="s2">&quot;CARDINALITY&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;CARDINALITY&quot;</span> <span class="ow">in</span> <span class="n">values</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;STATES&quot;</span><span class="p">]</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">var</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">states</span><span class="p">),</span> <span class="n">cpd</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span> <span class="n">evidence_card</span><span class="o">=</span><span class="n">evidence_card</span>
+            <span class="p">)</span>
+            <span class="n">tabular_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">tabular_cpds</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">_node</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">properties</span>
+
+        <span class="k">return</span> <span class="n">model</span></div></div>
+
+
+<div class="viewcode-block" id="XBNWriter"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter">[docs]</a><span class="k">class</span> <span class="nc">XBNWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for writing XML Belief Network file format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">prettyprint</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializer for XBNWriter class</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: BayesianNetwork Instance</span>
+<span class="sd">            Model to write</span>
+<span class="sd">        encoding: str(optional)</span>
+<span class="sd">            Encoding for test data</span>
+<span class="sd">        prettyprint: Bool(optional)</span>
+<span class="sd">            Indentation in output XML if true</span>
+
+<span class="sd">        Reference</span>
+<span class="sd">        ---------</span>
+<span class="sd">        http://xml.coverpages.org/xbn-MSdefault19990414.html</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter(model)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Model must be an instance of Bayesian Model.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prettyprint</span> <span class="o">=</span> <span class="n">prettyprint</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;ANALYSISNOTEBOOK&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s2">&quot;BNMODEL&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="p">,</span> <span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_variables</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_edges</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">edges</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_distributions</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the XML as string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prettyprint</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+
+<div class="viewcode-block" id="XBNWriter.indent"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.indent">[docs]</a>    <span class="k">def</span> <span class="nf">indent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inplace prettyprint formatter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">level</span> <span class="o">*</span> <span class="s2">&quot;  &quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">level</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_analysisnotebook"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_analysisnotebook">[docs]</a>    <span class="k">def</span> <span class="nf">set_analysisnotebook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set attributes for ANALYSISNOTEBOOK tag</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **data: dict</span>
+<span class="sd">            {name: value} for the attributes to be set.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_analysisnotebook(NAME=&quot;Notebook.Cancer Example From Neapolitan&quot;,</span>
+<span class="sd">        ...                             ROOT=&#39;Cancer&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_bnmodel_name"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_bnmodel_name">[docs]</a>    <span class="k">def</span> <span class="nf">set_bnmodel_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the name of the BNMODEL.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            Name of the BNModel.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_bnmodel_name(&quot;Cancer&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_static_properties"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_static_properties">[docs]</a>    <span class="k">def</span> <span class="nf">set_static_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set STATICPROPERTIES tag for the network</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **data: dict</span>
+<span class="sd">            {name: value} for name and value of the property.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_static_properties(FORMAT=&quot;MSR DTAS XML&quot;, VERSION=&quot;0.2&quot;, CREATOR=&quot;Microsoft Research DTAS&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">static_prop</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="p">,</span> <span class="s2">&quot;STATICPROPERTIES&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">static_prop</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;VALUE&quot;</span><span class="p">:</span> <span class="n">value</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_variables">[docs]</a>    <span class="k">def</span> <span class="nf">set_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set variables for the network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: dict</span>
+<span class="sd">            dict for variable in the form of example as shown.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_variables({&#39;a&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;XPOS&#39;: &#39;13495&#39;,</span>
+<span class="sd">        ...                             &#39;YPOS&#39;: &#39;10465&#39;, &#39;DESCRIPTION&#39;: &#39;(a) Metastatic Cancer&#39;,</span>
+<span class="sd">        ...                             &#39;STATES&#39;: [&#39;Present&#39;, &#39;Absent&#39;]},</span>
+<span class="sd">        ...                       &#39;b&#39;: {&#39;TYPE&#39;: &#39;discrete&#39;, &#39;XPOS&#39;: &#39;11290&#39;,</span>
+<span class="sd">        ...                             &#39;YPOS&#39;: &#39;11965&#39;, &#39;DESCRIPTION&#39;: &#39;(b) Serum Calcium Increase&#39;,</span>
+<span class="sd">        ...                             &#39;STATES&#39;: [&#39;Present&#39;, &#39;Absent&#39;]}})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="p">,</span> <span class="s2">&quot;VARIABLES&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">variables</span><span class="p">,</span>
+                <span class="s2">&quot;VAR&quot;</span><span class="p">,</span>
+                <span class="n">attrib</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="n">var</span><span class="p">,</span>
+                    <span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;XPOS&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;XPOS&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;YPOS&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;YPOS&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">variable</span><span class="p">,</span>
+                <span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">,</span>
+                <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;DESCRIPTION&quot;</span><span class="p">]},</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;STATES&quot;</span><span class="p">]:</span>
+                <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="s2">&quot;STATENAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">state</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_edges"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_edges">[docs]</a>    <span class="k">def</span> <span class="nf">set_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set edges/arc in the network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        edge_list: array_like</span>
+<span class="sd">            list, tuple, dict or set whose each elements has two values (parent, child).</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer = XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_edges([(&#39;a&#39;, &#39;b&#39;), (&#39;a&#39;, &#39;c&#39;), (&#39;b&#39;, &#39;d&#39;), (&#39;c&#39;, &#39;d&#39;), (&#39;c&#39;, &#39;e&#39;)])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="p">,</span> <span class="s2">&quot;STRUCTURE&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">edge_list</span><span class="p">:</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">structure</span><span class="p">,</span> <span class="s2">&quot;ARC&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;PARENT&quot;</span><span class="p">:</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;CHILD&quot;</span><span class="p">:</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="XBNWriter.set_distributions"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBeliefNetwork.XBNWriter.set_distributions">[docs]</a>    <span class="k">def</span> <span class="nf">set_distributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set distributions in the network.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO.XMLBeliefNetwork import XBNWriter</span>
+<span class="sd">        &gt;&gt;&gt; writer =XBNWriter()</span>
+<span class="sd">        &gt;&gt;&gt; writer.set_distributions()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distributions</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bnmodel</span><span class="p">,</span> <span class="s2">&quot;DISTRIBUTIONS&quot;</span><span class="p">)</span>
+
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="n">cpds</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">variable</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">cpd_values</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span>
+            <span class="n">dist</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">distributions</span><span class="p">,</span> <span class="s2">&quot;DIST&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="s2">&quot;TYPE&quot;</span><span class="p">]}</span>
+            <span class="p">)</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="s2">&quot;PRIVATE&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="n">var</span><span class="p">})</span>
+            <span class="n">dpis</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="s2">&quot;DPIS&quot;</span><span class="p">)</span>
+            <span class="n">evidence</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">evidence_card</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="n">evidence</span><span class="p">:</span>
+                <span class="n">condset</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="s2">&quot;CONDSET&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">condelem</span> <span class="ow">in</span> <span class="n">evidence</span><span class="p">:</span>
+                    <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">condset</span><span class="p">,</span> <span class="s2">&quot;CONDELEM&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;NAME&quot;</span><span class="p">:</span> <span class="n">condelem</span><span class="p">})</span>
+                <span class="n">indexes_iter</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">card</span><span class="p">)</span> <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="n">evidence_card</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cpd_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                    <span class="n">index_value</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="n">indexes_iter</span><span class="p">)))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                    <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                        <span class="n">dpis</span><span class="p">,</span> <span class="s2">&quot;DPI&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;INDEXES&quot;</span><span class="p">:</span> <span class="n">index_value</span><span class="p">}</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cpd_values</span><span class="p">[</span><span class="n">val</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">dpis</span><span class="p">,</span> <span class="s2">&quot;DPI&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cpd_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

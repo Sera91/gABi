@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.factors.continuous package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.factors.discrete package" href="coreBN.factors.discrete.html" />
+    <link rel="prev" title="coreBN.factors package" href="coreBN.factors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.factors.html">coreBN.factors package</a></li>
+      <li class="breadcrumb-item active">coreBN.factors.continuous package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.factors.continuous.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-factors-continuous-package">
+<h1>coreBN.factors.continuous package<a class="headerlink" href="#corebn-factors-continuous-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.factors.continuous.ContinuousFactor">
+<span id="corebn-factors-continuous-continuousfactor-module"></span><h2>coreBN.factors.continuous.ContinuousFactor module<a class="headerlink" href="#module-coreBN.factors.continuous.ContinuousFactor" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.ContinuousFactor.</span></span><span class="sig-name descname"><span class="pre">ContinuousFactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coreBN.factors.html#coreBN.factors.base.BaseFactor" title="coreBN.factors.base.BaseFactor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseFactor</span></code></a></p>
+<p>Base class for factors representing various multivariate
+representations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.assignment">
+<span class="sig-name descname"><span class="pre">assignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.assignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.assignment" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of pdf assignments for the corresponding values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*args</strong> (<em>values</em>) -- Values whose assignment is to be computed.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">0.013064233284684921</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Return a copy of the distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ContinuousFactor object</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>copy of the distribution</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="go"># Two variable dirichlet distribution with alpha = (1,2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dirichlet_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">dirichlet_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_factor</span> <span class="o">=</span> <span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.discretize">
+<span class="sig-name descname"><span class="pre">discretize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.discretize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.discretize" title="Permalink to this definition"></a></dt>
+<dd><p>Discretizes the continuous distribution into discrete
+probability masses using various methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>A Discretizer Class from coreBN.discretize</em>) -- </p></li>
+<li><p><strong>*args</strong> -- The parameters to be given to the Discretizer Class.</p></li>
+<li><p><strong>**kwargs</strong> -- The parameters to be given to the Discretizer Class.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>An n-D array or a DiscreteFactor object according to the discretiztion</em></p></li>
+<li><p><em>method used.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">RoundingDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dirichlet_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">dirichlet_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">RoundingDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go"># TODO: finish this</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.divide">
+<span class="sig-name descname"><span class="pre">divide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.divide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.divide" title="Permalink to this definition"></a></dt>
+<dd><p>Gives the ContinuousFactor divide with the other factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor"><em>ContinuousFactor</em></a>) -- The ContinuousFactor to be divided.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new <cite>ContinuousFactor</cite> instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf1</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn1</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn2</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span> <span class="o">=</span> <span class="n">sn2</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">sn1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.3989422804014327</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span> <span class="o">=</span> <span class="n">sn2</span> <span class="o">/</span> <span class="n">sn1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.3989422804014327</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.get_evidence">
+<span class="sig-name descname"><span class="pre">get_evidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.get_evidence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.get_evidence" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.is_valid_cpd">
+<span class="sig-name descname"><span class="pre">is_valid_cpd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.is_valid_cpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.is_valid_cpd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.marginalize">
+<span class="sig-name descname"><span class="pre">marginalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.marginalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.marginalize" title="Permalink to this definition"></a></dt>
+<dd><p>Marginalize the factor with respect to the given variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variables</strong> (<em>list</em><em>, </em><em>array-like</em>) -- List of variables with respect to which factor is to be maximized.</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new ContinuousFactor instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DiscreteFactor or None</strong> -- if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if inplace=True (default) returns None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;, &#39;x2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">0.058549831524319168</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">marginalize</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.normalize" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes the pdf of the continuous factor so that it integrates to
+1 over all the variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new factor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">0.117099663049</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">0.0585498315243</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.pdf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pdf</span></span><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.pdf" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the pdf of the ContinuousFactor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.product">
+<span class="sig-name descname"><span class="pre">product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.product" title="Permalink to this definition"></a></dt>
+<dd><p>Gives the ContinuousFactor product with the other factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor"><em>ContinuousFactor</em></a>) -- The ContinuousFactor to be multiplied.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new <cite>ContinuousFactor</cite> instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf1</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn1</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn2</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span> <span class="o">=</span> <span class="n">sn1</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">sn2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.063493635934240983</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span> <span class="o">=</span> <span class="n">sn1</span> <span class="o">*</span> <span class="n">sn2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.063493635934240983</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.reduce" title="Permalink to this definition"></a></dt>
+<dd><p>Reduces the factor to the context of the given variable values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>list</em><em>, </em><em>array-like</em>) -- A list of tuples of the form (variable_name, variable_value).</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new ContinuousFactor object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ContinuousFactor or None</strong> -- if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if inplace=True (default) returns None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">custom_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">z</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">],</span> <span class="n">custom_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;z&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">24.0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">([(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;z&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">24.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.scope">
+<span class="sig-name descname"><span class="pre">scope</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.scope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.scope" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the scope of the factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>list</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of variable names in the scope of the factor.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;, &#39;x2&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.variable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variable</span></span><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor.variable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.factors.continuous.LinearGaussianCPD">
+<span id="corebn-factors-continuous-lineargaussiancpd-module"></span><h2>coreBN.factors.continuous.LinearGaussianCPD module<a class="headerlink" href="#module-coreBN.factors.continuous.LinearGaussianCPD" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.LinearGaussianCPD.</span></span><span class="sig-name descname"><span class="pre">LinearGaussianCPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence_mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence_variance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/LinearGaussianCPD.html#LinearGaussianCPD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coreBN.factors.html#coreBN.factors.base.BaseFactor" title="coreBN.factors.base.BaseFactor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseFactor</span></code></a></p>
+<p>For, X -&gt; Y the Linear Gaussian model assumes that the mean
+of Y is a linear function of mean of X and the variance of Y does
+not depend on X.</p>
+<p>For example,</p>
+<div class="math notranslate nohighlight">
+\[p(Y|X) = N(-2x + 0.9 ; 1)\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(x\)</span> is the mean of the variable <span class="math notranslate nohighlight">\(X\)</span>.</p>
+<p>Let <span class="math notranslate nohighlight">\(Y\)</span> be a continuous variable with continuous parents
+<span class="math notranslate nohighlight">\(X1, X2, \cdots, Xk\)</span>. We say that <span class="math notranslate nohighlight">\(Y\)</span> has a linear Gaussian CPD
+if there are parameters <span class="math notranslate nohighlight">\(\beta_0, \beta_1, ..., \beta_k\)</span>
+and <span class="math notranslate nohighlight">\(\sigma_2\)</span> such that,</p>
+<div class="math notranslate nohighlight">
+\[p(Y |x1, x2, ..., xk) = \mathcal{N}(\beta_0 + x1*\beta_1 + ......... + xk*\beta_k ; \sigma_2)\]</div>
+<p>In vector notation,</p>
+<div class="math notranslate nohighlight">
+\[p(Y |x) = \mathcal{N}(\beta_0 + \boldmath{β}.T * \boldmath{x} ; \sigma_2)\]</div>
+<p class="rubric">References</p>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id1" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p><a class="reference external" href="https://cedar.buffalo.edu/~srihari/CSE574/Chap8/Ch8-PGM-GaussianBNs/8.5%20GaussianBNs.pdf">https://cedar.buffalo.edu/~srihari/CSE574/Chap8/Ch8-PGM-GaussianBNs/8.5%20GaussianBNs.pdf</a></p>
+</aside>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/LinearGaussianCPD.html#LinearGaussianCPD.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a copy of the distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>LinearGaussianCPD</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>copy of the distribution</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">LinearGaussianCPD</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cpd</span> <span class="o">=</span> <span class="n">LinearGaussianCPD</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">,</span>  <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="mf">9.6</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="s1">&#39;X3&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_cpd</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_cpd</span><span class="o">.</span><span class="n">variable</span>
+<span class="go">&#39;Y&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_cpd</span><span class="o">.</span><span class="n">evidence</span>
+<span class="go">[&#39;X1&#39;, &#39;X2&#39;, &#39;X3&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">complete_samples_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/LinearGaussianCPD.html#LinearGaussianCPD.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Determine βs from data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>) -- Dataframe containing samples from the conditional distribution, p(Y|X)
+estimator: 'MLE' or 'MAP'</p></li>
+<li><p><strong>completely_samples_only</strong> (<em>boolean</em><em> (</em><em>True</em><em> or </em><em>False</em><em>)</em>) -- Are they downsampled or complete? Defaults to True</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.maximum_likelihood_estimator">
+<span class="sig-name descname"><span class="pre">maximum_likelihood_estimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/LinearGaussianCPD.html#LinearGaussianCPD.maximum_likelihood_estimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.maximum_likelihood_estimator" title="Permalink to this definition"></a></dt>
+<dd><p>Fit using MLE method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em><em> or </em><em>2D array</em>) -- Dataframe of values containing samples from the conditional distribution, (Y|X)
+and corresponding X values.</p></li>
+<li><p><strong>states</strong> (<em>All the input states that are jointly gaussian.</em>) -- </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>beta, variance (tuple)</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns estimated betas and the variance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.pdf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pdf</span></span><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.pdf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.sum_of_product">
+<span class="sig-name descname"><span class="pre">sum_of_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/LinearGaussianCPD.html#LinearGaussianCPD.sum_of_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.LinearGaussianCPD.LinearGaussianCPD.sum_of_product" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.factors.continuous.discretize">
+<span id="corebn-factors-continuous-discretize-module"></span><h2>coreBN.factors.continuous.discretize module<a class="headerlink" href="#module-coreBN.factors.continuous.discretize" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.BaseDiscretizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.discretize.</span></span><span class="sig-name descname"><span class="pre">BaseDiscretizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#BaseDiscretizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.BaseDiscretizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABCMeta</span></code></p>
+<p>Base class for the discretizer classes in coreBN. The discretizer
+classes are used to discretize a continuous random variable
+distribution into discrete probability masses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> (<em>A ContinuousNode</em><em> or </em><em>a ContinuousFactor object</em>) -- the continuous node or factor representing the distribution
+to be discretized.</p></li>
+<li><p><strong>low</strong> (<em>float</em>) -- the range over which the function will be discretized.</p></li>
+<li><p><strong>high</strong> (<em>float</em>) -- the range over which the function will be discretized.</p></li>
+<li><p><strong>cardinality</strong> (<em>int</em>) -- the number of states required in the discretized output.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normal</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.discretize</span> <span class="kn">import</span> <span class="n">BaseDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ChildDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discretizer</span> <span class="o">=</span> <span class="n">ChildDiscretizer</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discretizer</span><span class="o">.</span><span class="n">factor</span>
+<span class="go">&lt;core.factors.continuous.ContinuousNode.ContinuousNode object at 0x04C98190&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discretizer</span><span class="o">.</span><span class="n">cardinality</span>
+<span class="go">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">discretizer</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
+<span class="go">[&#39;x=-3.0&#39;, &#39;x=-2.4&#39;, &#39;x=-1.8&#39;, &#39;x=-1.2&#39;, &#39;x=-0.6&#39;, &#39;x=0.0&#39;, &#39;x=0.6&#39;, &#39;x=1.2&#39;, &#39;x=1.8&#39;, &#39;x=2.4&#39;]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.BaseDiscretizer.get_discrete_values">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_discrete_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#BaseDiscretizer.get_discrete_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.BaseDiscretizer.get_discrete_values" title="Permalink to this definition"></a></dt>
+<dd><p>This method implements the algorithm to discretize the given
+continuous distribution.</p>
+<p>It must be implemented by all the subclasses of BaseDiscretizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of discrete values or a DiscreteFactor object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.BaseDiscretizer.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#BaseDiscretizer.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.BaseDiscretizer.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of strings representing the values about
+which the discretization method calculates the probability
+masses.</p>
+<p>Default value is the points -
+[low, low+step, low+2*step, ......... , high-step]
+unless the method is overridden by a subclass.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.discretize</span> <span class="kn">import</span> <span class="n">BaseDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ChildDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">ChildDiscretizer</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chld</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
+<span class="go">[&#39;x=-5.0&#39;, &#39;x=-4.5&#39;, &#39;x=-4.0&#39;, &#39;x=-3.5&#39;, &#39;x=-3.0&#39;, &#39;x=-2.5&#39;,</span>
+<span class="go"> &#39;x=-2.0&#39;, &#39;x=-1.5&#39;, &#39;x=-1.0&#39;, &#39;x=-0.5&#39;, &#39;x=0.0&#39;, &#39;x=0.5&#39;, &#39;x=1.0&#39;,</span>
+<span class="go"> &#39;x=1.5&#39;, &#39;x=2.0&#39;, &#39;x=2.5&#39;, &#39;x=3.0&#39;, &#39;x=3.5&#39;, &#39;x=4.0&#39;, &#39;x=4.5&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.RoundingDiscretizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.discretize.</span></span><span class="sig-name descname"><span class="pre">RoundingDiscretizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#RoundingDiscretizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.RoundingDiscretizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coreBN.factors.continuous.discretize.BaseDiscretizer" title="coreBN.factors.continuous.discretize.BaseDiscretizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDiscretizer</span></code></a></p>
+<p>This class uses the rounding method for discretizing the
+given continuous distribution.</p>
+<p>For the rounding method,</p>
+<p>The probability mass is,
+cdf(x+step/2)-cdf(x), for x = low</p>
+<p>cdf(x+step/2)-cdf(x-step/2), for low &lt; x &lt;= high</p>
+<p>where, cdf is the cumulative density function of the distribution
+and step = (high-low)/cardinality.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">RoundingDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">RoundingDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>                      <span class="n">cardinality</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="go">[0.001629865203424451, 0.009244709419989363, 0.027834684208773178,</span>
+<span class="go"> 0.065590616803038182, 0.120977578710013, 0.17466632194020804,</span>
+<span class="go"> 0.19741265136584729, 0.17466632194020937, 0.12097757871001302,</span>
+<span class="go"> 0.065590616803036905, 0.027834684208772664, 0.0092447094199902269]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.RoundingDiscretizer.get_discrete_values">
+<span class="sig-name descname"><span class="pre">get_discrete_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#RoundingDiscretizer.get_discrete_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.RoundingDiscretizer.get_discrete_values" title="Permalink to this definition"></a></dt>
+<dd><p>This method implements the algorithm to discretize the given
+continuous distribution.</p>
+<p>It must be implemented by all the subclasses of BaseDiscretizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of discrete values or a DiscreteFactor object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.UnbiasedDiscretizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.discretize.</span></span><span class="sig-name descname"><span class="pre">UnbiasedDiscretizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.UnbiasedDiscretizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coreBN.factors.continuous.discretize.BaseDiscretizer" title="coreBN.factors.continuous.discretize.BaseDiscretizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDiscretizer</span></code></a></p>
+<p>This class uses the unbiased method for discretizing the
+given continuous distribution.</p>
+<p>The unbiased method for discretization is the matching of the
+first moment method. It involves calculating the first order
+limited moment of the distribution which is done by the _lim_moment
+method.</p>
+<p>For this method,</p>
+<p>The probability mass is,
+(E(x) - E(x + step))/step + 1 - cdf(x), for x = low</p>
+<p>(2 * E(x) - E(x - step) - E(x + step))/step, for low &lt; x &lt; high</p>
+<p>(E(x) - E(x - step))/step - 1 + cdf(x), for x = high</p>
+<p>where, E(x) is the first limiting moment of the distribution
+about the point x, cdf is the cumulative density function
+and step = (high-low)/cardinality.</p>
+<p class="rubric">References</p>
+<p>Klugman, S. A., Panjer, H. H. and Willmot, G. E.,
+Loss Models, From Data to Decisions, Fourth Edition,
+Wiley, section 9.6.5.2 (Method of local moment matching) and
+exercise 9.41.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">UnbiasedDiscretizer</span>
+<span class="go"># exponential distribution with rate = 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_node</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">exp_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_node</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">UnbiasedDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">[0.39627368905806137, 0.4049838434034298, 0.13331784003148325,</span>
+<span class="go"> 0.043887287876647259, 0.014447413395300212, 0.0047559685431339703,</span>
+<span class="go"> 0.0015656350182896128, 0.00051540201980112557, 0.00016965346326140994,</span>
+<span class="go"> 3.7867260839208328e-05]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_discrete_values">
+<span class="sig-name descname"><span class="pre">get_discrete_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer.get_discrete_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_discrete_values" title="Permalink to this definition"></a></dt>
+<dd><p>This method implements the algorithm to discretize the given
+continuous distribution.</p>
+<p>It must be implemented by all the subclasses of BaseDiscretizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of discrete values or a DiscreteFactor object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.discretize.UnbiasedDiscretizer.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of strings representing the values about
+which the discretization method calculates the probability
+masses.</p>
+<p>Default value is the points -
+[low, low+step, low+2*step, ......... , high-step]
+unless the method is overridden by a subclass.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.discretize</span> <span class="kn">import</span> <span class="n">BaseDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ChildDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">ChildDiscretizer</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chld</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
+<span class="go">[&#39;x=-5.0&#39;, &#39;x=-4.5&#39;, &#39;x=-4.0&#39;, &#39;x=-3.5&#39;, &#39;x=-3.0&#39;, &#39;x=-2.5&#39;,</span>
+<span class="go"> &#39;x=-2.0&#39;, &#39;x=-1.5&#39;, &#39;x=-1.0&#39;, &#39;x=-0.5&#39;, &#39;x=0.0&#39;, &#39;x=0.5&#39;, &#39;x=1.0&#39;,</span>
+<span class="go"> &#39;x=1.5&#39;, &#39;x=2.0&#39;, &#39;x=2.5&#39;, &#39;x=3.0&#39;, &#39;x=3.5&#39;, &#39;x=4.0&#39;, &#39;x=4.5&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.factors.continuous">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.factors.continuous" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.</span></span><span class="sig-name descname"><span class="pre">CanonicalDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coreBN.factors.distributions.html#coreBN.factors.distributions.base.BaseDistribution" title="coreBN.factors.distributions.base.BaseDistribution"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDistribution</span></code></a></p>
+<p>The intermediate factors in a Gaussian network can be described
+compactly using a simple parametric representation called the
+canonical form. This representation is closed under the basic
+operations used in inference: factor product, factor division,
+factor reduction, and marginalization. Thus, we define this
+CanonicalDistribution class that allows the inference process to be
+performed on joint Gaussian networks.</p>
+<p>A canonical form C (X; K,h,g) is defined as</p>
+<p>C (X; K,h,g) = exp( ((-1/2) * X.T * K * X) + (h.T * X) + g)</p>
+<p class="rubric">References</p>
+<p>Probabilistic Graphical Models, Principles and Techniques,
+Daphne Koller and Nir Friedman, Section 14.2, Chapter 14.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.assignment">
+<span class="sig-name descname"><span class="pre">assignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.assignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.assignment" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the probability value of the PDF at the given parameter values.
+:param *x: collective defining a point at which the probability value is to be computed.
+:type *x: values of all variables of this distribution,</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>float</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>The probability value at the point.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.distributions</span> <span class="kn">import</span> <span class="n">GaussianDistribution</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span> <span class="o">=</span> <span class="n">GaussianDistribution</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                            <span class="n">mean</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+<span class="gp">... </span>                            <span class="n">cov</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.15915494309189535</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Makes a copy of the factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>CanonicalDistribution object</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Copy of the factor</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">CanonicalDistribution</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">CanonicalDistribution</span><span class="p">([</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span>
+<span class="go">                          np.array([[1], [-1]]), -3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;X&#39;, &#39;Y&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[1, -1],</span>
+<span class="go">       [-1, 1]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[1],</span>
+<span class="go">       [-1]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">g</span>
+<span class="go">-3</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi2</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi2</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;X&#39;, &#39;Y&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi2</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[1, -1],</span>
+<span class="go">       [-1, 1]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi2</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[1],</span>
+<span class="go">       [-1]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi2</span><span class="o">.</span><span class="n">g</span>
+<span class="go">-3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.divide">
+<span class="sig-name descname"><span class="pre">divide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.divide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.divide" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the division of two gaussian distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> (<a class="reference internal" href="coreBN.factors.distributions.html#coreBN.factors.distributions.GaussianDistribution" title="coreBN.factors.distributions.GaussianDistribution"><em>GaussianDistribution</em></a>) -- The GaussianDistribution to be divided.</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If True, modifies the distribution itself, otherwise returns a new
+GaussianDistribution object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None.
+if inplace=False returns a new CanonicalDistribution instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.CanonicalDistribution" title="coreBN.factors.continuous.CanonicalDistribution">CanonicalDistribution</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.distributions</span> <span class="kn">import</span> <span class="n">GaussianDistribution</span> <span class="k">as</span> <span class="n">GD</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis1</span> <span class="o">=</span> <span class="n">GD</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">,</span> <span class="s1">&#39;x3&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">]]),</span>
+<span class="gp">... </span>           <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis2</span> <span class="o">=</span> <span class="n">GD</span><span class="p">([</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span> <span class="s1">&#39;x4&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span> <span class="o">=</span> <span class="n">dis1</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">dis2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span><span class="o">.</span><span class="n">covariance</span>
+<span class="go">array([[ 3.6,  1. , -0.4, -0.6],</span>
+<span class="go">       [ 1. ,  2.5, -1. , -1.5],</span>
+<span class="go">       [-0.4, -1. ,  1.6,  2.4],</span>
+<span class="go">       [-1. , -2.5,  4. ,  4.5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span><span class="o">.</span><span class="n">mean</span>
+<span class="go">array([[ 1.6],</span>
+<span class="go">       [-1.5],</span>
+<span class="go">       [ 1.6],</span>
+<span class="go">       [ 3.5]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.marginalize">
+<span class="sig-name descname"><span class="pre">marginalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.marginalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.marginalize" title="Permalink to this definition"></a></dt>
+<dd><p>Modifies the factor with marginalized values.</p>
+<p>Let C(X,Y ; K, h, g) be some canonical form over X,Y where,</p>
+<dl class="simple">
+<dt>k = [[K_XX, K_XY],        ;       h = [[h_X],</dt><dd><p>[K_YX, K_YY]]                     [h_Y]]</p>
+</dd>
+</dl>
+<p>In this case, the result of the integration operation is a canonical
+from C (K', h', g') given by,</p>
+<div class="math notranslate nohighlight">
+\[K' = K_{XX} - K_{XY} * {K^{-1}}_{YY} * K_YX\]</div>
+<div class="math notranslate nohighlight">
+\[h' = h_X - K_{XY} * {K^{-1}}_{YY} * h_Y\]</div>
+<div class="math notranslate nohighlight">
+\[g' = g + 0.5 * (|Y| * log(2*pi) - log(|K_{YY}|) + {h^T}_Y * K_{YY} * h_Y)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variables</strong> (<em>list</em><em> or </em><em>array-like</em>) -- List of variables over which to marginalize.</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the distribution itself,
+else would return a new distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False return a new CanonicalDistribution instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.CanonicalDistribution" title="coreBN.factors.continuous.CanonicalDistribution">CanonicalDistribution</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">CanonicalDistribution</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">CanonicalDistribution</span><span class="p">([</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="s1">&#39;X3&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                      <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span>
+<span class="gp">... </span>                      <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[ 1, -1,  0],</span>
+<span class="go">        [-1,  4, -2],</span>
+<span class="go">        [ 0, -2,  4]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[ 1],</span>
+<span class="go">        [ 4],</span>
+<span class="go">        [-1]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">g</span>
+<span class="go">-2</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">marginalize</span><span class="p">([</span><span class="s1">&#39;X3&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[ 1., -1.],</span>
+<span class="go">        [-1.,  3.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[ 1. ],</span>
+<span class="go">        [ 3.5]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">g</span>
+<span class="go">0.22579135</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.pdf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pdf</span></span><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.pdf" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.product">
+<span class="sig-name descname"><span class="pre">product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.product" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the product of two gaussian distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> (<em>CanonicalFactor</em>) -- The GaussianDistribution to be multiplied.</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If True, modifies the distribution itself, otherwise returns a new
+CanonicalDistribution object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None.
+if inplace=False returns a new CanonicalDistribution instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.CanonicalDistribution" title="coreBN.factors.continuous.CanonicalDistribution">CanonicalDistribution</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.distributions</span> <span class="kn">import</span> <span class="n">GaussianDistribution</span> <span class="k">as</span> <span class="n">GD</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis1</span> <span class="o">=</span> <span class="n">GD</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">,</span> <span class="s1">&#39;x3&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">]]),</span>
+<span class="gp">... </span>           <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">]]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis2</span> <span class="o">=</span> <span class="n">GD</span><span class="p">([</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span> <span class="s1">&#39;x4&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span> <span class="o">=</span> <span class="n">dis1</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">dis2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span><span class="o">.</span><span class="n">covariance</span>
+<span class="go">array([[ 3.6,  1. , -0.4, -0.6],</span>
+<span class="go">       [ 1. ,  2.5, -1. , -1.5],</span>
+<span class="go">       [-0.4, -1. ,  1.6,  2.4],</span>
+<span class="go">       [-1. , -2.5,  4. ,  4.5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis3</span><span class="o">.</span><span class="n">mean</span>
+<span class="go">array([[ 1.6],</span>
+<span class="go">       [-1.5],</span>
+<span class="go">       [ 1.6],</span>
+<span class="go">       [ 3.5]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.reduce" title="Permalink to this definition"></a></dt>
+<dd><p>Reduces the distribution to the context of the given variable values.</p>
+<p>Let C(X,Y ; K, h, g) be some canonical form over X,Y where,</p>
+<dl class="simple">
+<dt>k = [[K_XX, K_XY],        ;       h = [[h_X],</dt><dd><p>[K_YX, K_YY]]                     [h_Y]]</p>
+</dd>
+</dl>
+<p>The formula for the obtained conditional distribution for setting
+Y = y is given by,</p>
+<div class="math notranslate nohighlight">
+\[K' = K_{XX}\]</div>
+<div class="math notranslate nohighlight">
+\[h' = h_X - K_{XY} * y\]</div>
+<div class="math notranslate nohighlight">
+\[g' = g + {h^T}_Y * y - 0.5 * y^T * K_{YY} * y\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>list</em><em>, </em><em>array-like</em>) -- A list of tuples of the form (variable name, variable value).</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new CanonicalFactor object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new CanonicalDistribution instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.CanonicalDistribution" title="coreBN.factors.continuous.CanonicalDistribution">CanonicalDistribution</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">CanonicalDistribution</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">CanonicalDistribution</span><span class="p">([</span><span class="s1">&#39;X1&#39;</span><span class="p">,</span> <span class="s1">&#39;X2&#39;</span><span class="p">,</span> <span class="s1">&#39;X3&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                      <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span>
+<span class="gp">... </span>                      <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;X1&#39;, &#39;X2&#39;, &#39;X3&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[ 1., -1.],</span>
+<span class="go">       [-1.,  3.]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[ 1. ],</span>
+<span class="go">       [ 3.5]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">g</span>
+<span class="go">-2</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">reduce</span><span class="p">([(</span><span class="s1">&#39;X3&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;X1&#39;, &#39;X2&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">K</span>
+<span class="go">array([[ 1, -1],</span>
+<span class="go">       [-1,  4]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">h</span>
+<span class="go">array([[ 1. ],</span>
+<span class="go">       [ 4.5]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">g</span>
+<span class="go">-2.375</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.CanonicalDistribution.to_joint_gaussian">
+<span class="sig-name descname"><span class="pre">to_joint_gaussian</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/distributions/CanonicalDistribution.html#CanonicalDistribution.to_joint_gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.CanonicalDistribution.to_joint_gaussian" title="Permalink to this definition"></a></dt>
+<dd><p>Return an equivalent Joint Gaussian Distribution.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">CanonicalDistribution</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">CanonicalDistribution</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span>
+<span class="go">                          np.array([[5], [-1]]), 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jgd</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">to_joint_gaussian</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jgd</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x1&#39;, &#39;x2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jgd</span><span class="o">.</span><span class="n">covariance</span>
+<span class="go">array([[ 0.5  ,  0.25 ],</span>
+<span class="go">       [ 0.25 ,  0.375]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">jgd</span><span class="o">.</span><span class="n">mean</span>
+<span class="go">array([[ 2.25 ],</span>
+<span class="go">       [ 0.875]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.</span></span><span class="sig-name descname"><span class="pre">ContinuousFactor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdf</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="coreBN.factors.html#coreBN.factors.base.BaseFactor" title="coreBN.factors.base.BaseFactor"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseFactor</span></code></a></p>
+<p>Base class for factors representing various multivariate
+representations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.assignment">
+<span class="sig-name descname"><span class="pre">assignment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.assignment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.assignment" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of pdf assignments for the corresponding values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*args</strong> (<em>values</em>) -- Values whose assignment is to be computed.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="go">0.013064233284684921</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.copy" title="Permalink to this definition"></a></dt>
+<dd><p>Return a copy of the distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ContinuousFactor object</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>copy of the distribution</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="go"># Two variable dirichlet distribution with alpha = (1,2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dirichlet_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">dirichlet_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_factor</span> <span class="o">=</span> <span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">copy_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.discretize">
+<span class="sig-name descname"><span class="pre">discretize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.discretize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.discretize" title="Permalink to this definition"></a></dt>
+<dd><p>Discretizes the continuous distribution into discrete
+probability masses using various methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<em>A Discretizer Class from coreBN.discretize</em>) -- </p></li>
+<li><p><strong>*args</strong> -- The parameters to be given to the Discretizer Class.</p></li>
+<li><p><strong>**kwargs</strong> -- The parameters to be given to the Discretizer Class.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>An n-D array or a DiscreteFactor object according to the discretiztion</em></p></li>
+<li><p><em>method used.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">RoundingDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">dirichlet_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">],</span> <span class="n">dirichlet_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dirichlet_factor</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">RoundingDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="go"># TODO: finish this</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.divide">
+<span class="sig-name descname"><span class="pre">divide</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.divide"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.divide" title="Permalink to this definition"></a></dt>
+<dd><p>Gives the ContinuousFactor divide with the other factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor"><em>ContinuousFactor</em></a>) -- The ContinuousFactor to be divided.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new <cite>ContinuousFactor</cite> instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf1</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn1</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn2</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span> <span class="o">=</span> <span class="n">sn2</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">sn1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.3989422804014327</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span> <span class="o">=</span> <span class="n">sn2</span> <span class="o">/</span> <span class="n">sn1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn4</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.3989422804014327</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.get_evidence">
+<span class="sig-name descname"><span class="pre">get_evidence</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.get_evidence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.get_evidence" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.is_valid_cpd">
+<span class="sig-name descname"><span class="pre">is_valid_cpd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.is_valid_cpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.is_valid_cpd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.marginalize">
+<span class="sig-name descname"><span class="pre">marginalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.marginalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.marginalize" title="Permalink to this definition"></a></dt>
+<dd><p>Marginalize the factor with respect to the given variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variables</strong> (<em>list</em><em>, </em><em>array-like</em>) -- List of variables with respect to which factor is to be maximized.</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new ContinuousFactor instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>DiscreteFactor or None</strong> -- if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if inplace=True (default) returns None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;, &#39;x2&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">0.058549831524319168</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">marginalize</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.normalize" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes the pdf of the continuous factor so that it integrates to
+1 over all the variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new factor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">0.117099663049</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">normalize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">0.0585498315243</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.pdf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pdf</span></span><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.pdf" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the pdf of the ContinuousFactor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.product">
+<span class="sig-name descname"><span class="pre">product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.product" title="Permalink to this definition"></a></dt>
+<dd><p>Gives the ContinuousFactor product with the other factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor"><em>ContinuousFactor</em></a>) -- The ContinuousFactor to be multiplied.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>if inplace=True (default) returns None
+if inplace=False returns a new <cite>ContinuousFactor</cite> instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#coreBN.factors.continuous.ContinuousFactor.ContinuousFactor" title="coreBN.factors.continuous.ContinuousFactor.ContinuousFactor">ContinuousFactor</a> or None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf1</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn_pdf2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x1</span><span class="p">,</span><span class="n">x2</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="o">.</span><span class="n">pdf</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn1</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn2</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">sn_pdf2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span> <span class="o">=</span> <span class="n">sn1</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">sn2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.063493635934240983</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span> <span class="o">=</span> <span class="n">sn1</span> <span class="o">*</span> <span class="n">sn2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sn3</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">0.063493635934240983</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.reduce">
+<span class="sig-name descname"><span class="pre">reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.reduce" title="Permalink to this definition"></a></dt>
+<dd><p>Reduces the factor to the context of the given variable values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>list</em><em>, </em><em>array-like</em>) -- A list of tuples of the form (variable_name, variable_value).</p></li>
+<li><p><strong>inplace</strong> (<em>boolean</em>) -- If inplace=True it will modify the factor itself, else would return
+a new ContinuousFactor object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ContinuousFactor or None</strong> -- if inplace=False returns a new ContinuousFactor instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>if inplace=True (default) returns None</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">beta</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">custom_pdf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">z</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">],</span> <span class="n">custom_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;z&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">24.0</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">([(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">variables</span>
+<span class="go">[&#39;x&#39;, &#39;z&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">custom_factor</span><span class="o">.</span><span class="n">assignment</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="go">24.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.scope">
+<span class="sig-name descname"><span class="pre">scope</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/ContinuousFactor.html#ContinuousFactor.scope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.scope" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the scope of the factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>list</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of variable names in the scope of the factor.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousFactor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">multivariate_normal</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">multivariate_normal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span> <span class="o">=</span> <span class="n">ContinuousFactor</span><span class="p">([</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">],</span> <span class="n">normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">phi</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span>
+<span class="go">[&#39;x1&#39;, &#39;x2&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.ContinuousFactor.variable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variable</span></span><a class="headerlink" href="#coreBN.factors.continuous.ContinuousFactor.variable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.RoundingDiscretizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.</span></span><span class="sig-name descname"><span class="pre">RoundingDiscretizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#RoundingDiscretizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.RoundingDiscretizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coreBN.factors.continuous.discretize.BaseDiscretizer" title="coreBN.factors.continuous.discretize.BaseDiscretizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDiscretizer</span></code></a></p>
+<p>This class uses the rounding method for discretizing the
+given continuous distribution.</p>
+<p>For the rounding method,</p>
+<p>The probability mass is,
+cdf(x+step/2)-cdf(x), for x = low</p>
+<p>cdf(x+step/2)-cdf(x-step/2), for low &lt; x &lt;= high</p>
+<p>where, cdf is the cumulative density function of the distribution
+and step = (high-low)/cardinality.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">RoundingDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">std_normal_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">std_normal</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">RoundingDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=-</span><span class="mi">3</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="gp">... </span>                      <span class="n">cardinality</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="go">[0.001629865203424451, 0.009244709419989363, 0.027834684208773178,</span>
+<span class="go"> 0.065590616803038182, 0.120977578710013, 0.17466632194020804,</span>
+<span class="go"> 0.19741265136584729, 0.17466632194020937, 0.12097757871001302,</span>
+<span class="go"> 0.065590616803036905, 0.027834684208772664, 0.0092447094199902269]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.RoundingDiscretizer.get_discrete_values">
+<span class="sig-name descname"><span class="pre">get_discrete_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#RoundingDiscretizer.get_discrete_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.RoundingDiscretizer.get_discrete_values" title="Permalink to this definition"></a></dt>
+<dd><p>This method implements the algorithm to discretize the given
+continuous distribution.</p>
+<p>It must be implemented by all the subclasses of BaseDiscretizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of discrete values or a DiscreteFactor object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.UnbiasedDiscretizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.factors.continuous.</span></span><span class="sig-name descname"><span class="pre">UnbiasedDiscretizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">namespace</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.UnbiasedDiscretizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#coreBN.factors.continuous.discretize.BaseDiscretizer" title="coreBN.factors.continuous.discretize.BaseDiscretizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDiscretizer</span></code></a></p>
+<p>This class uses the unbiased method for discretizing the
+given continuous distribution.</p>
+<p>The unbiased method for discretization is the matching of the
+first moment method. It involves calculating the first order
+limited moment of the distribution which is done by the _lim_moment
+method.</p>
+<p>For this method,</p>
+<p>The probability mass is,
+(E(x) - E(x + step))/step + 1 - cdf(x), for x = low</p>
+<p>(2 * E(x) - E(x - step) - E(x + step))/step, for low &lt; x &lt; high</p>
+<p>(E(x) - E(x - step))/step - 1 + cdf(x), for x = high</p>
+<p>where, E(x) is the first limiting moment of the distribution
+about the point x, cdf is the cumulative density function
+and step = (high-low)/cardinality.</p>
+<p class="rubric">References</p>
+<p>Klugman, S. A., Panjer, H. H. and Willmot, G. E.,
+Loss Models, From Data to Decisions, Fourth Edition,
+Wiley, section 9.6.5.2 (Method of local moment matching) and
+exercise 9.41.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors.continuous</span> <span class="kn">import</span> <span class="n">UnbiasedDiscretizer</span>
+<span class="go"># exponential distribution with rate = 2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_node</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">exp_pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exp_node</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">UnbiasedDiscretizer</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cardinality</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">[0.39627368905806137, 0.4049838434034298, 0.13331784003148325,</span>
+<span class="go"> 0.043887287876647259, 0.014447413395300212, 0.0047559685431339703,</span>
+<span class="go"> 0.0015656350182896128, 0.00051540201980112557, 0.00016965346326140994,</span>
+<span class="go"> 3.7867260839208328e-05]</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.UnbiasedDiscretizer.get_discrete_values">
+<span class="sig-name descname"><span class="pre">get_discrete_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer.get_discrete_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.UnbiasedDiscretizer.get_discrete_values" title="Permalink to this definition"></a></dt>
+<dd><p>This method implements the algorithm to discretize the given
+continuous distribution.</p>
+<p>It must be implemented by all the subclasses of BaseDiscretizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of discrete values or a DiscreteFactor object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.factors.continuous.UnbiasedDiscretizer.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/factors/continuous/discretize.html#UnbiasedDiscretizer.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.factors.continuous.UnbiasedDiscretizer.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of strings representing the values about
+which the discretization method calculates the probability
+masses.</p>
+<p>Default value is the points -
+[low, low+step, low+2*step, ......... , high-step]
+unless the method is overridden by a subclass.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">ContinuousNode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">coreBN.discretize</span> <span class="kn">import</span> <span class="n">BaseDiscretizer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ChildDiscretizer</span><span class="p">(</span><span class="n">BaseDiscretizer</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">def</span> <span class="nf">get_discrete_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">node</span> <span class="o">=</span> <span class="n">ContinuousNode</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">pdf</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">ChildDiscretizer</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">chld</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()</span>
+<span class="go">[&#39;x=-5.0&#39;, &#39;x=-4.5&#39;, &#39;x=-4.0&#39;, &#39;x=-3.5&#39;, &#39;x=-3.0&#39;, &#39;x=-2.5&#39;,</span>
+<span class="go"> &#39;x=-2.0&#39;, &#39;x=-1.5&#39;, &#39;x=-1.0&#39;, &#39;x=-0.5&#39;, &#39;x=0.0&#39;, &#39;x=0.5&#39;, &#39;x=1.0&#39;,</span>
+<span class="go"> &#39;x=1.5&#39;, &#39;x=2.0&#39;, &#39;x=2.5&#39;, &#39;x=3.0&#39;, &#39;x=3.5&#39;, &#39;x=4.0&#39;, &#39;x=4.5&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.factors.html" class="btn btn-neutral float-left" title="coreBN.factors package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.factors.discrete.html" class="btn btn-neutral float-right" title="coreBN.factors.discrete package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

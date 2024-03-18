@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.sampling.base &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.sampling.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.sampling.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.inference</span> <span class="kn">import</span> <span class="n">Inference</span>
+<span class="kn">from</span> <span class="nn">coreBN</span> <span class="kn">import</span> <span class="n">HAS_PANDAS</span>
+<span class="kn">from</span> <span class="nn">coreBN.utils</span> <span class="kn">import</span> <span class="n">_check_1d_array_object</span><span class="p">,</span> <span class="n">_check_length_equal</span>
+
+<span class="k">if</span> <span class="n">HAS_PANDAS</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+
+
+<div class="viewcode-block" id="BayesianModelInference"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BayesianModelInference">[docs]</a><span class="k">class</span> <span class="nc">BayesianModelInference</span><span class="p">(</span><span class="n">Inference</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inference class specific to Bayesian Models</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class to calculate probability (pmf) values specific to Bayesian Models</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: Bayesian Model</span>
+<span class="sd">            model on which inference queries will be computed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Model expected type: BayesianNetwork, got type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BayesianModelInference</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">topological_order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">topological_sort</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+
+<div class="viewcode-block" id="BayesianModelInference.pre_compute_reduce"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BayesianModelInference.pre_compute_reduce">[docs]</a>    <span class="k">def</span> <span class="nf">pre_compute_reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get probability arrays for a node as function of conditional dependencies</span>
+
+<span class="sd">        Internal function used for Bayesian networks, eg. in BayesianModelSampling</span>
+<span class="sd">        and BayesianModelProbability.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: Bayesian Model Node</span>
+<span class="sd">            node of the Bayesian network</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dictionary with probability array for node</span>
+<span class="sd">            as function of conditional dependency values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="n">variable_evid</span> <span class="o">=</span> <span class="n">variable_cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">cached_values</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">state_combination</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>
+            <span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variable_evid</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">variable_evid</span><span class="p">,</span> <span class="n">state_combination</span><span class="p">))</span>
+            <span class="n">cached_values</span><span class="p">[</span><span class="n">state_combination</span><span class="p">]</span> <span class="o">=</span> <span class="n">variable_cpd</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                <span class="n">states</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_warnings</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="k">return</span> <span class="n">cached_values</span></div>
+
+<div class="viewcode-block" id="BayesianModelInference.pre_compute_reduce_maps"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BayesianModelInference.pre_compute_reduce_maps">[docs]</a>    <span class="k">def</span> <span class="nf">pre_compute_reduce_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get probability array-maps for a node as function of conditional dependencies</span>
+
+<span class="sd">        Internal function used for Bayesian networks, eg. in BayesianModelSampling</span>
+<span class="sd">        and BayesianModelProbability.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: Bayesian Model Node</span>
+<span class="sd">            node of the Bayesian network</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dictionary with probability array-index for node as function of conditional dependency values,</span>
+<span class="sd">            dictionary with mapping of probability array-index to probability array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="n">variable_evid</span> <span class="o">=</span> <span class="n">variable_cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">state_combinations</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>
+                <span class="o">*</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variable_evid</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">weights_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">variable_cpd</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">variable_evid</span><span class="p">,</span> <span class="n">sc</span><span class="p">)),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_warnings</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">values</span>
+                <span class="k">for</span> <span class="n">sc</span> <span class="ow">in</span> <span class="n">state_combinations</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">unique_weights</span><span class="p">,</span> <span class="n">weights_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+            <span class="n">weights_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">return_inverse</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># convert weights to index; make mapping of state to index</span>
+        <span class="n">state_to_index</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">state_combinations</span><span class="p">,</span> <span class="n">weights_indices</span><span class="p">))</span>
+
+        <span class="c1"># make mapping of index to weights</span>
+        <span class="n">index_to_weight</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_weights</span><span class="p">))</span>
+
+        <span class="c1"># return mappings of state to index, and index to weight</span>
+        <span class="k">return</span> <span class="n">state_to_index</span><span class="p">,</span> <span class="n">index_to_weight</span></div></div>
+
+
+<div class="viewcode-block" id="BaseGradLogPDF"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BaseGradLogPDF">[docs]</a><span class="k">class</span> <span class="nc">BaseGradLogPDF</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for evaluating gradient log of probability density function/ distribution</span>
+
+<span class="sd">    Classes inheriting this base class can be passed as an argument for</span>
+<span class="sd">    finding gradient log of probability distribution in inference algorithms</span>
+
+<span class="sd">    The class should initialize  self.grad_log and self.log_pdf</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variable_assignments : A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing values(assignments) of variables at which we want to find gradient and log</span>
+
+<span class="sd">    model : An instance of coreBN.models</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import GaussianDistribution</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.inference.continuous import BaseGradLogPDF</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; class GradLogGaussian(BaseGradLogPDF):</span>
+<span class="sd">    ...     def __init__(self, position, model):</span>
+<span class="sd">    ...         BaseGradLogPDF.__init__(self, position, model)</span>
+<span class="sd">    ...         self.grad_log, self.log_pdf = self._get_gradient_log_pdf()</span>
+<span class="sd">    ...     def _get_gradient_log_pdf(self):</span>
+<span class="sd">    ...         sub_vec = self.position - self.model.mean.flatten()</span>
+<span class="sd">    ...         grad = - np.dot(self.model.precision_matrix, sub_vec)</span>
+<span class="sd">    ...         log_pdf = 0.5 * float(np.dot(sub_vec, grad))</span>
+<span class="sd">    ...         return grad, log_pdf</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([1, 1])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.array([[1, 0.2], [0.2, 7]])</span>
+<span class="sd">    &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; dist_param = np.array([0.1, 0.9])</span>
+<span class="sd">    &gt;&gt;&gt; grad_logp, logp = GradLogGaussian(dist_param, model).get_gradient_log_pdf()</span>
+<span class="sd">    &gt;&gt;&gt; logp</span>
+<span class="sd">    -0.4054597701149426</span>
+<span class="sd">    &gt;&gt;&gt; grad_logp</span>
+<span class="sd">    array([ 0.90229885, -0.01149425])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_assignments</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_assignments</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span>
+            <span class="n">variable_assignments</span><span class="p">,</span> <span class="s2">&quot;variable_assignments&quot;</span>
+        <span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span>
+            <span class="n">variable_assignments</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span>
+            <span class="s2">&quot;variable_assignments&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;model.variables&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="c1"># The gradient log of probability distribution at position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_log</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># The gradient log of probability distribution at position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_pdf</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BaseGradLogPDF.get_gradient_log_pdf"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BaseGradLogPDF.get_gradient_log_pdf">[docs]</a>    <span class="k">def</span> <span class="nf">get_gradient_log_pdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the gradient log and log of model at given position</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Returns a tuple of following types</span>
+
+<span class="sd">        numpy.array: Representing gradient log of model at given position</span>
+
+<span class="sd">        float: Representing log of model at given position</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; # Using implementation of GradLogPDFGaussian</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.sampling.base import GradLogPDFGaussian</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([1, 1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = np.array([[1, -5], [-5, 2]])</span>
+<span class="sd">        &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; dist_param = np.array([0.6, 0.8])</span>
+<span class="sd">        &gt;&gt;&gt; grad_logp, logp = GradLogPDFGaussian(dist_param, model).get_gradient_log_pdf()</span>
+<span class="sd">        &gt;&gt;&gt; logp</span>
+<span class="sd">        0.025217391304347823</span>
+<span class="sd">        &gt;&gt;&gt; grad_logp</span>
+<span class="sd">        array([-0.07826087, -0.09565217])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_pdf</span></div></div>
+
+
+<div class="viewcode-block" id="GradLogPDFGaussian"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.GradLogPDFGaussian">[docs]</a><span class="k">class</span> <span class="nc">GradLogPDFGaussian</span><span class="p">(</span><span class="n">BaseGradLogPDF</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for finding gradient and gradient log of Joint Gaussian Distribution</span>
+<span class="sd">    Inherits coreBN.inference.base_continuous.BaseGradLogPDF</span>
+<span class="sd">    Here model must be an instance of GaussianDistribution</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variable_assignments : A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing values of variables at which we want to find gradient and log</span>
+
+<span class="sd">    model : An instance of coreBN.models.GaussianDistribution</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import GradLogPDFGaussian</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([3, 4])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.array([[5, 4], [4, 5]])</span>
+<span class="sd">    &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; dist_param = np.array([12, 21])</span>
+<span class="sd">    &gt;&gt;&gt; grad_logp, logp = GradLogPDFGaussian(dist_param, model).get_gradient_log_pdf()</span>
+<span class="sd">   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_assignments</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="n">BaseGradLogPDF</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable_assignments</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_pdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_gradient_log_pdf</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_gradient_log_pdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that finds gradient and its log at position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sub_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_assignments</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">mean</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">precision_matrix</span><span class="p">,</span> <span class="n">sub_vec</span><span class="p">)</span>
+        <span class="n">log_pdf</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sub_vec</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">grad</span><span class="p">,</span> <span class="n">log_pdf</span></div>
+
+
+<div class="viewcode-block" id="BaseSimulateHamiltonianDynamics"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BaseSimulateHamiltonianDynamics">[docs]</a><span class="k">class</span> <span class="nc">BaseSimulateHamiltonianDynamics</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for proposing new values of position and momentum by simulating Hamiltonian Dynamics.</span>
+
+<span class="sd">    Classes inheriting this base class can be passed as an argument for</span>
+<span class="sd">    simulate_dynamics in inference algorithms.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : An instance of coreBN.models</span>
+<span class="sd">        Model for which DiscretizeTime object is initialized</span>
+
+<span class="sd">    position : A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing values of parameter position( or X)</span>
+
+<span class="sd">    momentum: A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing the proposed value for momentum (velocity)</span>
+
+<span class="sd">    stepsize: Float</span>
+<span class="sd">        stepsize for the simulating dynamics</span>
+
+<span class="sd">    grad_log_pdf : A subclass of coreBN.inference.continuous.BaseGradLogPDF</span>
+<span class="sd">        A class for finding gradient log and log of distribution</span>
+
+<span class="sd">    grad_log_position: A 1d array like object, defaults to None</span>
+<span class="sd">        Vector representing gradient log at given position</span>
+<span class="sd">        If None, then will be calculated</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import BaseSimulateHamiltonianDynamics</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import GradLogPDFGaussian</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; # Class should initalize self.new_position, self.new_momentum and self.new_grad_logp</span>
+<span class="sd">    &gt;&gt;&gt; # self.new_grad_logp represents gradient log at new proposed value of position</span>
+<span class="sd">    &gt;&gt;&gt; class ModifiedEuler(BaseSimulateHamiltonianDynamics):</span>
+<span class="sd">    ...     def __init__(self, model, position, momentum, stepsize, grad_log_pdf, grad_log_position=None):</span>
+<span class="sd">    ...         BaseSimulateHamiltonianDynamics.__init__(self, model, position, momentum,</span>
+<span class="sd">    ...                                                  stepsize, grad_log_pdf, grad_log_position)</span>
+<span class="sd">    ...         self.new_position, self.new_momentum, self.new_grad_logp = self._get_proposed_values()</span>
+<span class="sd">    ...     def _get_proposed_values(self):</span>
+<span class="sd">    ...         momentum_bar = self.momentum + self.stepsize * self.grad_log_position</span>
+<span class="sd">    ...         position_bar = self.position + self.stepsize * momentum_bar</span>
+<span class="sd">    ...         grad_log_position, _ = self.grad_log_pdf(position_bar, self.model).get_gradient_log_pdf()</span>
+<span class="sd">    ...         return position_bar, momentum_bar, grad_log_position</span>
+<span class="sd">    &gt;&gt;&gt; pos = np.array([1, 2])</span>
+<span class="sd">    &gt;&gt;&gt; momentum = np.array([0, 0])</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([0, 0])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.eye(2)</span>
+<span class="sd">    &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; new_pos, new_momentum, new_grad = ModifiedEuler(model, pos, momentum,</span>
+<span class="sd">    ...                                                 0.25, GradLogPDFGaussian).get_proposed_values()</span>
+<span class="sd">    &gt;&gt;&gt; new_pos</span>
+<span class="sd">    array([0.9375, 1.875])</span>
+<span class="sd">    &gt;&gt;&gt; new_momentum</span>
+<span class="sd">    array([-0.25, -0.5])</span>
+<span class="sd">    &gt;&gt;&gt; new_grad</span>
+<span class="sd">    array([-0.9375, -1.875])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">grad_log_position</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+
+        <span class="n">position</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">)</span>
+
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span><span class="n">momentum</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">BaseGradLogPDF</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;grad_log_pdf must be an instance&quot;</span>
+                <span class="o">+</span> <span class="s2">&quot; of coreBN.inference.continuous.base.BaseGradLogPDF&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">_check_length_equal</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;momentum&quot;</span><span class="p">)</span>
+        <span class="n">_check_length_equal</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">,</span> <span class="s2">&quot;model.variables&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">grad_log_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">grad_log_position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grad_log_positon</span> <span class="o">=</span> <span class="n">_check_1d_array_object</span><span class="p">(</span>
+                <span class="n">grad_log_position</span><span class="p">,</span> <span class="s2">&quot;grad_log_position&quot;</span>
+            <span class="p">)</span>
+            <span class="n">_check_length_equal</span><span class="p">(</span>
+                <span class="n">grad_log_position</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="s2">&quot;grad_log_position&quot;</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">momentum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">=</span> <span class="n">stepsize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span> <span class="o">=</span> <span class="n">grad_log_pdf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_position</span> <span class="o">=</span> <span class="n">grad_log_position</span>
+
+        <span class="c1"># new_position is the new proposed position, new_momentum is the new proposed momentum, new_grad_lop</span>
+        <span class="c1"># is the value of grad log at new_position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">new_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_momentum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_grad_logp</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BaseSimulateHamiltonianDynamics.get_proposed_values"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.BaseSimulateHamiltonianDynamics.get_proposed_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_proposed_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the new proposed values of position and momentum</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Returns a tuple of following type (in order)</span>
+
+<span class="sd">        numpy.array: A 1d numpy.array representing new proposed value of position</span>
+
+<span class="sd">        numpy.array: A 1d numpy.array representing new proposed value of momentum</span>
+
+<span class="sd">        numpy.array: A 1d numpy.array representing gradient of log distribution at new proposed value of position</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; # Using implementation of ModifiedEuler</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference.continuous import ModifiedEuler, GradLogPDFGaussian as GLPG</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import GaussianDistribution</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; pos = np.array([3, 4])</span>
+<span class="sd">        &gt;&gt;&gt; momentum = np.array([1, 1])</span>
+<span class="sd">        &gt;&gt;&gt; mean = np.array([-1, 1])</span>
+<span class="sd">        &gt;&gt;&gt; covariance = 3*np.eye(2)</span>
+<span class="sd">        &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">        &gt;&gt;&gt; new_pos, new_momentum, new_grad = ModifiedEuler(model, pos, momentum, 0.70, GLPG).get_proposed_values()</span>
+<span class="sd">        &gt;&gt;&gt; new_pos</span>
+<span class="sd">        array([ 3.04666667,  4.21      ])</span>
+<span class="sd">        &gt;&gt;&gt; new_momentum</span>
+<span class="sd">        array([ 0.06666667,  0.3       ])</span>
+<span class="sd">        &gt;&gt;&gt; new_grad</span>
+<span class="sd">        array([-1.34888889, -1.07      ])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_momentum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_grad_logp</span></div></div>
+
+
+<div class="viewcode-block" id="LeapFrog"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.LeapFrog">[docs]</a><span class="k">class</span> <span class="nc">LeapFrog</span><span class="p">(</span><span class="n">BaseSimulateHamiltonianDynamics</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for simulating hamiltonian dynamics using leapfrog method</span>
+<span class="sd">    Inherits coreBN.inference.base_continuous.BaseSimulateHamiltonianDynamics</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : An instance of coreBN.models</span>
+<span class="sd">        Model for which DiscretizeTime object is initialized</span>
+
+<span class="sd">    position : A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing values of parameter position( or X)</span>
+
+<span class="sd">    momentum: A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing the proposed value for momentum (velocity)</span>
+
+<span class="sd">    stepsize: Float</span>
+<span class="sd">        stepsize for the simulating dynamics</span>
+
+<span class="sd">    grad_log_pdf : A subclass of coreBN.inference.continuous.BaseGradLogPDF, defaults to None</span>
+<span class="sd">        A class for evaluating gradient log and log of distribution for a given assignment of variables</span>
+<span class="sd">        If None, then model.get_gradient_log_pdf will be used</span>
+
+<span class="sd">    grad_log_position: A 1d array like object, defaults to None</span>
+<span class="sd">        Vector representing gradient log at given position</span>
+<span class="sd">        If None, then will be calculated</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import LeapFrog, GradLogPDFGaussian as GLPG</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; pos = np.array([2, 1])</span>
+<span class="sd">    &gt;&gt;&gt; momentum = np.array([7, 7])</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([-5, 5])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.array([[1, 2], [2, 1]])</span>
+<span class="sd">    &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; new_pos, new_momentum, new_grad = LeapFrog(model, pos, momentum, 4.0, GLPG).get_proposed_values()</span>
+<span class="sd">    &gt;&gt;&gt; new_pos</span>
+<span class="sd">    array([ 70., -19.])</span>
+<span class="sd">    &gt;&gt;&gt; new_momentum</span>
+<span class="sd">    array([  99., -121.])</span>
+<span class="sd">    &gt;&gt;&gt; new_grad</span>
+<span class="sd">    array([ 41., -58.])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">grad_log_position</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+
+        <span class="n">BaseSimulateHamiltonianDynamics</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">grad_log_position</span>
+        <span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_position</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_momentum</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_grad_logp</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_proposed_values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_proposed_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to perform time splitting using leapfrog</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Take half step in time for updating momentum</span>
+        <span class="n">momentum_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_position</span>
+
+        <span class="c1"># Take full step in time for updating position position</span>
+        <span class="n">position_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">*</span> <span class="n">momentum_bar</span>
+
+        <span class="n">grad_log</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position_bar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+
+        <span class="c1"># Take remaining half step in time for updating momentum</span>
+        <span class="n">momentum_bar</span> <span class="o">=</span> <span class="n">momentum_bar</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">*</span> <span class="n">grad_log</span>
+
+        <span class="k">return</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">,</span> <span class="n">grad_log</span></div>
+
+
+<div class="viewcode-block" id="ModifiedEuler"><a class="viewcode-back" href="../../../coreBN.sampling.html#coreBN.sampling.base.ModifiedEuler">[docs]</a><span class="k">class</span> <span class="nc">ModifiedEuler</span><span class="p">(</span><span class="n">BaseSimulateHamiltonianDynamics</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for simulating Hamiltonian Dynamics using Modified euler method</span>
+<span class="sd">    Inherits coreBN.inference.base_continuous.BaseSimulateHamiltonianDynamics</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: An instance of coreBN.models</span>
+<span class="sd">        Model for which DiscretizeTime object is initialized</span>
+
+<span class="sd">    position: A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing values of parameter position( or X)</span>
+
+<span class="sd">    momentum: A 1d array like object (numpy.ndarray or list)</span>
+<span class="sd">        Vector representing the proposed value for momentum (velocity)</span>
+
+<span class="sd">    stepsize: Float</span>
+<span class="sd">        stepsize for the simulating dynamics</span>
+
+<span class="sd">    grad_log_pdf: A subclass of coreBN.inference.continuous.BaseGradLogPDF, defaults to None</span>
+<span class="sd">        A class for finding gradient log and log of distribution</span>
+<span class="sd">        If None, then will use model.get_gradient_log_pdf</span>
+
+<span class="sd">    grad_log_position: A 1d array like object, defaults to None</span>
+<span class="sd">        Vector representing gradient log at given position</span>
+<span class="sd">        If None, then will be calculated</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.continuous import GaussianDistribution</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.sampling import GradLogPDFGaussian, ModifiedEuler</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; pos = np.array([2, 1])</span>
+<span class="sd">    &gt;&gt;&gt; momentum = np.array([1, 1])</span>
+<span class="sd">    &gt;&gt;&gt; mean = np.array([0, 0])</span>
+<span class="sd">    &gt;&gt;&gt; covariance = np.eye(2)</span>
+<span class="sd">    &gt;&gt;&gt; model = GaussianDistribution([&#39;x&#39;, &#39;y&#39;], mean, covariance)</span>
+<span class="sd">    &gt;&gt;&gt; new_pos, new_momentum, new_grad = ModifiedEuler(model, pos, momentum,</span>
+<span class="sd">    ...                                                 0.25, GradLogPDFGaussian).get_proposed_values()</span>
+<span class="sd">    &gt;&gt;&gt; new_pos</span>
+<span class="sd">    array([2.125, 1.1875])</span>
+<span class="sd">    &gt;&gt;&gt; new_momentum</span>
+<span class="sd">    array([0.5, 0.75])</span>
+<span class="sd">    &gt;&gt;&gt; new_grad</span>
+<span class="sd">    array([-2.125, -1.1875])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">grad_log_position</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+
+        <span class="n">BaseSimulateHamiltonianDynamics</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">grad_log_pdf</span><span class="p">,</span> <span class="n">grad_log_position</span>
+        <span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_position</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_momentum</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_grad_logp</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_proposed_values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_proposed_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method to perform time splitting using Modified euler method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Take full step in time and update momentum</span>
+        <span class="n">momentum_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">momentum</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_position</span>
+
+        <span class="c1"># Take full step in time and update position</span>
+        <span class="n">position_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsize</span> <span class="o">*</span> <span class="n">momentum_bar</span>
+
+        <span class="n">grad_log</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_log_pdf</span><span class="p">(</span><span class="n">position_bar</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">get_gradient_log_pdf</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">position_bar</span><span class="p">,</span> <span class="n">momentum_bar</span><span class="p">,</span> <span class="n">grad_log</span></div>
+
+
+<span class="k">def</span> <span class="nf">_return_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">state_names_map</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A utility function to return samples according to type</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state_names_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="o">!=</span> <span class="s2">&quot;_weight&quot;</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">state_names_map</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
