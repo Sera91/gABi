@@ -85,7 +85,7 @@ def lpb4(coeff, x):
     if(len(coeff) < 4):
         print(
             "Less than four coefficients - LPB4 method may return NaN: running hbe instead.")
-        from hbe import hbe
+        from coreBNutils import hbe
         return(hbe(coeff, x))
 
     # step 0: decide on parameters for distribution and support points p specified to be 4 for this version of the function

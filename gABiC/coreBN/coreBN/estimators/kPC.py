@@ -19,8 +19,11 @@ from coreBN.CItests import kernel_CItest, kernel_CItest_cycle
 from coreBN.global_vars import SHOW_PROGRESS
 from pygam import LinearGAM, s
 from coreBN.CItests import Hsic_gamma_py
+from .hsic_gamma_pytorch_new import Hsic_gamma_py_new
+from .hsic_gamma_pytorch_new_compile import Hsic_gamma_py_new2
 #from coreBN.CItests.hsic_perm import Hsic_perm_or
 from coreBN.CItests import Dcov_gamma_py 
+from coreBN.CItests import RCIT
 #from coreBN.CItests.dcc_perm import Dcov_perm_or
 from dask.distributed import as_completed
 #from dask.distributed import Client
@@ -183,8 +186,7 @@ class kPC(StructureEstimator):
 
         # Step 3: Generalized transitive phase
 
-        pdag = self.regrVonPS(pdag, ci_test=ci_test,
-                              significance_level=0.06)
+        pdag = self.regrVonPS(pdag, ci_test=ci_test, significance_level=0.06)
 
         # Step 4: Applying Meek's rules
 
@@ -280,7 +282,7 @@ class kPC(StructureEstimator):
         else:
             raise ValueError(
                 f"ci_test must be either hsic_gamma, hsic_perm or dcc_perm or a function. Got: {ci_test}")
-        variables = self.variables[1:]
+        variables = self.variables[0:]
         
         max_cond_vars= len(variables)-2
         
@@ -615,7 +617,7 @@ class kPC(StructureEstimator):
         >>> data = pd.DataFrame(np.random.randint(0, 4, size=(5000, 3)), columns=list('ABD'))
         >>> data['C'] = data['A'] - data['B']
         >>> data['D'] += data['A']
-        >>> c = PC(data)
+        >>> c = kPC(data)
         >>> pdag = c.skeleton_to_pdag(*c.build_skeleton())
         >>> pdag.edges() # edges: A->C, B->C, A--D (not directed)
         [('B', 'C'), ('A', 'C'), ('A', 'D'), ('D', 'A')]

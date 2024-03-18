@@ -5,6 +5,7 @@ from .optimizer import optimize, pinverse
 from .utils import get_example_model
 from .GAMfit import GAM_residuals, GAM_residuals_fast
 from .lpb4 import lpb4
+from .hbe import hbe
 
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     "get_example_model",
     "GAM_residuals",
     "GAM_residuals_fast",
+    "hbe",
     "lpb4"
 ]
