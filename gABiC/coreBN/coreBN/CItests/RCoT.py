@@ -5,11 +5,11 @@ from scipy.linalg import cholesky, solve_triangular
 from scipy.spatial import distance_matrix
 
 class RCOT:
-    def __init__(self, x=None, y=None, z=None, num_f=25, num_f2=5):
+    def __init__(self, x=None, y=None, z=None, num_f=25, num_f2=5, approx="lpd4"):
         self.x = x
         self.y = y
         self.z = z
-        self.approx = "lpd4"
+        self.approx = approx
         self.num_f = num_f
         self.num_f2 = num_f2
         self.alpha = 0.05
@@ -173,6 +173,11 @@ class RCOT:
 
         return (p, Sta)
 
+    def Sta_perm(r_x,r_y,r):
+        Cxy=np.cov(r_x,r_y);
+        Sta = r*np.sum(Cxy**2)
+        return Sta
+
     def rcot(self, x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
         """
         It returns a list containing the p-value (p-val) and statistic (Sta).
@@ -180,10 +185,13 @@ class RCOT:
         This method utilizes Random Fourier Features over traditional kernel methods to scale linearly 
         with sample size and achieve the high accuracy and efficiency. 
 
-        It takes as input x (Random variable), y (Random variable), z (Random variable), 
-        num_f (the number of features for conditioning set), num_f2 (the number of features for unconditioning sets)
-        sigma (smooth parameter of RBF kernel), seed (for controlling random number generation)
-        and r (maximum number of datapoints considered for RFF)
+        It takes as input:
+        - x (Random variable)
+        - y (Random variable)
+        -  z (Random variable), 
+        - num_f (the number of features for conditioning set), num_f2 (the number of features for unconditioning sets)
+        - sigma (smooth parameter of RBF kernel), seed (for controlling random number generation)
+        - r (maximum number of datapoints considered for RFF)
 
         Default Value of num_f is 25, num_f2 is 5 which is observed to give consistent and most accurate results 
         and the default value of r is 500.
@@ -288,6 +296,20 @@ class RCOT:
         # residual of fourier after it removes the effect of ??
         res_x = f_x-e_x_z
         res_y = f_y-e_y_z
+
+        if (self.approx == "perm"):
+            #using permutation test
+            nperm=1000
+            Cxy_z = np.cov(res_x, res_y, rowvar=False)
+            Sta = r*np.sum(Cxy_z^2)
+            Stas=np.array([])
+            for ps in range(nperm):
+                i_sample = np.random.choice(range(r), size=r, replace=False)
+                Sta_i = Sta_perm(res_x[i_sample],res_y,r)
+                Stas=np.append(Stas,Sta_i)
+
+            p = 1-(np.sum(np.where(Stas <= Sta))/len(Stas))
+            return (Cxy_z, Sta, p)
 
         matmul = (Cxz @ (i_Czz @ Czy))
         Cxy_z = Cxy-matmul  # less accurate for permutation testing

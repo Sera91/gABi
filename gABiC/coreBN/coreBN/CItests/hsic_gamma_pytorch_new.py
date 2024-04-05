@@ -120,7 +120,7 @@ if torch.cuda.is_available():
                 out[j, i] = out[i, j]    
 
 
-def Hsic_gamma_py_new(x, y, n_device, sigma=1.0, debug=False, gpu_selected=True):
+def Hsic_gamma_median(x, y, n_device, sigma=1.0, debug=False, gpu_selected=True):
     
     #' @details Let x and y be two samples of length n. 
     #Gram matrices K and L are defined as: K_{i,j} =exp(-sig^2 (x_i-x_j)^2)   (\eqn{K_{i,j} = \exp{- \sigma (x_i-x_j)^2}})

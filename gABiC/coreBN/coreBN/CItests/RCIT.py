@@ -15,6 +15,8 @@ class RCIT:
         self.num_f2 = num_f2
         if approx==None:
         	self.approx = "lpd4"
+        else:
+                self.approx = approx   
         
         self.alpha = 0.05
 
@@ -176,6 +178,7 @@ class RCIT:
                 p = 1 - hbe(w1, Sta)
 
         return (p, Sta)
+
     def Sta_perm(r_x,r_y,r):
 	Cxy=np.cov(r_x,r_y);
 	Sta = r*np.sum(Cxy**2)
@@ -312,7 +315,7 @@ class RCIT:
 		Stas=np.append(Stas,Sta_i)
 
 	   p = 1-(np.sum(np.where(Stas <= Sta))/len(Stas))
-	   return p,Sta
+	   return (Cxy_z, Sta, p)
 
         matmul = (Cxz @ (i_Czz @ Czy))
         Cxy_z = Cxy-matmul  # less accurate for permutation testing
@@ -342,7 +345,7 @@ class RCIT:
         return (Cxy_z, Sta, p)
     
     def independence(self, x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
-        (Cxy,Sta,p) = self.rcot(x, y, z, num_f, num_f2, seed,r)
+        (Cxy,Sta,p) = self.rcit(x, y, z, num_f, num_f2, seed,r)
         dependence =  max(0, (.5 + (self.alpha-p)/(self.alpha*2)), (.5 - (p-self.alpha)/(2*(1-self.alpha))))
         return (1-dependence)
 

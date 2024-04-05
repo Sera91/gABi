@@ -63,7 +63,7 @@ def random_fourier_features(x, w=None, b=None, num_f=25, sigma=None, seed=None):
         x = matrix2(x)
         r = x.shape[0]  # n => datapoints
         try:
-            c = x.shape[1]    # D => dimension of variable
+            c = x.shape[1]    # D => dimension of variable, in the conditional test it's the dim of the conditioning subset
         except:
             c = 1
         if((sigma is None) or (sigma == 0)):
@@ -75,10 +75,10 @@ def random_fourier_features(x, w=None, b=None, num_f=25, sigma=None, seed=None):
                 import numpy.random as npr
                 npr.seed(seed)
 
-            # Generate normal(0,1) with (num_f*c) values
-            # Shape w: (num_f, c)
+            # Generate an array with (num_f*c) values from a normal distr: normal(0,1)
             w = (1/sigma)*norm.rvs(size=(num_f*c))
-            w = w.reshape(num_f, c, order='F')
+            #  reshape w
+            w = w.reshape(num_f, c, order='F')  # Shape w: (num_f, c)
 
             # set the seed to seed
             if(seed is not None):
@@ -112,6 +112,9 @@ def RIT(x, y, num_f2=5, seed=None,r=500, approx=None):
         x = np.matrix(x).T
         y = np.matrix(y).T
 
+        if approx==None:
+           approx="lpd4"	
+
 
         if(np.std(x) == 0 or np.std(y) == 0):
             return 1   # this is P value
@@ -141,30 +144,34 @@ def RIT(x, y, num_f2=5, seed=None,r=500, approx=None):
         Sta = r*np.sum(Cxy**2)
 
 
-        res_x = f_x - np.repeat(np.matrix(colMeans(f_x))
-                                [:, np.newaxis], r, axis=1)
-        res_y = f_y - np.repeat(np.matrix(colMeans(f_x))
-                                [:, np.newaxis], r, axis=1)
+        res_x = f_x - np.repeat(np.matrix(colMeans(f_x))[:, np.newaxis], r, axis=1)
+       
+        res_y = f_y - np.repeat(np.matrix(colMeans(f_y))[:, np.newaxis], r, axis=1)
 
-        d = expandgrid(
-            np.arange(0, f_x.shape[1]), np.arange(0, f_y.shape[1]))
+        d = expandgrid(np.arange(0, f_x.shape[1]), np.arange(0, f_y.shape[1]))
         
-        res = np.array(res_x[:, np.array(d['Var2'])]) * \
-            np.array(res_y[:, np.array(d['Var1'])])
+        res = np.array(res_x[:, np.array(d['Var2'])]) * np.array(res_y[:, np.array(d['Var1'])])
         res = np.matrix(res)
 
         Cov = 1/r * ((res.T) @ res)
+
+        #if (approx == "chi2"):
+           #i_Cov = pinv(Cov, rcond=1.e-15)
+           #Sta
+           #p = 1 - 
+           #R-code: Sta = r * (c(Cxy)%*%  i_Cov %*% c(Cxy) )
+           #        p = 1-pchisq(Sta, length(c(Cxy)));
+
         w, v = np.linalg.eigh(Cov)
         w = np.flip(w)
         
         w = [i for i in w if i > 0]
 
         if(approx == "lpd4"):
-            w1 = w
-            p = 1 - lpb4(np.array(w1), Sta)
+            p = 1 - lpb4(np.array(w), Sta)
             if(p == None or np.isnan(p)):
                 from .hbe import hbe
-                p = 1 - hbe(w1, Sta)
+                p = 1 - hbe(w, Sta)
 
         return (p, Sta)
 
@@ -174,17 +181,20 @@ def Sta_perm(r_x,r_y,r):
 	Sta = r*np.sum(Cxy**2)
 	return Sta
 
-def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
+def RCIT(x, y, z=[], num_f=25, num_f2=5, seed=None,r=500, approx=None):
         """
         It returns a list containing the p-value (p-val) and statistic (Sta).
         It tests whether x and y are conditionally independent given z. RCoT calls RIT if z is empty. 
         This method utilizes Random Fourier Features over traditional kernel methods to scale linearly 
         with sample size and achieve the high accuracy and efficiency. 
 
-        It takes as input x (Random variable), y (Random variable), z (Random variable), 
-        num_f (the number of features for conditioning set), num_f2 (the number of features for unconditioning sets)
-        sigma (smooth parameter of RBF kernel), seed (for controlling random number generation)
-        and r (maximum number of datapoints considered for RFF)
+        It takes as input: 
+        - x (Random variable)
+        - y (Random variable)
+        - z (Random variable)
+        - num_f (the number of features for conditioning set), num_f2 (the number of features for unconditioning sets)
+        - sigma (smooth parameter of RBF kernel), seed (for controlling random number generation)
+        - r (maximum number of datapoints considered for RFF)
 
         Default Value of num_f is 25, num_f2 is 5 which is observed to give consistent and most accurate results 
         and the default value of r is 500.
@@ -193,12 +203,14 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
         x = np.matrix(x).T
         y = np.matrix(y).T
         
+        if approx==None:
+           approx="lpd4"
         # Unconditional Testing
-        if(len(z) == 0 or z == None):
+        if (len(z) == 0 ):
             (p, Sta) = RIT(x, y, num_f2, seed,r)
             return (None, Sta, p)
         
-        z = np.matrix(z).T
+        z = np.matrix(z) # z=np.matrix(z).T
 
         x = matrix2(x)
         y = matrix2(y)
@@ -222,12 +234,13 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
             d = z.shape[1]    # D => dimension of variable
         except:
             d = 1
+
         # Unconditional Testing
         if(len(z) == 0 or z.any() == None):
             (p, Sta) = RIT(x, y, num_f2, seed,r)
             return (None, Sta, p)
 
-        # Sta - test statistic -> s
+        # Sta: test statistic -> s
         # if sd of x or sd of y == 0 then x and y are independent
         if (x.std() == 0 or y.std() == 0):
             # p=1 and Sta=0
@@ -249,7 +262,7 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
         else:
             z = normalizeMat(z)
 
-        newy = np.vstack((y,z))
+        #new_y = np.vstack((y,z))
 
         (four_z, w, b) = random_fourier_features(
             z[:, :d], num_f=num_f, sigma=np.median(dist(z[:r1, :])), seed=seed)
@@ -258,7 +271,8 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
             x, num_f=num_f2, sigma=np.median(dist(x[:r1, ])), seed=seed)
 
         (four_y, w, b) = random_fourier_features(
-            new_y, num_f=num_f2, sigma=np.median(dist(y[:r1, ])), seed=seed)
+            y, num_f=num_f2, sigma=np.median(dist(y[:r1, ])), seed=seed)
+
         f_x = normalizeMat(four_x)
         f_y = normalizeMat(four_y)  # n,numf2
         f_z = normalizeMat(four_z)  # n,numf
@@ -294,17 +308,17 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
 	
         if (approx == "perm"):
 	   #using permutation test
-           nperm=1000
+           nperm=100
            Cxy_z = np.cov(res_x, res_y, rowvar=False)
-           Sta = r*np.sum(Cxy_z^2)
-	   
-           Stas=np.array([])
-           for ps in range(nperm):
-                i_sample = np.random.choice(range(r), size=r, replace=False)
-                Sta_i = Sta_perm(res_x[i_sample],res_y,r)
-                Stas=np.append(Stas,Sta_i)
+           Sta = r*np.sum(Cxy_z**2)
+           Stas=np.array([Sta_perm(res_x[np.random.choice(range(r), size=r, replace=False)],res_y,r) for ps in range(nperm)])
+           #Stas=np.array([])
+           #for ps in range(nperm):
+           #     i_sample = np.random.choice(range(r), size=r, replace=False)
+           #     Sta_i = Sta_perm(res_x[i_sample],res_y,r)
+           #     Stas=np.append(Stas,Sta_i)
 
-           p = 1-(np.sum(np.where(Stas <= Sta))/len(Stas))
+           p = 1-((np.count_nonzero(Stas <= Sta))/nperm)
            return (None,Sta, p)
 
         matmul = (Cxz @ (i_Czz @ Czy))
@@ -325,6 +339,8 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
 
         w = [i for i in w if i > 0]
 
+        #TO DO: port here methods for other approximation  from the R package (chisquare, gamma, hbe)
+
         if(approx == "lpd4"):
             # from lpb4 import lpb4
             w1 = w
@@ -333,12 +349,17 @@ def RCIT(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, approx=None):
                 from coreBN.utils import hbe
                 p = 1 - hbe(w1, Sta)
         return (Cxy_z, Sta, p)
+
+
+def RCIT_wrapper(x, y, n_device, z=[], num_f=25, num_f2=5, seed=4,r=500, approx=None):
+    Cxy_z, Sta, p = RCIT(x, y, z, num_f, num_f2, seed, r, approx)
+    return p 
     
-def independence(x, y, z=None, num_f=25, num_f2=5, seed=None,r=500, alpha=0.05):
-        (Cxy,Sta,p) = rcit(x, y, z, num_f, num_f2, seed,r)
+def independence(x, y, z=[], num_f=25, num_f2=5, seed=None,r=500, alpha=0.05):
+        (Cxy,Sta,p) = RCIT(x, y, z, num_f, num_f2, seed,r)
         dependence =  max(0, (.5 + (alpha-p)/(alpha*2)), (.5 - (p-alpha)/(2*(1-alpha))))
         return (1-dependence)
 
-def dependence( x, y, z=None, num_f=25, num_f2=5, seed=None,r=500):
+def dependence( x, y, z=[], num_f=25, num_f2=5, seed=None,r=500):
         independence = independence(x, y, z, num_f, num_f2, seed,r)
         return 1-independence

@@ -58,14 +58,14 @@ def factorial(vec):
 
 def lpb4(coeff, x):
     """
-    Computes the cdf (Cummalitive Distribution Function) of a positively-weighted sum of 
+    This function computes the CDF (Cummalitive Distribution Function) of a positively weighted sum of 
     chi-squared random variables with the Lindsay-Pilla-Basak method using four support points.
-    LPB approximation technique is used by RCoT to determine if the answer is statistically significant or 
+    LPB approximation is used by RCoT to determine if the answer is statistically significant or 
     it could have been generate by a random variation.
     
-    In some cases when the coefficient vector was of length two or three, the algorithm would be 
+    Since for coefficient vectors with length two or three, this function would be 
     unable to find roots of a particular equation during an intermediate step, and so 
-    the algorithm would produce NULL solutions. If the coefficient vector is of length less than four, 
+    the RCoT/RCIT algorithm would produce NULL solutions, when the coefficient vector is of length less than four, 
     the Hall-Buckley-Eagleson (HBE) method is used.
 
     It takes as input the coeff (coefficient vector of atleast length of 4) and x (a vector).

@@ -3,12 +3,6 @@ import numpy as np
 import sys
 import gc
 from pygam import LinearGAM, s
-from .hsic_gamma_pytorch import Hsic_gamma_py
-from .hsic_gamma_pytorch_new import Hsic_gamma_py_new
-from .hsic_gamma_pytorch_new_compile import Hsic_gamma_py_new2
-#from .hsic_perm import Hsic_perm_or
-#from .dcc_perm import Dcov_perm_or
-from .dcc_gamma_pytorch import Dcov_gamma_py
 #import dask.dataframe as dd
 from coreBN.utils import GAM_residuals, GAM_residuals_fast
 import sys
@@ -16,9 +10,8 @@ import sys
 
 
 
-
 #version of Kernel_CItest that imports Hsic_gamma_py_new
-def kernel_CItest_cycle_new2( x, y, sep_sets, l_m , alpha, n_device, data, method='dcc.gamma', verbose=False):
+def kernel_CItest_cycle_new( x, y, sep_sets, l_m , alpha, n_device, data, method='dcc.gamma', median=False, verbose=False):
 
         """
         This function, implemented for the parallel run of kpc, tests whether x and y are conditionally independent given all the subsets S, unique combination of the remaining nodes, inside the neighborood of x and y,
@@ -48,152 +41,78 @@ def kernel_CItest_cycle_new2( x, y, sep_sets, l_m , alpha, n_device, data, metho
 
         if (method =='dcc.gamma'):
             #print("selected method:dcc", flush=True)
-            from coreBN.CItests import Dcov_gamma_py as Itest
+            from coreBN.CItests import Dcov_gamma as Itest
         elif (method == 'hsic.gamma'):
-            from coreBN.CItests import Hsic_gamma_py_new2 as Itest
+            if median==True:
+                 from coreBN.CItests import Hsic_gamma_median as Itest
+            else:
+                 from coreBN.CItests import HSIC_gamma as Itest
+        elif (method == 'rcit'):
+                 from coreBN.CItests import RCIT_wrapper as Itest
         else:
             print("wrong method")
             sys.exit()
 
 
         l_sets = list(sep_sets)
+        N_sets = len(l_sets)
         if verbose:
-            print("first separating set", l_sets[0])
+            print(N_sets, " conditioning sets of len:",l_m,  flush=True)
+            print("separating sets", l_sets)
 
-
-        if (l_m<1):
+        final_x_arr = (data[x]).to_numpy()
+        final_y_arr = (data[y]).to_numpy()
+        
+        if (l_m<1): 
+            p_value = Itest(final_x_arr, final_y_arr, n_device)
             if verbose:
                 print("pure independence test")
-            final_x_arr = (data[x]).to_numpy()
-            final_y_arr = (data[y]).to_numpy()
-            p_value = Itest(final_x_arr, final_y_arr, n_device)
+                print("p-value", x, "-",y,":", p_value)
             del final_x_arr, final_y_arr
             gc.collect()
             return (x,y), {()}, p_value
 
-        N_sets = len(l_sets)
+
+        
         list_vars = data.columns.to_list()
         dict_ind = { list_vars[i]:i for i in range(0, len(list_vars) ) }
         #x_index = dict_ind[x]
         #y_index = dict_ind[y] 
-        data_matrix = data.to_numpy()
-        x_arr = data_matrix[:, dict_ind[x]]
-        y_arr = data_matrix[:, dict_ind[y]]
+        
         if (l_m==1):
             Si_sets = [dict_ind[list(sep)[0]] for sep in l_sets]
         else:
             Si_sets = [list(itemgetter(*sep_set)(dict_ind)) for sep_set in sep_sets]
         #print("conditioning sets:", sep_sets, flush=True)   
 
-        if verbose:
-            print("conditioning sets of len:",N_sets, sep_sets, flush=True)
+        
         del dict_ind
-        for i in np.arange(0, N_sets):
-                data_Sset= data_matrix[:, Si_sets[i]]
-                res_x = GAM_residuals_fast(data_Sset, x_arr, l_m )
-                res_y = GAM_residuals_fast(data_Sset, y_arr, l_m )
-                p_value = Itest(res_x, res_y, n_device)
-                #p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)
-                if (p_value > alpha) :
-                    if verbose:
-                        print(i,'-th pval:', p_value)
-                    final_set = l_sets[i]
-                    del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
-                    gc.collect()
-                    return (x,y), final_set, p_value
-        final_set = l_sets[(N_sets-1)]
-        del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
-        gc.collect()
-        return (x,y), final_set , p_value
 
-
-#version of Kernel_CItest that imports Hsic_gamma_py_new
-def kernel_CItest_cycle_new( x, y, sep_sets, l_m , alpha, n_device, data, method='dcc.gamma', verbose=False):
-
-        """
-        This function, implemented for the parallel run of kpc, tests whether x and y are conditionally independent given all the subsets S, unique combination of the remaining nodes, inside the neighborood of x and y,
-        using two independence criterions: Distance Covariance/HSIC
-        It takes as arguments:
-                 
-                 @str       : x,y (identify vars over whic we test CI, in the dataframe)
-                 @list of Ssets: list of separating sets, containing each a list of names identifying vars in the conditioning set
-                 @l_m       : size of each subset
-                 @dataframe :  data
-                 @float param: alpha (significance level to test with the p-value test)
-                 @int param : integer identifying the cuda device over which perform the GPU calculations
-                 @str  param: method  (Method for the conditional independence test: Distance Covariance (permutation or gamma test), HSIC (permutation or gamma test) or HSIC cluster)
-                 @int  param: p  (number of permutations for Distance Covariance, HSIC permutation and HSIC cluster tests)
-                 @int  param: index (power index in (0,2]  for te formula of the distance in the Distance Covariance)
-                 @float param: sig (Gaussian kernel width for HSIC tests. Default is 1)
-                 @int  param: numCol (number of columns used in the incomplete Cholesky decomposition. Default is 100)
-                 @bool param:  verbose (a logical parameter, if None it is setted to False. When True the detailed output is provided)
-                 
-        The function returns the  p_value and the corresponding sep_set         
-        """
-
-
-        from operator import itemgetter
-
-        #print(" I am inside kernel function", flush=True)
-
-        if (method =='dcc.gamma'):
-            #print("selected method:dcc", flush=True)
-            from coreBN.CItests import Dcov_gamma_py as Itest
-        elif (method == 'hsic.gamma'):
-            from coreBN.CItests import Hsic_gamma_py_new as Itest
-        else:
-            print("wrong method")
-            sys.exit()
-
-
-        l_sets = list(sep_sets)
-        if verbose:
-            print("first separating set", l_sets[0])
-
-
-        if (l_m<1):
-            if verbose:
-                print("pure independence test")
-            final_x_arr = (data[x]).to_numpy()
-            final_y_arr = (data[y]).to_numpy()
-            p_value = Itest(final_x_arr, final_y_arr, n_device)
-            del final_x_arr, final_y_arr
-            gc.collect()
-            return (x,y), {()}, p_value
-
-        N_sets = len(l_sets)
-        list_vars = data.columns.to_list()
-        dict_ind = { list_vars[i]:i for i in range(0, len(list_vars) ) }
-        #x_index = dict_ind[x]
-        #y_index = dict_ind[y] 
+        
+        x_arr = final_x_arr
+        y_arr = final_y_arr
         data_matrix = data.to_numpy()
-        x_arr = data_matrix[:, dict_ind[x]]
-        y_arr = data_matrix[:, dict_ind[y]]
-        if (l_m==1):
-            Si_sets = [dict_ind[list(sep)[0]] for sep in l_sets]
-        else:
-            Si_sets = [list(itemgetter(*sep_set)(dict_ind)) for sep_set in sep_sets]
-        #print("conditioning sets:", sep_sets, flush=True)   
-
-        if verbose:
-            print("conditioning sets of len:",N_sets, sep_sets, flush=True)
-        del dict_ind
-        for i in np.arange(0, N_sets):
+        
+        i=0
+        p_value=0
+        while (p_value < alpha) and (i<N_sets):
                 data_Sset= data_matrix[:, Si_sets[i]]
-                res_x = GAM_residuals_fast(data_Sset, x_arr, l_m )
-                res_y = GAM_residuals_fast(data_Sset, y_arr, l_m )
-                p_value = Itest(res_x, res_y, n_device)
-                #p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)
-                if (p_value > alpha) :
-                    if verbose:
-                        print(i,'-th pval:', p_value)
-                    final_set = l_sets[i]
-                    del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
-                    gc.collect()
-                    return (x,y), final_set, p_value
-        final_set = l_sets[(N_sets-1)]
-        del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
+                
+                if (method == 'rcit'):
+                   p_value = Itest(x_arr, y_arr, n_device, z=data_Sset) 
+                else:
+                   res_x = GAM_residuals_fast(data_Sset, x_arr, l_m )
+                   res_y = GAM_residuals_fast(data_Sset, y_arr, l_m )
+                   p_value = Itest(res_x, res_y, n_device)
+
+                print("p-value=",p_value, " for Sset ", Si_sets[i])
+                i += 1
+       
+        final_set = l_sets[(i-1)]
+        print("Exiting while cycle with p-valua", p_value, "associated to set", Si_sets[i-1])
+        del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets
         gc.collect()
+        
         return (x,y), final_set , p_value
 
 
@@ -229,9 +148,9 @@ def kernel_CItest_cycle( x, y, sep_sets, l_m , alpha, n_device, data, method='dc
 
         if (method =='dcc.gamma'):
             #print("selected method:dcc", flush=True)
-            from coreBN.CItests import Dcov_gamma_py as Itest
+            from coreBN.CItests import Dcov_gamma as Itest
         elif (method == 'hsic.gamma'):
-            from coreBN.CItests import Hsic_gamma_py as Itest
+            from coreBN.CItests import HSIC_gamma as Itest
         else:
             print("wrong method")
             sys.exit()
@@ -239,7 +158,7 @@ def kernel_CItest_cycle( x, y, sep_sets, l_m , alpha, n_device, data, method='dc
 
         l_sets = list(sep_sets)
         if verbose:
-            print("first separating set", l_sets[0])
+            print("separating set of size", l_m)
                  
         
         if (l_m<1):
@@ -267,7 +186,7 @@ def kernel_CItest_cycle( x, y, sep_sets, l_m , alpha, n_device, data, method='dc
         #print("conditioning sets:", sep_sets, flush=True)   
         
         if verbose:
-            print("conditioning sets of len:",N_sets, sep_sets, flush=True)   
+            print(N_sets, " conditioning sets of len:",l_m, flush=True)   
         del dict_ind
         for i in np.arange(0, N_sets):
                 data_Sset= data_matrix[:, Si_sets[i]]
@@ -287,93 +206,6 @@ def kernel_CItest_cycle( x, y, sep_sets, l_m , alpha, n_device, data, method='dc
         gc.collect()
         return (x,y), final_set , p_value
 
-def kernel_CItest_cycle( x, y, sep_sets, l_m , alpha, n_device, data, method='dcc.gamma', verbose=False):
-
-        """
-        This function, implemented for the parallel run of kpc, tests whether x and y are conditionally independent given all the subsets S, unique combination of the remaining nodes, inside the neighborood of x and y,
-        using two independence criterions: Distance Covariance/HSIC
-        It takes as arguments:
-                 
-                 @str       : x,y (identify vars over whic we test CI, in the dataframe)
-                 @list of Ssets: list of separating sets, containing each a list of names identifying vars in the conditioning set
-                 @l_m       : size of each subset
-                 @dataframe :  data
-                 @float param: alpha (significance level to test with the p-value test)
-                 @int param : integer identifying the cuda device over which perform the GPU calculations
-                 @str  param: method  (Method for the conditional independence test: Distance Covariance (permutation or gamma test), HSIC (permutation or gamma test) or HSIC cluster)
-                 @int  param: p  (number of permutations for Distance Covariance, HSIC permutation and HSIC cluster tests)
-                 @int  param: index (power index in (0,2]  for te formula of the distance in the Distance Covariance)
-                 @float param: sig (Gaussian kernel width for HSIC tests. Default is 1)
-                 @int  param: numCol (number of columns used in the incomplete Cholesky decomposition. Default is 100)
-                 @bool param:  verbose (a logical parameter, if None it is setted to False. When True the detailed output is provided)
-                 
-        The function returns the  p_value and the corresponding sep_set         
-        """
-
-
-        from operator import itemgetter
-
-        #print(" I am inside kernel function", flush=True)
-
-        if (method =='dcc.gamma'):
-            #print("selected method:dcc", flush=True)
-            from coreBN.CItests import Dcov_gamma_py as Itest
-        elif (method == 'hsic.gamma'):
-            from coreBN.CItests import Hsic_gamma_py as Itest
-        else:
-            print("wrong method")
-            sys.exit()
-
-
-        l_sets = list(sep_sets)
-        if verbose:
-            print("first separating set", l_sets[0])
-                 
-        
-        if (l_m<1):
-            if verbose:
-                print("pure independence test")
-            final_x_arr = (data[x]).to_numpy()
-            final_y_arr = (data[y]).to_numpy()
-            p_value = Itest(final_x_arr, final_y_arr, n_device)
-            del final_x_arr, final_y_arr
-            gc.collect()
-            return (x,y), {()}, p_value
-        
-        N_sets = len(l_sets)
-        list_vars = data.columns.to_list()
-        dict_ind = { list_vars[i]:i for i in range(0, len(list_vars) ) }
-        #x_index = dict_ind[x]
-        #y_index = dict_ind[y] 
-        data_matrix = data.to_numpy()
-        x_arr = data_matrix[:, dict_ind[x]]
-        y_arr = data_matrix[:, dict_ind[y]]
-        if (l_m==1):
-            Si_sets = [dict_ind[list(sep)[0]] for sep in l_sets]
-        else:
-            Si_sets = [list(itemgetter(*sep_set)(dict_ind)) for sep_set in sep_sets]
-        #print("conditioning sets:", sep_sets, flush=True)   
-        
-        if verbose:
-            print("conditioning sets of len:",N_sets, sep_sets, flush=True)   
-        del dict_ind
-        for i in np.arange(0, N_sets):
-                data_Sset= data_matrix[:, Si_sets[i]]
-                res_x = GAM_residuals_fast(data_Sset, x_arr, l_m ) 
-                res_y = GAM_residuals_fast(data_Sset, y_arr, l_m )
-                p_value = Itest(res_x, res_y, n_device)  
-                #p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)
-                if (p_value > alpha) :
-                    if verbose:
-                        print(i,'-th pval:', p_value)
-                    final_set = l_sets[i]
-                    del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
-                    gc.collect()
-                    return (x,y), final_set, p_value
-        final_set = l_sets[(N_sets-1)]
-        del data_Sset, data_matrix, x_arr, y_arr, Si_sets, list_vars, l_sets, res_x, res_y
-        gc.collect()
-        return (x,y), final_set , p_value
 
         
 
@@ -399,7 +231,7 @@ def kernel_CItest( x, y, list_set, data, method='hsic.gamma', p=None, index=1, s
                  If boolean=True, an additional argument `significance_level` must
                  be specified. If p_value of the test is greater than equal to
                  `significance_level`, returns True. Otherwise returns False.
-                If boolean=False, returns the pearson correlation coefficient and p_value
+                If boolean=False, returns the p_value
                 of the test.         
         """
 
@@ -469,13 +301,15 @@ def kernel_CItest( x, y, list_set, data, method='hsic.gamma', p=None, index=1, s
         if method =='dcc.gamma':    
                   #NEED  to introduce flag for backend here
                   #p_value = Dcov_gamma_py_gpu(final_x_arr, final_y_arr, index)
-                  p_value = Dcov_gamma_py(final_x_arr, final_y_arr, 0)
+            from coreBN.CItests import Dcov_gamma 																		
+            p_value = Dcov_gamma(final_x_arr, final_y_arr, 0)
         #elif method == 'dcc.perm':
         #          p_value = Dcov_perm_or(final_x_arr, final_y_arr, index, p)
         #elif method=='hsic.perm':
         #          p_value = Hsic_perm_or(final_x_arr, final_y_arr,  sig, p, numCol)
         elif method == 'hsic.gamma':
-                  p_value = Hsic_gamma_py(final_x_arr, final_y_arr, 0)
+            from coreBN.CItests import HSIC_gamma 
+            p_value = HSIC_gamma(final_x_arr, final_y_arr, 0)
         else:
             sys.exit()
         

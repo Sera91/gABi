@@ -74,26 +74,22 @@ def correlation_score(
     >>> correlation_score(alarm, data, test="chi_square", significance_level=0.05)
     0.911957950065703
     """
-    from coreBN.estimators.CITests import (
+    from coreBN.CITests import (
         chi_square,
-        g_sq,
+        #g_sq,
         log_likelihood,
-        freeman_tuckey,
-        modified_log_likelihood,
-        neyman,
-        cressie_read,
         pearsonr,
     )
 
     # Step 1: Checks for input arguments.
     supported_tests = {
         "chi_square": chi_square,
-        "g_sq": g_sq,
+        #"g_sq": g_sq,
         "log_likelihood": log_likelihood,
-        "freeman_tuckey": freeman_tuckey,
-        "modified_log_likelihood": modified_log_likelihood,
-        "neyman": neyman,
-        "cressie_read": cressie_read,
+        #"freeman_tuckey": freeman_tuckey,
+        #"modified_log_likelihood": modified_log_likelihood,
+        #"neyman": neyman,
+        #"cressie_read": cressie_read,
         "pearsonr": pearsonr,
     }
 

@@ -15,7 +15,7 @@ from joblib import Parallel, delayed
 from tqdm.auto import tqdm
 from coreBN.base import PDAG
 from coreBN.estimators import StructureEstimator
-from coreBN.CItests import kernel_CItest, kernel_CItest_cycle
+from coreBN.CItests import kernel_CItest, kernel_CItest_cycle, kernel_CItest_cycle_new
 from coreBN.global_vars import SHOW_PROGRESS
 from pygam import LinearGAM, s
 from coreBN.CItests import Hsic_gamma_py
