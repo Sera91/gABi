@@ -31,5 +31,6 @@ algorithms:
 
 - PC-stable
 - kernel-PC
+- FCI
 
 The algorithms depends on dask for the parallelization, and can be launched on CPUs and GPUs
