@@ -25,12 +25,11 @@ This package has the following dependencies:
  - dask
  - mpi4py
 
-
+## Release 0.0
 At the moment the gABI package provides the parallel version of the following structure learning
 algorithms:
 
 - PC-stable
 - kernel-PC
-- FCI
 
-The algorithms depends on dask for the parallelization, and can be launched on CPUs and GPUs
+The algorithms depends on dask and MPI for the parallelization, and can be launched on CPUs and GPUs
