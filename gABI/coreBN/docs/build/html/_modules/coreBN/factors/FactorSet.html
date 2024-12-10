@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.factors.FactorSet &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.factors.FactorSet</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.factors.FactorSet</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors.base</span> <span class="kn">import</span> <span class="n">BaseFactor</span>
+
+
+<div class="viewcode-block" id="FactorSet"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet">[docs]</a><span class="k">class</span> <span class="nc">FactorSet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class of *DiscreteFactor Sets*.</span>
+
+<span class="sd">    A factor set provides a compact representation of  higher dimensional factor</span>
+<span class="sd">    :math:`\phi_1\cdot\phi_2\cdots\phi_n`</span>
+
+<span class="sd">    For example the factor set corresponding to factor :math:`\phi_1\cdot\phi_2` would be the union of the factors</span>
+<span class="sd">    :math:`\phi_1` and :math:`\phi_2` i.e. factor set :math:`\vec\phi = \phi_1 \cup \phi_2`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">factors_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the factor set class.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factors_list: Factor1, Factor2, ....</span>
+<span class="sd">            All the factors whose product is represented by the factor set</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set</span>
+<span class="sd">        &lt;core.factors.FactorSet.FactorSet at 0x7f8e32af6d50&gt;</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f8e32b4c2d0&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f8e32b4c710&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">BaseFactor</span><span class="p">)</span> <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="n">factors_list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input parameters must be child classes of BaseFactor&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factors</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">factor</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors_list</span><span class="p">])</span>
+
+<div class="viewcode-block" id="FactorSet.add_factors"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.add_factors">[docs]</a>    <span class="k">def</span> <span class="nf">add_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">factors</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds factors to the factor set.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factors: Factor1, Factor2, ...., Factorn</span>
+<span class="sd">            factors to be added into the factor set</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; phi4 = DiscreteFactor([&#39;x5&#39;, &#39;x7&#39;, &#39;x8&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.add_factors(phi3, phi4)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set1)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f8e32b4ca10&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f8e4c393690&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b4c750&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f8e32b4cb50&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">factors</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FactorSet.remove_factors"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.remove_factors">[docs]</a>    <span class="k">def</span> <span class="nf">remove_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">factors</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes factors from the factor set.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factors: Factor1, Factor2, ...., Factorn</span>
+<span class="sd">            factors to be removed from the factor set</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.add_factors(phi3)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set1)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f8e32b5b050&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b5b250&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f8e32b5b150&gt;])</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.remove_factors(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set1)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b4cb10&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FactorSet.get_factors"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.get_factors">[docs]</a>    <span class="k">def</span> <span class="nf">get_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns all the factors present in factor set.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.add_factors(phi3)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.get_factors()</span>
+<span class="sd">        {&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f827c0a23c8&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f827c0a2358&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f825243f9e8&gt;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span></div>
+
+<div class="viewcode-block" id="FactorSet.product"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.product">[docs]</a>    <span class="k">def</span> <span class="nf">product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factorset</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the factor sets product with the given factor sets</span>
+
+<span class="sd">        Suppose :math:`\vec\phi_1` and :math:`\vec\phi_2` are two factor sets then their product is a another factors</span>
+<span class="sd">        set :math:`\vec\phi_3 = \vec\phi_1 \cup \vec\phi_2`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factorsets: FactorSet1, FactorSet2, ..., FactorSetn</span>
+<span class="sd">            FactorSets to be multiplied</span>
+
+<span class="sd">        inplace: A boolean (Default value True)</span>
+<span class="sd">            If inplace = True , then it will modify the FactorSet object, if False, it will</span>
+<span class="sd">            return a new FactorSet object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        If inpalce = False, will return a new FactorSet object, which is product of two factors</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; phi4 = DiscreteFactor([&#39;x5&#39;, &#39;x7&#39;, &#39;x8&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set2 = FactorSet(phi3, phi4)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set2)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b5b050&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f8e32b5b690&gt;])</span>
+<span class="sd">        &gt;&gt;&gt; factor_set2.product(factor_set1)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set2)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f8e32b4c910&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f8e32b4cc50&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b5b050&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f8e32b5b690&gt;])</span>
+<span class="sd">        &gt;&gt;&gt; factor_set2 = FactorSet(phi3, phi4)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set3 = factor_set2.product(factor_set1, inplace=False)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set2)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b5b060&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f8e32b5b790&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">factor_set</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">factor_set1</span> <span class="o">=</span> <span class="n">factorset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">factor_set</span><span class="o">.</span><span class="n">add_factors</span><span class="p">(</span><span class="o">*</span><span class="n">factor_set1</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">factor_set</span></div>
+
+<div class="viewcode-block" id="FactorSet.divide"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factorset</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a new factor set instance after division by the factor set</span>
+
+<span class="sd">        Division of two factor sets :math:`\frac{\vec\phi_1}{\vec\phi_2}` basically translates to union of all the</span>
+<span class="sd">        factors present in :math:`\vec\phi_2` and :math:`\frac{1}{\phi_i}` of all the factors present in</span>
+<span class="sd">        :math:`\vec\phi_2`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        factorset: FactorSet</span>
+<span class="sd">            The divisor</span>
+
+<span class="sd">        inplace: A boolean (Default value True)</span>
+<span class="sd">            If inplace = True ,then it will modify the FactorSet object, if False then will</span>
+<span class="sd">            return a new FactorSet object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        If inplace = False, will return a new FactorSet Object which is division of</span>
+<span class="sd">        given factors.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; phi4 = DiscreteFactor([&#39;x5&#39;, &#39;x7&#39;, &#39;x8&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set2 = FactorSet(phi3, phi4)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set3 = factor_set2.divide(factor_set1)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set3)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f8e32b5ba10&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f8e32b5b650&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f8e32b5b050&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f8e32b5b8d0&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">factor_set</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">factor_set1</span> <span class="o">=</span> <span class="n">factorset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">factor_set</span><span class="o">.</span><span class="n">add_factors</span><span class="p">(</span>
+            <span class="o">*</span><span class="p">[</span><span class="n">phi</span><span class="o">.</span><span class="n">identity_factor</span><span class="p">()</span> <span class="o">/</span> <span class="n">phi</span> <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="n">factor_set1</span><span class="o">.</span><span class="n">factors</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">factor_set</span></div>
+
+<div class="viewcode-block" id="FactorSet.marginalize"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marginalizes the factors present in the factor sets with respect to the given variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list, array-like</span>
+<span class="sd">            List of the variables to be marginalized.</span>
+
+<span class="sd">        inplace: boolean (Default value True)</span>
+<span class="sd">            If inplace=True it will modify the factor set itself, would create a new factor set</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        If inplace = False, will return a new marginalized FactorSet object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set1.marginalize(&#39;x1&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; print(factor_set1)</span>
+<span class="sd">        set([&lt;DiscreteFactor representing phi(x2:3, x3:2) at 0x7f8e32b4cc10&gt;,</span>
+<span class="sd">             &lt;DiscreteFactor representing phi(x3:2, x4:2) at 0x7f8e32b4cf90&gt;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected list or array-like type got type str&quot;</span><span class="p">)</span>
+
+        <span class="n">factor_set</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">factors_to_be_marginalized</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">scope</span><span class="p">())</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">variables</span><span class="p">),</span> <span class="n">factor_set</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors_to_be_marginalized</span><span class="p">:</span>
+            <span class="n">variables_to_be_marginalized</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">scope</span><span class="p">())</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
+                <span class="n">factor</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">variables_to_be_marginalized</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">factor_set</span><span class="o">.</span><span class="n">remove_factors</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span>
+                <span class="n">factor_set</span><span class="o">.</span><span class="n">add_factors</span><span class="p">(</span>
+                    <span class="n">factor</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span><span class="n">variables_to_be_marginalized</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">factor_set</span></div>
+
+    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FactorSet.copy"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.FactorSet.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a copy of factor set.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">        &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">        &gt;&gt;&gt; factor_set = FactorSet(phi1, phi2)</span>
+<span class="sd">        &gt;&gt;&gt; factor_set</span>
+<span class="sd">        &lt;core.factors.FactorSet.FactorSet at 0x7fa68f390320&gt;</span>
+<span class="sd">        &gt;&gt;&gt; factor_set_copy = factor_set.copy()</span>
+<span class="sd">        &gt;&gt;&gt; factor_set_copy</span>
+<span class="sd">        &lt;core.factors.FactorSet.FactorSet at 0x7f91a0031160&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># No need to have copies of factors as argument because __init__ method creates copies.</span>
+        <span class="k">return</span> <span class="n">FactorSet</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="factorset_product"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.factorset_product">[docs]</a><span class="k">def</span> <span class="nf">factorset_product</span><span class="p">(</span><span class="o">*</span><span class="n">factorsets_list</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base method used for product of factor sets.</span>
+
+<span class="sd">    Suppose :math:`\vec\phi_1` and :math:`\vec\phi_2` are two factor sets then their product is a another factors set</span>
+<span class="sd">    :math:`\vec\phi_3 = \vec\phi_1 \cup \vec\phi_2`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factorsets_list: FactorSet1, FactorSet2, ..., FactorSetn</span>
+<span class="sd">        All the factor sets to be multiplied</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Product of factorset in factorsets_list</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import factorset_product</span>
+<span class="sd">    &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">    &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">    &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; phi4 = DiscreteFactor([&#39;x5&#39;, &#39;x7&#39;, &#39;x8&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; factor_set2 = FactorSet(phi3, phi4)</span>
+<span class="sd">    &gt;&gt;&gt; factor_set3 = factorset_product(factor_set1, factor_set2)</span>
+<span class="sd">    &gt;&gt;&gt; print(factor_set3)</span>
+<span class="sd">    set([&lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7fb3a1933e90&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7fb3a1933f10&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7fb3a1933f90&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7fb3a1933e10&gt;])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">factorset</span><span class="p">,</span> <span class="n">FactorSet</span><span class="p">)</span> <span class="k">for</span> <span class="n">factorset</span> <span class="ow">in</span> <span class="n">factorsets_list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Input parameters must be FactorSet instances&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">factorsets_list</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="factorset_divide"><a class="viewcode-back" href="../../../coreBN.factors.html#coreBN.factors.FactorSet.factorset_divide">[docs]</a><span class="k">def</span> <span class="nf">factorset_divide</span><span class="p">(</span><span class="n">factorset1</span><span class="p">,</span> <span class="n">factorset2</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base method for dividing two factor sets.</span>
+
+<span class="sd">    Division of two factor sets :math:`\frac{\vec\phi_1}{\vec\phi_2}` basically translates to union of all the factors</span>
+<span class="sd">    present in :math:`\vec\phi_2` and :math:`\frac{1}{\phi_i}` of all the factors present in :math:`\vec\phi_2`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    factorset1: FactorSet</span>
+<span class="sd">        The dividend</span>
+
+<span class="sd">    factorset2: FactorSet</span>
+<span class="sd">        The divisor</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    The division of factorset1 and factorset2</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import FactorSet</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors import factorset_divide</span>
+<span class="sd">    &gt;&gt;&gt; phi1 = DiscreteFactor([&#39;x1&#39;, &#39;x2&#39;, &#39;x3&#39;], [2, 3, 2], range(12))</span>
+<span class="sd">    &gt;&gt;&gt; phi2 = DiscreteFactor([&#39;x3&#39;, &#39;x4&#39;, &#39;x1&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; factor_set1 = FactorSet(phi1, phi2)</span>
+<span class="sd">    &gt;&gt;&gt; phi3 = DiscreteFactor([&#39;x5&#39;, &#39;x6&#39;, &#39;x7&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; phi4 = DiscreteFactor([&#39;x5&#39;, &#39;x7&#39;, &#39;x8&#39;], [2, 2, 2], range(8))</span>
+<span class="sd">    &gt;&gt;&gt; factor_set2 = FactorSet(phi3, phi4)</span>
+<span class="sd">    &gt;&gt;&gt; factor_set3 = factorset_divide(factor_set2, factor_set1)</span>
+<span class="sd">    &gt;&gt;&gt; print(factor_set3)</span>
+<span class="sd">    set([&lt;DiscreteFactor representing phi(x3:2, x4:2, x1:2) at 0x7f119ad78f90&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x5:2, x6:2, x7:2) at 0x7f119ad78e50&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x1:2, x2:3, x3:2) at 0x7f119ad78ed0&gt;,</span>
+<span class="sd">         &lt;DiscreteFactor representing phi(x5:2, x7:2, x8:2) at 0x7f119ad78e90&gt;])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factorset1</span><span class="p">,</span> <span class="n">FactorSet</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factorset2</span><span class="p">,</span> <span class="n">FactorSet</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;factorset1 and factorset2 must be FactorSet instances&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">factorset1</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">factorset2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

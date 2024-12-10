@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.models.DynamicBayesianNetwork &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.models.DynamicBayesianNetwork</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.models.DynamicBayesianNetwork</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span><span class="p">,</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.base</span> <span class="kn">import</span> <span class="n">DAG</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span>
+<span class="kn">from</span> <span class="nn">coreBN.global_vars</span> <span class="kn">import</span> <span class="n">SHOW_PROGRESS</span>
+
+
+<div class="viewcode-block" id="DynamicNode"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicNode">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">eq</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DynamicNode</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for representing the nodes of Dynamic Bayesian Networks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">node</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">time_slice</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span>
+        <span class="k">elif</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Index </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2"> out of bounds.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;DynamicNode(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span><span class="si">}</span><span class="s2">) at </span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">time_slice</span>
+
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">node</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">time_slice</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">DynamicNode</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">time_slice</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span><span class="p">)</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="DynamicNode.to_tuple"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicNode.to_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">to_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a tuple representation as (node, time_slice) for DynamicNode object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_slice</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DynamicBayesianNetwork"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork">[docs]</a><span class="k">class</span> <span class="nc">DynamicBayesianNetwork</span><span class="p">(</span><span class="n">DAG</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base class for Dynamic Bayesian Network</span>
+
+<span class="sd">        This is a time variant model of the static Bayesian model, where each</span>
+<span class="sd">        time-slice has some static nodes and is then replicated over a certain</span>
+<span class="sd">        time period.</span>
+
+<span class="sd">        The nodes can be any hashable python objects.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ebunch: Data to initialize graph.  If data=None (default) an empty</span>
+<span class="sd">              graph is created.  The data can be an edge list, or any NetworkX</span>
+<span class="sd">              graph object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        Create an empty Dynamic Bayesian Network with no nodes and no edges:</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+
+<span class="sd">        Adding nodes and edges inside the dynamic bayesian network. A single</span>
+<span class="sd">        node can be added using the method below. For adding edges we need to</span>
+<span class="sd">        specify the time slice since edges can be across different time slices.</span>
+
+<span class="sd">        For example for a network as [image](http://s8.postimg.org/aaybw4x2t/Blank_Flowchart_New_Page_1.png),</span>
+<span class="sd">        we will need to add all the edges in the 2-TBN as:</span>
+
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 0)), ((&#39;D&#39;, 0), (&#39;D&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;I&#39;, 0), (&#39;I&#39;, 1)), ((&#39;G&#39;, 0), (&#39;G&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 1)), ((&#39;L&#39;, 0), (&#39;L&#39;, 1))])</span>
+
+<span class="sd">        We can query the edges and nodes in the network as:</span>
+<span class="sd">        &gt;&gt;&gt; dbn.nodes()</span>
+<span class="sd">        [&#39;G&#39;, &#39;D&#39;, &#39;I&#39;, &#39;L&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; dbn.edges()</span>
+<span class="sd">        [((&#39;D&#39;, 1), (&#39;G&#39;, 1)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0)), ((&#39;I&#39;, 0), (&#39;I&#39;, 1)),</span>
+<span class="sd">         ((&#39;I&#39;, 1), (&#39;G&#39;, 1)), ((&#39;G&#39;, 0), (&#39;L&#39;, 0)), ((&#39;G&#39;, 0), (&#39;G&#39;, 1)),</span>
+<span class="sd">         ((&#39;G&#39;, 0), (&#39;L&#39;, 1)), ((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;D&#39;, 0), (&#39;D&#39;, 1)),</span>
+<span class="sd">         ((&#39;L&#39;, 0), (&#39;L&#39;, 1)), ((&#39;G&#39;, 1), (&#39;L&#39;, 1))]</span>
+
+<span class="sd">        If any variable is not present in the network while adding an edge,</span>
+<span class="sd">        coreBN will automatically add that variable to the network.</span>
+
+<span class="sd">        But for adding nodes to the model we don&#39;t need to specify the time</span>
+<span class="sd">        slice as it is common in all the time slices. And therefore coreBN</span>
+<span class="sd">        automatically replicated it all the time slices. For example, for</span>
+<span class="sd">        adding a new variable `S` in the above network we can simply do:</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_node(&#39;S&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; dbn.nodes()</span>
+<span class="sd">        [&#39;S&#39;, &#39;G&#39;, &#39;D&#39;, &#39;I&#39;, &#39;L&#39;]</span>
+
+<span class="sd">        Public Methods</span>
+<span class="sd">        --------------</span>
+<span class="sd">        add_node</span>
+<span class="sd">        add_nodes_from</span>
+<span class="sd">        add_edges</span>
+<span class="sd">        add_edges_from</span>
+<span class="sd">        add_cpds</span>
+<span class="sd">        initialize_initial_state</span>
+<span class="sd">        inter_slice</span>
+<span class="sd">        intra_slice</span>
+<span class="sd">        copy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ebunch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.add_node"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.add_node">[docs]</a>    <span class="k">def</span> <span class="nf">add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a single node to the Network</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node: node</span>
+<span class="sd">            A node can be any hashable Python object.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_node(&#39;A&#39;)</span>
+<span class="sd">        [&#39;A&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">DynamicNode</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.add_nodes_from"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.add_nodes_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add multiple nodes to the Network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nodes: iterable container</span>
+<span class="sd">            A container of nodes (list, dict, set, etc.).</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_nodes_from([&#39;A&#39;, &#39;B&#39;, &#39;C&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the list of nodes present in the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_nodes_from([&#39;A&#39;, &#39;B&#39;, &#39;C&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; sorted(dbn._nodes())</span>
+<span class="sd">        [&#39;B&#39;, &#39;A&#39;, &#39;C&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">node</span>
+                    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">timeslice</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_timeslices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">timeslice</span>
+                    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">timeslice</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.add_edge"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an edge between two nodes.</span>
+
+<span class="sd">        The nodes will be automatically added if they are not present in the network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start: tuple</span>
+<span class="sd">               Both the start and end nodes should specify the time slice as</span>
+<span class="sd">               (node_name, time_slice). Here, node_name can be any hashable</span>
+<span class="sd">               python object while the time_slice is an integer value,</span>
+<span class="sd">               which denotes the time slice that the node belongs to.</span>
+
+<span class="sd">        end: tuple</span>
+<span class="sd">               Both the start and end nodes should specify the time slice as</span>
+<span class="sd">               (node_name, time_slice). Here, node_name can be any hashable</span>
+<span class="sd">               python object while the time_slice is an integer value,</span>
+<span class="sd">               which denotes the time slice that the node belongs to.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; model = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_nodes_from([&#39;D&#39;, &#39;I&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model.add_edge((&#39;D&#39;,0), (&#39;I&#39;,0))</span>
+<span class="sd">        &gt;&gt;&gt; sorted(model.edges())</span>
+<span class="sd">        [((&#39;D&#39;, 0), (&#39;I&#39;, 0)), ((&#39;D&#39;, 1), (&#39;I&#39;, 1))]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">start</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">end</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nodes must be of type (node, time_slice).&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nodes must be of type (node, time_slice).&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                    <span class="s2">&quot;Edges in backward direction are not allowed.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Edges over multiple time slices is not currently supported&quot;</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Nodes must be of type (node, time_slice).&quot;</span><span class="p">)</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">end</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">start</span> <span class="o">==</span> <span class="n">end</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Self Loops are not allowed&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">start</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">end</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">nx</span><span class="o">.</span><span class="n">has_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Loops are not allowed. Adding the edge from (</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">)</span><span class="si">}</span><span class="s2"> --&gt; </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">end</span><span class="p">)</span><span class="si">}</span><span class="s2">) forms a loop.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                <span class="n">DynamicNode</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span>
+                <span class="n">DynamicNode</span><span class="p">(</span><span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.add_edges_from"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add all the edges in ebunch.</span>
+
+<span class="sd">        If nodes referred in the ebunch are not already present, they</span>
+<span class="sd">        will be automatically added. Node names can be any hashable python object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ebunch : list, array-like</span>
+<span class="sd">                List of edges to add. Each edge must be of the form of</span>
+<span class="sd">                ((start, time_slice), (end, time_slice)).</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0))])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.nodes()</span>
+<span class="sd">        [&#39;G&#39;, &#39;I&#39;, &#39;D&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; dbn.edges()</span>
+<span class="sd">        [((&#39;D&#39;, 1), (&#39;G&#39;, 1)),</span>
+<span class="sd">         ((&#39;I&#39;, 1), (&#39;G&#39;, 1)),</span>
+<span class="sd">         ((&#39;D&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">         ((&#39;I&#39;, 0), (&#39;G&#39;, 0))]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">ebunch</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_intra_edges"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_intra_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_intra_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the intra slice edges present in the 2-TBN.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_slice: int (whole number)</span>
+<span class="sd">                The time slice for which to get intra edges. The timeslice</span>
+<span class="sd">                should be a positive value or zero.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_nodes_from([&#39;D&#39;, &#39;G&#39;, &#39;I&#39;, &#39;S&#39;, &#39;L&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 0)), ((&#39;D&#39;, 0), (&#39;D&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;I&#39;, 0), (&#39;I&#39;, 1)), ((&#39;G&#39;, 0), (&#39;G&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 1)), ((&#39;L&#39;, 0), (&#39;L&#39;, 1))])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_intra_edges()</span>
+<span class="sd">        [((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;G&#39;, 0), (&#39;L&#39;, 0)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0))]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">time_slice</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The timeslice should be a positive value greater than or equal to zero&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">DynamicNode</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_inter_edges"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_inter_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_inter_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inter-slice edges present in the 2-TBN.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0), (&#39;G&#39;, 0)), ((&#39;I&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 0)), ((&#39;D&#39;, 0), (&#39;D&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;I&#39;, 0), (&#39;I&#39;, 1)), ((&#39;G&#39;, 0), (&#39;G&#39;, 1)),</span>
+<span class="sd">        ...                     ((&#39;G&#39;, 0), (&#39;L&#39;, 1)), ((&#39;L&#39;, 0), (&#39;L&#39;, 1))])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_inter_edges()</span>
+<span class="sd">        [((&#39;D&#39;, 0), (&#39;D&#39;, 1)),</span>
+<span class="sd">         ((&#39;G&#39;, 0), (&#39;G&#39;, 1)),</span>
+<span class="sd">         ((&#39;G&#39;, 0), (&#39;L&#39;, 1)),</span>
+<span class="sd">         ((&#39;I&#39;, 0), (&#39;I&#39;, 1)),</span>
+<span class="sd">         ((&#39;L&#39;, 0), (&#39;L&#39;, 1))]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span> <span class="k">if</span> <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_interface_nodes"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_interface_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_interface_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the nodes in the first timeslice whose children are present in the first timeslice.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_slice:int</span>
+<span class="sd">                The timeslice should be a positive value greater than or equal to zero</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_nodes_from([&#39;D&#39;, &#39;G&#39;, &#39;I&#39;, &#39;S&#39;, &#39;L&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;,0),(&#39;G&#39;,0)),((&#39;I&#39;,0),(&#39;G&#39;,0)),((&#39;G&#39;,0),(&#39;L&#39;,0)),((&#39;D&#39;,0),(&#39;D&#39;,1))])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_interface_nodes()</span>
+<span class="sd">        [(&#39;D&#39;, 0)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">time_slice</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The timeslice should be a positive integer greater than or equal to zero: (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">time_slice</span><span class="p">)</span><span class="si">}</span><span class="s2">, value: </span><span class="si">{</span><span class="n">time_slice</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">DynamicNode</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="n">time_slice</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="n">time_slice</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_inter_edges</span><span class="p">()</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_slice_nodes"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_slice_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">get_slice_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the nodes present in a particular timeslice</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_slice:int</span>
+<span class="sd">                The timeslice should be a positive value greater than or equal to zero</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_nodes_from([&#39;D&#39;, &#39;G&#39;, &#39;I&#39;, &#39;S&#39;, &#39;L&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0),(&#39;G&#39;, 0)),((&#39;I&#39;, 0),(&#39;G&#39;, 0)),((&#39;G&#39;, 0),(&#39;L&#39;, 0)),((&#39;D&#39;, 0),(&#39;D&#39;, 1))])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_slice_nodes()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">time_slice</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The timeslice should be a positive value greater than or equal to zero&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">DynamicNode</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">time_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.add_cpds"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.add_cpds">[docs]</a>    <span class="k">def</span> <span class="nf">add_cpds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">cpds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method adds the cpds to the dynamic bayesian network.</span>
+<span class="sd">        Note that while adding variables and the evidence in cpd,</span>
+<span class="sd">        they have to be of the following form</span>
+<span class="sd">        (node_name, time_slice)</span>
+<span class="sd">        Here, node_name is the node that is inserted</span>
+<span class="sd">        while the time_slice is an integer value, which denotes</span>
+<span class="sd">        the index of the time_slice that the node belongs to.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cpds : list, set, tuple (array-like)</span>
+<span class="sd">            List of CPDs which are to be associated with the model. Each CPD</span>
+<span class="sd">            should be an instance of `TabularCPD`.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;, 0),(&#39;G&#39;, 0)),((&#39;I&#39;, 0),(&#39;G&#39;, 0)),((&#39;D&#39;, 0),(&#39;D&#39;, 1)),((&#39;I&#39;, 0),(&#39;I&#39;, 1))])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd = TabularCPD((&#39;G&#39;, 0), 3, [[0.3, 0.05, 0.9, 0.5],</span>
+<span class="sd">        ...                                      [0.4, 0.25, 0.8, 0.03],</span>
+<span class="sd">        ...                                      [0.3, 0.7, 0.02, 0.2]],</span>
+<span class="sd">        ...                        evidence=[(&#39;I&#39;, 0),(&#39;D&#39;, 0)],</span>
+<span class="sd">        ...                        evidence_card=[2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; d_i_cpd = TabularCPD((&#39;D&#39;,1), 2, [[0.6, 0.3],</span>
+<span class="sd">        ...                                   [0.4, 0.7]],</span>
+<span class="sd">        ...                      evidence=[(&#39;D&#39;,0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; diff_cpd = TabularCPD((&#39;D&#39;, 0), 2, [[0.6, 0.4]])</span>
+<span class="sd">        &gt;&gt;&gt; intel_cpd = TabularCPD((&#39;I&#39;, 0), 2, [[0.7, 0.3]])</span>
+<span class="sd">        &gt;&gt;&gt; i_i_cpd = TabularCPD((&#39;I&#39;, 1), 2, [[0.5, 0.4],</span>
+<span class="sd">        ...                                    [0.5, 0.6]],</span>
+<span class="sd">        ...                      evidence=[(&#39;I&#39;, 0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_cpds(grade_cpd, d_i_cpd, diff_cpd, intel_cpd, i_i_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_cpds()</span>
+<span class="sd">        [&lt;TabularCPD representing P((&#39;G&#39;, 0):3 | (&#39;I&#39;, 0):2, (&#39;D&#39;, 0):2) at 0x7ff7f27b0cf8&gt;,</span>
+<span class="sd">         &lt;TabularCPD representing P((&#39;D&#39;, 1):2 | (&#39;D&#39;, 0):2) at 0x7ff810b9c2e8&gt;,</span>
+<span class="sd">         &lt;TabularCPD representing P((&#39;D&#39;, 0):2) at 0x7ff7f27e6f98&gt;,</span>
+<span class="sd">         &lt;TabularCPD representing P((&#39;I&#39;, 0):2) at 0x7ff7f27e6ba8&gt;,</span>
+<span class="sd">         &lt;TabularCPD representing P((&#39;I&#39;, 1):2 | (&#39;I&#39;, 0):2) at 0x7ff7f27e6668&gt;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cpd</span><span class="p">,</span> <span class="n">TabularCPD</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cpd should be an instance of TabularCPD&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;CPD defined on variable not in the model&quot;</span><span class="p">,</span> <span class="n">cpd</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cpds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_cpds"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_cpds">[docs]</a>    <span class="k">def</span> <span class="nf">get_cpds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the CPDs that have been associated with the network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node: tuple (node_name, time_slice)</span>
+<span class="sd">            The node should be in the following form (node_name, time_slice).</span>
+<span class="sd">            Here, node_name is the node that is inserted while the time_slice is</span>
+<span class="sd">            an integer value, which denotes the index of the time_slice that the</span>
+<span class="sd">            node belongs to.</span>
+
+<span class="sd">        time_slice: int</span>
+<span class="sd">            The time_slice should be a positive integer greater than or equal to zero.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;,0),(&#39;G&#39;,0)),((&#39;I&#39;,0),(&#39;G&#39;,0)),((&#39;D&#39;,0),(&#39;D&#39;,1)),((&#39;I&#39;,0),(&#39;I&#39;,1))])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd =  TabularCPD((&#39;G&#39;,0), 3, [[0.3,0.05,0.9,0.5],</span>
+<span class="sd">        ...                                      [0.4,0.25,0.8,0.03],</span>
+<span class="sd">        ...                                      [0.3,0.7,0.02,0.2]], [(&#39;I&#39;, 0),(&#39;D&#39;, 0)],[2,2])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_cpds(grade_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_cpds()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">time_slice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_slices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeslices</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">time_slice</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time_slices</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_slice</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">time_slice</span><span class="p">):</span>
+                <span class="n">time_slices</span> <span class="o">=</span> <span class="n">time_slice</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;At least one element inside time_slice interable is not positive and/or integer&quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Time slice is not a positive integer neither a interable of integers&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">node</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Node not present in the model.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span> <span class="o">==</span> <span class="n">node</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">cpd</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">time_slice</span> <span class="ow">in</span> <span class="n">time_slices</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_slice_nodes</span><span class="p">(</span><span class="n">time_slice</span><span class="o">=</span><span class="n">time_slice</span><span class="p">):</span>
+                    <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">var</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">cpd</span><span class="p">:</span>
+                        <span class="n">return_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">return_cpds</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.remove_cpds"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.remove_cpds">[docs]</a>    <span class="k">def</span> <span class="nf">remove_cpds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">cpds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes the cpds that are provided in the argument.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *cpds : list, set, tuple (array-like)</span>
+<span class="sd">            List of CPDs which are to be associated with the model. Each CPD</span>
+<span class="sd">            should be an instance of `TabularCPD`.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;,0),(&#39;G&#39;,0)),((&#39;I&#39;,0),(&#39;G&#39;,0)),((&#39;D&#39;,0),(&#39;D&#39;,1)),((&#39;I&#39;,0),(&#39;I&#39;,1))])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd =  TabularCPD((&#39;G&#39;,0), 3, [[0.3,0.05,0.9,0.5],</span>
+<span class="sd">        ...                                      [0.4,0.25,0.8,0.03],</span>
+<span class="sd">        ...                                      [0.3,0.7,0.02,0.2]], [(&#39;I&#39;, 0),(&#39;D&#39;, 0)],[2,2])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_cpds(grade_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_cpds()</span>
+<span class="sd">        [&lt;TabularCPD representing P((&#39;G&#39;, 0):3 | (&#39;I&#39;, 0):2, (&#39;D&#39;, 0):2) at 0x3348ab0&gt;]</span>
+<span class="sd">        &gt;&gt;&gt; dbn.remove_cpds(grade_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; dbn.get_cpds()</span>
+<span class="sd">        []</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cpd</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.check_model"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.check_model">[docs]</a>    <span class="k">def</span> <span class="nf">check_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the model for various errors. This method checks for the following</span>
+<span class="sd">        errors.</span>
+
+<span class="sd">        * Checks if the sum of the probabilities in each associated CPD for each</span>
+<span class="sd">            state is equal to 1 (tol=0.01).</span>
+<span class="sd">        * Checks if the CPDs associated with nodes are consistent with their parents.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        boolean: True if everything seems to be order. Otherwise raises error</span>
+<span class="sd">            according to the problem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cpd</span><span class="p">,</span> <span class="n">TabularCPD</span><span class="p">):</span>
+                <span class="n">evidence</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">evidence_card</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">parents</span> <span class="k">if</span> <span class="n">parents</span> <span class="k">else</span> <span class="p">[]):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;CPD associated with </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2"> doesn&#39;t have proper parents associated with it.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+                    <span class="n">cpd</span><span class="o">.</span><span class="n">to_factor</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">marginalize</span><span class="p">([</span><span class="n">node</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)),</span>
+                    <span class="n">atol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Sum of probabilities of states for node </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="s2"> is not equal to 1&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.initialize_initial_state"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.initialize_initial_state">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_initial_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method will automatically re-adjust the cpds and the edges added to the bayesian network.</span>
+<span class="sd">        If an edge that is added as an intra time slice edge in the 0th timeslice, this method will</span>
+<span class="sd">        automatically add it in the 1st timeslice. It will also add the cpds. However, to call this</span>
+<span class="sd">        method, one needs to add cpds as well as the edges in the bayesian network of the whole</span>
+<span class="sd">        skeleton including the 0th and the 1st timeslice,.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; student = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; student.add_nodes_from([&#39;D&#39;, &#39;G&#39;, &#39;I&#39;, &#39;S&#39;, &#39;L&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; student.add_edges_from([((&#39;D&#39;, 0),(&#39;G&#39;, 0)),((&#39;I&#39;, 0),(&#39;G&#39;, 0)),((&#39;D&#39;, 0),(&#39;D&#39;, 1)),((&#39;I&#39;, 0),(&#39;I&#39;, 1))])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd = TabularCPD((&#39;G&#39;, 0), 3, [[0.3, 0.05, 0.9, 0.5],</span>
+<span class="sd">        ...                                      [0.4, 0.25, 0.08, 0.3],</span>
+<span class="sd">        ...                                      [0.3, 0.7, 0.02, 0.2]],</span>
+<span class="sd">        ...                        evidence=[(&#39;I&#39;, 0),(&#39;D&#39;, 0)],</span>
+<span class="sd">        ...                        evidence_card=[2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; d_i_cpd = TabularCPD((&#39;D&#39;, 1), 2, [[0.6, 0.3],</span>
+<span class="sd">        ...                                    [0.4, 0.7]],</span>
+<span class="sd">        ...                      evidence=[(&#39;D&#39;, 0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; diff_cpd = TabularCPD((&#39;D&#39;, 0), 2, [[0.6, 0.4]])</span>
+<span class="sd">        &gt;&gt;&gt; intel_cpd = TabularCPD((&#39;I&#39;,0), 2, [[0.7, 0.3]])</span>
+<span class="sd">        &gt;&gt;&gt; i_i_cpd = TabularCPD((&#39;I&#39;, 1), 2, [[0.5, 0.4],</span>
+<span class="sd">        ...                                    [0.5, 0.6]],</span>
+<span class="sd">        ...                      evidence=[(&#39;I&#39;, 0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; student.add_cpds(grade_cpd, d_i_cpd, diff_cpd, intel_cpd, i_i_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; student.initialize_initial_state()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="p">:</span>
+            <span class="n">temp_var</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">temp_var</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">variable</span> <span class="o">==</span> <span class="n">temp_var</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">parents</span><span class="p">:</span>
+                        <span class="n">evidence_card</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[:</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="n">new_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                            <span class="n">temp_var</span><span class="p">,</span>
+                            <span class="n">cpd</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span>
+                            <span class="n">cpd</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                                <span class="n">cpd</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">evidence_card</span><span class="p">)</span>
+                            <span class="p">),</span>
+                            <span class="n">parents</span><span class="p">,</span>
+                            <span class="n">evidence_card</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">cpd</span><span class="o">.</span><span class="n">get_evidence</span><span class="p">():</span>
+                            <span class="n">initial_cpd</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span>
+                                <span class="n">cpd</span><span class="o">.</span><span class="n">get_evidence</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                            <span class="p">)</span>
+                            <span class="n">new_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                                <span class="n">temp_var</span><span class="p">,</span>
+                                <span class="n">cpd</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">initial_cpd</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">new_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                                <span class="n">temp_var</span><span class="p">,</span>
+                                <span class="n">cpd</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+                            <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="n">new_cpd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_model</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.moralize"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.moralize">[docs]</a>    <span class="k">def</span> <span class="nf">moralize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes all the immoralities in the Network and creates a moral</span>
+<span class="sd">        graph (UndirectedGraph).</span>
+
+<span class="sd">        A v-structure X-&gt;Z&lt;-Y is an immorality if there is no directed edge</span>
+<span class="sd">        between X and Y.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN([((&#39;D&#39;,0), (&#39;G&#39;,0)), ((&#39;I&#39;,0), (&#39;G&#39;,0))])</span>
+<span class="sd">        &gt;&gt;&gt; moral_graph = dbn.moralize()</span>
+<span class="sd">        &gt;&gt;&gt; moral_graph.edges()</span>
+<span class="sd">        EdgeView([((&#39;G&#39;, 0), (&#39;I&#39;, 0)),</span>
+<span class="sd">                  ((&#39;G&#39;, 0), (&#39;D&#39;, 0)),</span>
+<span class="sd">                  ((&#39;D&#39;, 1), (&#39;I&#39;, 1)),</span>
+<span class="sd">                  ((&#39;D&#39;, 1), (&#39;G&#39;, 1)),</span>
+<span class="sd">                  ((&#39;I&#39;, 0), (&#39;D&#39;, 0)),</span>
+<span class="sd">                  ((&#39;G&#39;, 1), (&#39;I&#39;, 1))])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">moral_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="n">moral_graph</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">node</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">moral_graph</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.copy"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the dynamic bayesian network.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DynamicBayesianNetwork: copy of the dynamic bayesian network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN()</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_edges_from([((&#39;D&#39;,0),(&#39;G&#39;,0)),((&#39;I&#39;,0),(&#39;G&#39;,0)),((&#39;D&#39;,0),(&#39;D&#39;,1)),((&#39;I&#39;,0),(&#39;I&#39;,1))])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd =  TabularCPD((&#39;G&#39;,0), 3, [[0.3, 0.05, 0.9,  0.5 ],</span>
+<span class="sd">        ...                                      [0.4, 0.25, 0.8,  0.03],</span>
+<span class="sd">        ...                                      [0.3,  0.7, 0.02, 0.2 ]],</span>
+<span class="sd">        ...                         [(&#39;I&#39;, 0), (&#39;D&#39;, 0)],[2,2])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_cpds(grade_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; dbn_copy = dbn.copy()</span>
+<span class="sd">        &gt;&gt;&gt; dbn_copy.nodes()</span>
+<span class="sd">        [&#39;Z&#39;, &#39;G&#39;, &#39;I&#39;, &#39;D&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; dbn_copy.edges()</span>
+<span class="sd">        [((&#39;I&#39;, 1), (&#39;G&#39;, 1)),</span>
+<span class="sd">        ((&#39;I&#39;, 0), (&#39;I&#39;, 1)),</span>
+<span class="sd">        ((&#39;I&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">        ((&#39;D&#39;, 1), (&#39;G&#39;, 1)),</span>
+<span class="sd">        ((&#39;D&#39;, 0), (&#39;G&#39;, 0)),</span>
+<span class="sd">        ((&#39;D&#39;, 0), (&#39;D&#39;, 1))]</span>
+<span class="sd">        &gt;&gt;&gt; dbn_copy.get_cpds()</span>
+<span class="sd">        [&lt;TabularCPD representing P((&#39;G&#39;, 0):3 | (&#39;I&#39;, 0):2, (&#39;D&#39;, 0):2) at 0x7f13961a3320&gt;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dbn</span> <span class="o">=</span> <span class="n">DynamicBayesianNetwork</span><span class="p">()</span>
+        <span class="n">dbn</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">())</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">u</span><span class="o">.</span><span class="n">to_tuple</span><span class="p">(),</span> <span class="n">v</span><span class="o">.</span><span class="n">to_tuple</span><span class="p">())</span> <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">()]</span>
+        <span class="n">dbn</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+        <span class="n">cpd_copy</span> <span class="o">=</span> <span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()]</span>
+        <span class="n">dbn</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">cpd_copy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dbn</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_markov_blanket"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_markov_blanket">[docs]</a>    <span class="k">def</span> <span class="nf">get_markov_blanket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="c1"># Wrap node into DynamicNode</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">DynamicNode</span><span class="p">):</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">)</span>
+        <span class="c1"># Get standard Markov blanket</span>
+        <span class="n">markov_blanket</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_markov_blanket</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Augment Markov blanket:</span>
+        <span class="c1"># if node is in the last time slice, unroll and add children nodes from next time slice</span>
+        <span class="n">max_ts</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">n</span><span class="o">.</span><span class="n">time_slice</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">()])</span>
+        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">==</span> <span class="n">max_ts</span><span class="p">:</span>
+            <span class="c1"># Move node to previous time slice and get children</span>
+            <span class="n">temp_children</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_children</span><span class="p">(</span>
+                <span class="n">DynamicNode</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># Move children to next time slice</span>
+            <span class="n">next_children</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">DynamicNode</span><span class="p">(</span><span class="n">child</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="n">child</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">temp_children</span>
+            <span class="p">}</span>
+            <span class="c1"># Get children parents</span>
+            <span class="n">next_parents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">temp_children</span><span class="p">])</span>
+            <span class="p">)</span>
+            <span class="c1"># Get children&#39;s parents</span>
+            <span class="n">temp_parents</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">parent</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">temp_children</span> <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="c1"># Move children&#39;s parents to next time slice</span>
+            <span class="n">next_parents</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">DynamicNode</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">node</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">time_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">temp_parents</span>
+            <span class="p">}</span>
+            <span class="c1"># Add them to Markov blanket</span>
+            <span class="n">markov_blanket</span> <span class="o">=</span> <span class="n">markov_blanket</span> <span class="o">|</span> <span class="n">next_children</span>
+            <span class="n">markov_blanket</span> <span class="o">=</span> <span class="n">markov_blanket</span> <span class="o">|</span> <span class="n">next_parents</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">markov_blanket</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.get_constant_bn"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.get_constant_bn">[docs]</a>    <span class="k">def</span> <span class="nf">get_constant_bn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a normal bayesian network object which has nodes from the first two</span>
+<span class="sd">        time slices and all the edges in the first time slice and edges going from</span>
+<span class="sd">        first to second time slice. The returned bayesian network bascially represents</span>
+<span class="sd">        the part of the DBN which remains constant.</span>
+
+<span class="sd">        The node names are changed to strings in the form `{var}_{time}`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_slice</span><span class="p">),</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_slice</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="n">new_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpds</span><span class="p">:</span>
+            <span class="n">new_vars</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span> <span class="o">+</span> <span class="n">t_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span>
+            <span class="p">]</span>
+            <span class="n">new_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">TabularCPD</span><span class="p">(</span>
+                    <span class="n">variable</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">variable_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">values</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span>
+                    <span class="n">evidence</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                    <span class="n">evidence_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">bn</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+        <span class="n">bn</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">new_cpds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bn</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.fit"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="s2">&quot;MLE&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Learns the CPD of the model from data.</span>
+
+<span class="sd">        Since the assumption is that the 2-TBN stays constant throughtout the model,</span>
+<span class="sd">        the algorithm iterates over every 2 consecutive time slices in the data and</span>
+<span class="sd">        updates the CPDs based on it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data: pandas.DataFrame instance</span>
+<span class="sd">            The column names must be of the form (variable, time_slice). The</span>
+<span class="sd">            time-slices must start from 0.</span>
+
+<span class="sd">        estimator: str</span>
+<span class="sd">            Currently only Maximum Likelihood Estimator is supported.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None: The CPDs are added to the model instance.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; model = DBN(</span>
+<span class="sd">        &gt;&gt;&gt;     [</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;A&quot;, 0), (&quot;B&quot;, 0)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;A&quot;, 0), (&quot;C&quot;, 0)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;B&quot;, 0), (&quot;D&quot;, 0)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;C&quot;, 0), (&quot;D&quot;, 0)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;A&quot;, 0), (&quot;A&quot;, 1)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;B&quot;, 0), (&quot;B&quot;, 1)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;C&quot;, 0), (&quot;C&quot;, 1)),</span>
+<span class="sd">        &gt;&gt;&gt;         ((&quot;D&quot;, 0), (&quot;D&quot;, 1)),</span>
+<span class="sd">        &gt;&gt;&gt;     ]</span>
+<span class="sd">        &gt;&gt;&gt; )</span>
+<span class="sd">        &gt;&gt;&gt; data = np.random.randint(low=0, high=2, size=(1000, 20))</span>
+<span class="sd">        &gt;&gt;&gt; colnames = []</span>
+<span class="sd">        &gt;&gt;&gt; for t in range(5):</span>
+<span class="sd">        ...     colnames.extend([(&quot;A&quot;, t), (&quot;B&quot;, t), (&quot;C&quot;, t), (&quot;D&quot;, t)])</span>
+<span class="sd">        &gt;&gt;&gt; df = pd.DataFrame(data, columns=colnames)</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(df)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data must be a pandas dataframe. Got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data column names must start from time slice 0.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">estimator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;MLE&quot;</span><span class="p">,</span> <span class="s2">&quot;mle&quot;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Only Maximum Likelihood Estimator is supported currently&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Make a copy and replace tuple column names with str.</span>
+        <span class="n">data_copy</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">data_copy</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">const_bn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_constant_bn</span><span class="p">()</span>
+        <span class="n">n_time_slices</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">t_slice</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_time_slices</span><span class="p">):</span>
+            <span class="c1"># Get the columns names for this time slice</span>
+            <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">()]</span>
+            <span class="n">colnames</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">()]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Select the data frame for this time slice</span>
+            <span class="n">df_slice</span> <span class="o">=</span> <span class="n">data_copy</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">colnames</span><span class="p">]</span>
+
+            <span class="c1"># Change the column time slice to match the constant bayesian network.</span>
+            <span class="n">tuple_colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">df_slice</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">new_colnames</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">-</span> <span class="n">t_slice</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tuple_colnames</span>
+            <span class="p">]</span>
+            <span class="n">df_slice</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_colnames</span>
+
+            <span class="c1"># Fit or fit_update with df_slice depending on the time slice</span>
+            <span class="k">if</span> <span class="n">t_slice</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">const_bn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_slice</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">const_bn</span><span class="o">.</span><span class="n">fit_update</span><span class="p">(</span><span class="n">df_slice</span><span class="p">,</span> <span class="n">n_prev_samples</span><span class="o">=</span><span class="n">t_slice</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">)</span>
+
+        <span class="n">cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">const_bn</span><span class="o">.</span><span class="n">cpds</span><span class="p">:</span>
+            <span class="n">var_tuples</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+            <span class="n">new_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">DynamicNode</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">var_tuples</span><span class="p">]</span>
+            <span class="n">cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">TabularCPD</span><span class="p">(</span>
+                    <span class="n">variable</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">variable_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable_card</span><span class="p">,</span>
+                    <span class="n">values</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span>
+                    <span class="n">evidence</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                    <span class="n">evidence_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">cpds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.active_trail_nodes"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.active_trail_nodes">[docs]</a>    <span class="k">def</span> <span class="nf">active_trail_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_latents</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">DynamicNode</span><span class="p">):</span>
+            <span class="c1"># Wrap variables in DynamicNode objects</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">variables</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">variables</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">observed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">DynamicNode</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">observed</span><span class="p">])</span>
+        <span class="p">):</span>
+            <span class="c1"># Wrap observed in DynamicNode objects</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observed</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">observed</span> <span class="o">=</span> <span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">observed</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">observed</span> <span class="o">=</span> <span class="p">[</span><span class="n">DynamicNode</span><span class="p">(</span><span class="o">*</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">observed</span><span class="p">]</span>
+        <span class="c1"># Call super method</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">DynamicBayesianNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">active_trail_nodes</span><span class="p">(</span>
+            <span class="n">variables</span><span class="p">,</span> <span class="n">observed</span><span class="p">,</span> <span class="n">include_latents</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_postprocess</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Postprocess the generated samples before returning.</span>
+<span class="sd">        1. Remove any of the variables created because of the virtual evidence or intervention. Variables</span>
+<span class="sd">           starting with `__`</span>
+<span class="sd">        2. Change the column names from str to tuples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Step 1: Remove virtual evidence columns</span>
+        <span class="n">non_virt_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)]</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">non_virt_cols</span><span class="p">]</span>
+
+        <span class="c1"># Step 2: Change the column names</span>
+        <span class="n">tuple_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">new_cols</span> <span class="o">=</span> <span class="p">[(</span><span class="n">var</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tuple_cols</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_cols</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+<div class="viewcode-block" id="DynamicBayesianNetwork.simulate"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.DynamicBayesianNetwork.DynamicBayesianNetwork.simulate">[docs]</a>    <span class="k">def</span> <span class="nf">simulate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_samples</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">n_time_slices</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">do</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">virtual_intervention</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_latents</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simulates time-series data from the specified model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_samples: int</span>
+<span class="sd">            The number of data samples to simulate from the model.</span>
+
+<span class="sd">        n_time_slices: int</span>
+<span class="sd">            The number of time slices for which to simulate the data.</span>
+
+<span class="sd">        do: dict</span>
+<span class="sd">            The interventions to apply to the model. dict should be of the form</span>
+<span class="sd">            {(variable_name, time_slice): state}</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            Observed evidence to apply to the model. dict should be of the form</span>
+<span class="sd">            {(variable_name, time_slice): state}</span>
+
+<span class="sd">        virtual_evidence: list</span>
+<span class="sd">            Probabilistically apply evidence to the model. `virtual_evidence` should</span>
+<span class="sd">            be a list of `core.factors.discrete.TabularCPD` objects specifying the</span>
+<span class="sd">            virtual probabilities.</span>
+
+<span class="sd">        virtual_intervention: list</span>
+<span class="sd">            Also known as soft intervention. `virtual_intervention` should be a list</span>
+<span class="sd">            of `core.factors.discrete.TabularCPD` objects specifying the virtual/soft</span>
+<span class="sd">            intervention probabilities.</span>
+
+<span class="sd">        include_latents: boolean (default: False)</span>
+<span class="sd">            Whether to include the latent variable values in the generated samples.</span>
+
+<span class="sd">        seed: int (default: None)</span>
+<span class="sd">            If a value is provided, sets the seed for numpy.random.</span>
+
+<span class="sd">        show_progress: bool</span>
+<span class="sd">            If True, shows a progress bar when generating samples.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame: A dataframe with the simulated data.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import DynamicBayesianNetwork as DBN</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; dbn = DBN([((&quot;D&quot;, 0), (&quot;G&quot;, 0)), ((&quot;I&quot;, 0), (&quot;G&quot;, 0)),</span>
+<span class="sd">        ...            ((&quot;D&quot;, 0), (&quot;D&quot;, 1)), ((&quot;I&quot;, 0), (&quot;I&quot;, 1)),])</span>
+<span class="sd">        &gt;&gt;&gt; diff_cpd = TabularCPD((&quot;D&quot;, 0), 2, [[0.6], [0.4]])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd = TabularCPD(variable=(&quot;G&quot;, 0), variable_card=3,</span>
+<span class="sd">        ...                        values=[[0.3, 0.05, 0.9, 0.5],</span>
+<span class="sd">        ...                                [0.4, 0.25, 0.08, 0.3],</span>
+<span class="sd">        ...                                [0.3, 0.7, 0.02, 0.2]],</span>
+<span class="sd">        ...                        evidence=[(&quot;I&quot;, 0), (&quot;D&quot;, 0)],</span>
+<span class="sd">        ...                        evidence_card=[2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; d_i_cpd = TabularCPD(variable=(&quot;D&quot;, 1), variable_card=2,</span>
+<span class="sd">        ...                      values=[[0.6, 0.3], [0.4, 0.7]],</span>
+<span class="sd">        ...                      evidence=[(&quot;D&quot;, 0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; intel_cpd = TabularCPD((&quot;I&quot;, 0), 2, [[0.7], [0.3]])</span>
+<span class="sd">        &gt;&gt;&gt; i_i_cpd = TabularCPD(variable=(&quot;I&quot;, 1), variable_card=2,</span>
+<span class="sd">        ...                      values=[[0.5, 0.4], [0.5, 0.6]],</span>
+<span class="sd">        ...                      evidence=[(&quot;I&quot;, 0)],</span>
+<span class="sd">        ...                      evidence_card=[2])</span>
+<span class="sd">        &gt;&gt;&gt; g_i_cpd = TabularCPD(variable=(&quot;G&quot;, 1), variable_card=3,</span>
+<span class="sd">        ...                      values=[[0.3, 0.05, 0.9, 0.5],</span>
+<span class="sd">        ...                              [0.4, 0.25, 0.08, 0.3],</span>
+<span class="sd">        ...                              [0.3, 0.7, 0.02, 0.2]],</span>
+<span class="sd">        ...                      evidence=[(&quot;I&quot;, 1), (&quot;D&quot;, 1)],</span>
+<span class="sd">        ...                      evidence_card=[2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; dbn.add_cpds(diff_cpd, grade_cpd, d_i_cpd, intel_cpd, i_i_cpd, g_i_cpd)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">coreBN.sampling</span> <span class="kn">import</span> <span class="n">BayesianModelSampling</span>
+
+        <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">and</span> <span class="n">SHOW_PROGRESS</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">n_time_slices</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">()))</span>
+
+        <span class="c1"># Step 1: Create some data strucures for easily accessing values</span>
+        <span class="n">do</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">do</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">do</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">evidence</span>
+        <span class="n">virtual_intervention</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[]</span> <span class="k">if</span> <span class="n">virtual_intervention</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">virtual_intervention</span>
+        <span class="p">)</span>
+        <span class="n">virtual_evidence</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">virtual_evidence</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">virtual_evidence</span>
+
+        <span class="n">do_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="n">evidence_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="n">virtual_inter_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        <span class="n">virtual_evi_dict</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">do</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">do_dict</span><span class="p">[</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">evidence</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">evidence_dict</span><span class="p">[</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_intervention</span><span class="p">:</span>
+            <span class="n">new_vars</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+            <span class="n">new_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">variable</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">variable_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                <span class="n">evidence_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="p">)</span>
+            <span class="n">virtual_inter_dict</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_cpd</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_evidence</span><span class="p">:</span>
+            <span class="n">new_vars</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+            <span class="n">new_cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">variable</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">variable_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">values</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">(),</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">new_vars</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+                <span class="n">evidence_card</span><span class="o">=</span><span class="n">cpd</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+            <span class="p">)</span>
+            <span class="n">virtual_evi_dict</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_cpd</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Generate first two time samples</span>
+        <span class="n">const_bn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_constant_bn</span><span class="p">(</span><span class="n">t_slice</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sampled</span> <span class="o">=</span> <span class="n">const_bn</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+            <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
+            <span class="n">do</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">do_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">do_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">evidence_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]},</span>
+            <span class="n">virtual_evidence</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">virtual_evi_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">virtual_evi_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="n">virtual_intervention</span><span class="o">=</span><span class="p">[</span><span class="o">*</span><span class="n">virtual_inter_dict</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">*</span><span class="n">virtual_inter_dict</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="n">include_latents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_time_slices</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">sampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">sampled</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="k">elif</span> <span class="n">n_time_slices</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">sampled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">sampled</span>
+
+        <span class="c1"># Step 3: If n_time_slices &gt; 2, iterate over the time slices and generate samples</span>
+        <span class="k">for</span> <span class="n">t_slice</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_time_slices</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">const_bn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_constant_bn</span><span class="p">(</span><span class="n">t_slice</span><span class="o">=</span><span class="n">t_slice</span><span class="p">)</span>
+            <span class="n">partial_colnames</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">t_slice</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nodes</span><span class="p">()</span>
+            <span class="p">]</span>
+            <span class="n">partial_df</span> <span class="o">=</span> <span class="n">sampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">partial_colnames</span><span class="p">]</span>
+            <span class="n">remaining_df</span> <span class="o">=</span> <span class="n">sampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="o">~</span><span class="n">sampled</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">partial_colnames</span><span class="p">)]</span>
+            <span class="n">new_samples</span> <span class="o">=</span> <span class="n">const_bn</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+                <span class="n">n_samples</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
+                <span class="n">do</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">do_dict</span><span class="p">[</span><span class="n">t_slice</span><span class="p">],</span> <span class="o">**</span><span class="n">do_dict</span><span class="p">[</span><span class="n">t_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]},</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence_dict</span><span class="p">[</span><span class="n">t_slice</span><span class="p">],</span> <span class="o">**</span><span class="n">evidence_dict</span><span class="p">[</span><span class="n">t_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]},</span>
+                <span class="n">virtual_evidence</span><span class="o">=</span><span class="p">[</span>
+                    <span class="o">*</span><span class="n">virtual_evi_dict</span><span class="p">[</span><span class="n">t_slice</span><span class="p">],</span>
+                    <span class="o">*</span><span class="n">virtual_evi_dict</span><span class="p">[</span><span class="n">t_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">virtual_intervention</span><span class="o">=</span><span class="p">[</span>
+                    <span class="o">*</span><span class="n">virtual_inter_dict</span><span class="p">[</span><span class="n">t_slice</span><span class="p">],</span>
+                    <span class="o">*</span><span class="n">virtual_inter_dict</span><span class="p">[</span><span class="n">t_slice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">],</span>
+                <span class="n">include_latents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">partial_samples</span><span class="o">=</span><span class="n">partial_df</span><span class="p">,</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sampled</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">remaining_df</span><span class="p">,</span> <span class="n">new_samples</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

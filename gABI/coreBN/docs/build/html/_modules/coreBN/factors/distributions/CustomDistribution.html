@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.factors.distributions.CustomDistribution &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.factors.distributions.CustomDistribution</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.factors.distributions.CustomDistribution</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">integrate</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors.distributions</span> <span class="kn">import</span> <span class="n">BaseDistribution</span>
+
+
+<div class="viewcode-block" id="CustomDistribution"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution">[docs]</a><span class="k">class</span> <span class="nc">CustomDistribution</span><span class="p">(</span><span class="n">BaseDistribution</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">distribution</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class for representing custom continuous distributions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list or array-like</span>
+<span class="sd">            The variables for which the distribution is defined.</span>
+
+<span class="sd">        distribution: function</span>
+<span class="sd">            The probability density function of the distribution.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        # Two variable dirichlet distribution with alpha = (1, 2)</span>
+<span class="sd">        &gt;&gt;&gt; def dirichlet_pdf(x, y):</span>
+<span class="sd">        ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist = CustomDistribution(variables=[&#39;x&#39;, &#39;y&#39;], distribution=dirichlet_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist.variables</span>
+<span class="sd">        [&#39;x&#39;, &#39;y&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;variables: Expected type: iterable, got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Multiple variables can&#39;t have the same name&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="n">distribution</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pdf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the Probability Density Function of the distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        function: The probability density function of the distribution</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        # Two variable dirichlet distribution with alpha = (1, 2)</span>
+<span class="sd">        &gt;&gt;&gt; def dirichlet_pdf(x, y):</span>
+<span class="sd">        ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist = CustomDistribution(variables=[&#39;x&#39;, &#39;y&#39;],</span>
+<span class="sd">        ...                                     distribution=dirichlet_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist.pdf()</span>
+<span class="sd">        &lt;function __main__.diri_pdf&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pdf</span>
+
+    <span class="nd">@pdf</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="n">f</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the scope of the distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list: List of variables on which the distribution is defined.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        # Two variable dirichlet distribution with alpha = (1, 2)</span>
+<span class="sd">        &gt;&gt;&gt; def dirichlet_pdf(x, y):</span>
+<span class="sd">        ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist = CustomDistribution(variables=[&#39;x&#39;, &#39;y&#39;],</span>
+<span class="sd">        ...                                     distribution=dirichlet_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist.variables</span>
+<span class="sd">        [&#39;x&#39;, &#39;y&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variables</span>
+
+    <span class="nd">@variables</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_variables</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="CustomDistribution.assignment"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.assignment">[docs]</a>    <span class="k">def</span> <span class="nf">assignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the probability value of the PDF at the given parameter values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *x: values of all variables of this distribution,</span>
+<span class="sd">            collective defining a point at which the probability value is to be computed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float: The probability value at the point.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import multivariate_normal</span>
+<span class="sd">        &gt;&gt;&gt; normal_pdf = lambda x1, x2: multivariate_normal.pdf(</span>
+<span class="sd">        ...     x=(x1, x2), mean=[0, 0], cov=[[1, 0], [0, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist = CustomDistribution(variables=[&#39;x1&#39;, &#39;x2&#39;],</span>
+<span class="sd">        ...                                  distribution=normal_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.assignment(0, 0)</span>
+<span class="sd">        0.15915494309189535</span>
+<span class="sd">        0.15915494309189535</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.copy"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the CustomDistribution instance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution object: copy of the instance</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        # Two variable dirichlet distribution with alpha = (1,2)</span>
+<span class="sd">        &gt;&gt;&gt; def dirichlet_pdf(x, y):</span>
+<span class="sd">        ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_dist = CustomDistribution(variables=[&#39;x&#39;, &#39;y&#39;],</span>
+<span class="sd">        ...                                     distribution=dirichlet_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; copy_dist = dirichlet_dist.copy()</span>
+<span class="sd">        &gt;&gt;&gt; copy_dist.variables</span>
+<span class="sd">        [&#39;x&#39;, &#39;y&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">CustomDistribution</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">)</span></div>
+
+    <span class="c1"># TODO: Discretize methods need to be fixed for this to work</span>
+<div class="viewcode-block" id="CustomDistribution.discretize"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.discretize">[docs]</a>    <span class="k">def</span> <span class="nf">discretize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Discretizes the continuous distribution into discrete</span>
+<span class="sd">        probability masses using specified method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method: string, BaseDiscretizer instance</span>
+<span class="sd">            A Discretizer Class from coreBN.factors.discretize</span>
+
+<span class="sd">        *args, **kwargs: values</span>
+<span class="sd">            The parameters to be given to the Discretizer Class.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        An n-D array or a DiscreteFactor object according to the discretiztion</span>
+<span class="sd">        method used.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import ContinuousFactor</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.continuous import RoundingDiscretizer</span>
+<span class="sd">        &gt;&gt;&gt; def dirichlet_pdf(x, y):</span>
+<span class="sd">        ...     return (np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_factor = ContinuousFactor([&#39;x&#39;, &#39;y&#39;], dirichlet_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; dirichlet_factor.discretize(RoundingDiscretizer,</span>
+<span class="sd">        ...                             low=1, high=2, cardinality=5)</span>
+<span class="sd">        # TODO: finish this</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CustomDistribution</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">discretize</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.reduce"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reduces the factor to the context of the given variable values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        values: list, array-like</span>
+<span class="sd">            A list of tuples of the form (variable_name, variable_value).</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the factor itself, else would return</span>
+<span class="sd">            a new CustomDistribution object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution or None:</span>
+<span class="sd">                    if inplace=True (default) returns None</span>
+<span class="sd">                    if inplace=False returns a new CustomDistribution instance.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.special import beta</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; def custom_pdf(x, y, z):</span>
+<span class="sd">        ...     return z*(np.power(x, 1) * np.power(y, 2)) / beta(x, y)</span>
+<span class="sd">        &gt;&gt;&gt; custom_dist = CustomDistribution([&#39;x&#39;, &#39;y&#39;, &#39;z&#39;], custom_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; custom_dist.variables</span>
+<span class="sd">        [&#39;x&#39;, &#39;y&#39;, &#39;z&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; custom_dist.assignment(1, 2, 3)</span>
+<span class="sd">        24.0</span>
+
+<span class="sd">        &gt;&gt;&gt; custom_dist.reduce([(&#39;y&#39;, 2)])</span>
+<span class="sd">        &gt;&gt;&gt; custom_dist.variables</span>
+<span class="sd">        [&#39;x&#39;, &#39;z&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; custom_dist.assignment(1, 3)</span>
+<span class="sd">        24.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variables: Expected type: iterable, got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> not in scope.&quot;</span><span class="p">)</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">var_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">]</span>
+        <span class="n">var_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">var_to_remove</span><span class="p">]</span>
+
+        <span class="n">reduced_var_index</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">),</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span>
+        <span class="p">]</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span>
+
+        <span class="k">def</span> <span class="nf">reduced_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">reduced_args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+            <span class="n">reduced_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">reduced_args</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">reduced_var_index</span><span class="p">:</span>
+                    <span class="n">reduced_args</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">reduced_kwargs</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">variable</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                    <span class="n">reduced_kwargs</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">if</span> <span class="n">reduced_args</span> <span class="ow">and</span> <span class="n">reduced_kwargs</span><span class="p">:</span>
+                <span class="n">reduced_args</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">reduced_args</span> <span class="k">if</span> <span class="n">arg</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reduced_kwargs</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                <span class="p">]</span>
+
+            <span class="k">return</span> <span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">reduced_args</span><span class="p">,</span> <span class="o">**</span><span class="n">reduced_kwargs</span><span class="p">)</span>
+
+        <span class="n">phi</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">var_to_keep</span>
+        <span class="n">phi</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="n">reduced_pdf</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">phi</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.marginalize"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.marginalize">[docs]</a>    <span class="k">def</span> <span class="nf">marginalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marginalize the distribution with respect to the given variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list, array-like</span>
+<span class="sd">            List of variables to be removed from the marginalized distribution.</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the factor itself, else would return</span>
+<span class="sd">            a new CustomDistribution instance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Marginalized distribution or None:</span>
+<span class="sd">                if inplace=True (default) returns None</span>
+<span class="sd">                if inplace=False returns a new CustomDistribution instance.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import multivariate_normal</span>
+<span class="sd">        &gt;&gt;&gt; normal_pdf = lambda x1, x2: multivariate_normal.pdf(</span>
+<span class="sd">        ...                x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist = CustomDistribution(variables=[&#39;x1&#39;, &#39;x2&#39;],</span>
+<span class="sd">        ...                                  distribution=normal_pdf)</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.variables</span>
+<span class="sd">        [&#39;x1&#39;, &#39;x2&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.assignment(1, 1)</span>
+<span class="sd">        0.058549831524319168</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.marginalize([&#39;x2&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.variables</span>
+<span class="sd">        [&#39;x1&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.assignment(1)</span>
+<span class="sd">        0.24197072451914328</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Shouldn&#39;t be calling marginalize over no variable.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;variables: Expected type iterable, got: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> not in scope.&quot;</span><span class="p">)</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">all_var</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+        <span class="n">var_to_keep</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">]</span>
+        <span class="n">reordered_var_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_var</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span> <span class="o">+</span> <span class="n">var_to_keep</span><span class="p">]</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">_pdf</span>
+
+        <span class="c1"># The arguments need to be reordered because integrate.nquad</span>
+        <span class="c1"># integrates the first n-arguments of the function passed.</span>
+
+        <span class="k">def</span> <span class="nf">reordered_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="c1"># ordered_args restores the original order as it was in self.variables</span>
+            <span class="n">ordered_args</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">reordered_var_index</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index_id</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">index_id</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">all_var</span><span class="p">))</span>
+            <span class="p">]</span>
+            <span class="k">return</span> <span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">ordered_args</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">marginalized_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">integrate</span><span class="o">.</span><span class="n">nquad</span><span class="p">(</span>
+                <span class="n">reordered_pdf</span><span class="p">,</span>
+                <span class="p">[[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variables</span><span class="p">))],</span>
+                <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">phi</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="n">marginalized_pdf</span>
+        <span class="n">phi</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">var_to_keep</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">phi</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.normalize"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.normalize">[docs]</a>    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalizes the pdf of the distribution so that it</span>
+<span class="sd">        integrates to 1 over all the variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the distribution itself, else would return</span>
+<span class="sd">            a new distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution or None:</span>
+<span class="sd">             if inplace=True (default) returns None</span>
+<span class="sd">             if inplace=False returns a new CustomDistribution instance.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import multivariate_normal</span>
+<span class="sd">        &gt;&gt;&gt; normal_pdf_x2 = lambda x1, x2: 2 * multivariate_normal.pdf(</span>
+<span class="sd">        ...                     x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist_x2 = CustomDistribution(variables=[&#39;x1&#39;, &#39;x2&#39;],</span>
+<span class="sd">        ...                                     distribution=normal_pdf_x2)</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist_x2.assignment(1, 1)</span>
+<span class="sd">        0.117099663049</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist = normal_dist_x2.normalize(inplace=False)</span>
+<span class="sd">        &gt;&gt;&gt; normal_dist.assignment(1, 1)</span>
+<span class="sd">        0.0585498315243</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span>
+
+        <span class="n">pdf_mod</span> <span class="o">=</span> <span class="n">integrate</span><span class="o">.</span><span class="n">nquad</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">phi</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">/</span> <span class="n">pdf_mod</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">phi</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.is_valid_cpd"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.is_valid_cpd">[docs]</a>    <span class="k">def</span> <span class="nf">is_valid_cpd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span>
+            <span class="n">integrate</span><span class="o">.</span><span class="n">nquad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pdf</span><span class="p">,</span> <span class="p">[[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_operate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gives the CustomDistribution operation (product or divide) with</span>
+<span class="sd">        the other distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other: CustomDistribution</span>
+<span class="sd">            The CustomDistribution to be multiplied.</span>
+
+<span class="sd">        operation: str</span>
+<span class="sd">            &#39;product&#39; for multiplication operation and &#39;divide&#39; for</span>
+<span class="sd">            division operation.</span>
+
+<span class="sd">        inplace: boolean</span>
+<span class="sd">            If inplace=True it will modify the factor itself, else would return</span>
+<span class="sd">            a new distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution or None:</span>
+<span class="sd">                        if inplace=True (default) returns None</span>
+<span class="sd">                        if inplace=False returns a new `CustomDistribution` instance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">CustomDistribution</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;CustomDistribution objects can only be multiplied or divided with another CustomDistribution object. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">, expected: CustomDistribution.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span> <span class="k">if</span> <span class="n">inplace</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">pdf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdf</span>
+        <span class="n">self_var</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+
+        <span class="n">modified_pdf_var</span> <span class="o">=</span> <span class="n">self_var</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">variables</span> <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">self_var</span>
+        <span class="p">]</span>
+
+        <span class="k">def</span> <span class="nf">modified_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="n">self_pdf_args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">self_var</span><span class="p">)])</span>
+            <span class="n">other_pdf_args</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">modified_pdf_var</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">variables</span>
+            <span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;product&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">self_pdf_args</span><span class="p">)</span> <span class="o">*</span> <span class="n">other</span><span class="o">.</span><span class="n">_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">other_pdf_args</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;divide&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pdf</span><span class="p">(</span><span class="o">*</span><span class="n">self_pdf_args</span><span class="p">)</span> <span class="o">/</span> <span class="n">other</span><span class="o">.</span><span class="n">_pdf</span><span class="p">(</span><span class="o">*</span><span class="n">other_pdf_args</span><span class="p">)</span>
+
+        <span class="n">phi</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">modified_pdf_var</span>
+        <span class="n">phi</span><span class="o">.</span><span class="n">_pdf</span> <span class="o">=</span> <span class="n">modified_pdf</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inplace</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">phi</span>
+
+<div class="viewcode-block" id="CustomDistribution.product"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.product">[docs]</a>    <span class="k">def</span> <span class="nf">product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gives the CustomDistribution product with the other distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other: CustomDistribution</span>
+<span class="sd">            The CustomDistribution to be multiplied.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution or None:</span>
+<span class="sd">                        if inplace=True (default) returns None</span>
+<span class="sd">                        if inplace=False returns a new `CustomDistribution` instance.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import multivariate_normal</span>
+<span class="sd">        &gt;&gt;&gt; sn_pdf1 = lambda x: multivariate_normal.pdf(</span>
+<span class="sd">        ...                                 x=[x], mean=[0], cov=[[1]])</span>
+<span class="sd">        &gt;&gt;&gt; sn_pdf2 = lambda x1,x2: multivariate_normal.pdf(</span>
+<span class="sd">        ...                     x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; sn1 = CustomDistribution(variables=[&#39;x2&#39;], distribution=sn_pdf1)</span>
+<span class="sd">        &gt;&gt;&gt; sn2 = CustomDistribution(variables=[&#39;x1&#39;, &#39;x2&#39;],</span>
+<span class="sd">        ...                          distribution=sn_pdf2)</span>
+
+<span class="sd">        &gt;&gt;&gt; sn3 = sn1.product(sn2, inplace=False)</span>
+<span class="sd">        &gt;&gt;&gt; sn3.assignment(0, 0)</span>
+<span class="sd">        0.063493635934240983</span>
+
+<span class="sd">        &gt;&gt;&gt; sn3 = sn1 * sn2</span>
+<span class="sd">        &gt;&gt;&gt; sn3.assignment(0, 0)</span>
+<span class="sd">        0.063493635934240983</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operate</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">&quot;product&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CustomDistribution.divide"><a class="viewcode-back" href="../../../../coreBN.factors.distributions.html#coreBN.factors.distributions.CustomDistribution.CustomDistribution.divide">[docs]</a>    <span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gives the CustomDistribution divide with the other factor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other: CustomDistribution</span>
+<span class="sd">            The CustomDistribution to be multiplied.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        CustomDistribution or None:</span>
+<span class="sd">                        if inplace=True (default) returns None</span>
+<span class="sd">                        if inplace=False returns a new `CustomDistribution` instance.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.distributions import CustomDistribution</span>
+<span class="sd">        &gt;&gt;&gt; from scipy.stats import multivariate_normal</span>
+<span class="sd">        &gt;&gt;&gt; sn_pdf1 = lambda x: multivariate_normal.pdf(</span>
+<span class="sd">        ...                                     x=[x], mean=[0], cov=[[1]])</span>
+<span class="sd">        &gt;&gt;&gt; sn_pdf2 = lambda x1, x2: multivariate_normal.pdf(</span>
+<span class="sd">        ...                 x=[x1, x2], mean=[0, 0], cov=[[1, 0], [0, 1]])</span>
+<span class="sd">        &gt;&gt;&gt; sn1 = CustomDistribution(variables=[&#39;x2&#39;], distribution=sn_pdf1)</span>
+<span class="sd">        &gt;&gt;&gt; sn2 = CustomDistribution(variables=[&#39;x1&#39;, &#39;x2&#39;],</span>
+<span class="sd">        ...                          distribution=sn_pdf2)</span>
+
+<span class="sd">        &gt;&gt;&gt; sn3 = sn2.divide(sn1, inplace=False)</span>
+<span class="sd">        &gt;&gt;&gt; sn3.assignment(0, 0)</span>
+<span class="sd">        0.3989422804014327</span>
+
+<span class="sd">        &gt;&gt;&gt; sn3 = sn2 / sn1</span>
+<span class="sd">        &gt;&gt;&gt; sn3.assignment(0, 0)</span>
+<span class="sd">        0.3989422804014327</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Scope of divisor should be a subset of dividend&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_operate</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">&quot;divide&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">divide</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">__div__</span> <span class="o">=</span> <span class="fm">__truediv__</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.models.MarkovChain &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.models.MarkovChain</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.models.MarkovChain</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">eig</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">State</span>
+<span class="kn">from</span> <span class="nn">coreBN.utils</span> <span class="kn">import</span> <span class="n">sample_discrete</span>
+
+
+<div class="viewcode-block" id="MarkovChain"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain">[docs]</a><span class="k">class</span> <span class="nc">MarkovChain</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to represent a Markov Chain with multiple kernels for factored state space,</span>
+<span class="sd">    along with methods to simulate a run.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    Create an empty Markov Chain:</span>
+
+<span class="sd">    &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">    &gt;&gt;&gt; model = MC()</span>
+
+<span class="sd">    And then add variables to it</span>
+
+<span class="sd">    &gt;&gt;&gt; model.add_variables_from([&#39;intel&#39;, &#39;diff&#39;], [2, 3])</span>
+
+<span class="sd">    Or directly create a Markov Chain from a list of variables and their cardinalities</span>
+
+<span class="sd">    &gt;&gt;&gt; model = MC([&#39;intel&#39;, &#39;diff&#39;], [2, 3])</span>
+
+<span class="sd">    Add transition models</span>
+
+<span class="sd">    &gt;&gt;&gt; intel_tm = {0: {0: 0.25, 1: 0.75}, 1: {0: 0.5, 1: 0.5}}</span>
+<span class="sd">    &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">    &gt;&gt;&gt; diff_tm = {0: {0: 0.1, 1: 0.5, 2: 0.4}, 1: {0: 0.2, 1: 0.2, 2: 0.6 }, 2: {0: 0.7, 1: 0.15, 2: 0.15}}</span>
+<span class="sd">    &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+
+<span class="sd">    Set a start state</span>
+
+<span class="sd">    &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">    &gt;&gt;&gt; model.set_start_state([State(&#39;intel&#39;, 0), State(&#39;diff&#39;, 2)])</span>
+
+<span class="sd">    Sample from it</span>
+
+<span class="sd">    &gt;&gt;&gt; model.sample(size=5)</span>
+<span class="sd">       intel  diff</span>
+<span class="sd">    0      0     2</span>
+<span class="sd">    1      1     0</span>
+<span class="sd">    2      0     1</span>
+<span class="sd">    3      1     0</span>
+<span class="sd">    4      0     2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">card</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: array-like iterable object</span>
+<span class="sd">            A list of variables of the model.</span>
+
+<span class="sd">        card: array-like iterable object</span>
+<span class="sd">            A list of cardinalities of the variables.</span>
+
+<span class="sd">        start_state: array-like iterable object</span>
+<span class="sd">            List of tuples representing the starting states of the variables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">card</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;variables must be a non-string iterable.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">card</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;card must be a non-string iterable.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">c</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">card</span><span class="p">)}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">start_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_state</span><span class="p">(</span><span class="n">start_state</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">start_state</span>
+
+<div class="viewcode-block" id="MarkovChain.set_start_state"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.set_start_state">[docs]</a>    <span class="k">def</span> <span class="nf">set_start_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the start state of the Markov Chain. If the start_state is given as a array-like iterable, its contents</span>
+<span class="sd">        are reordered in the internal representation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start_state: dict or array-like iterable object</span>
+<span class="sd">            Dict (or list) of tuples representing the starting states of the variables.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MC([&#39;a&#39;, &#39;b&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; model.set_start_state([State(&#39;a&#39;, 0), State(&#39;b&#39;, 1)])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">start_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">start_state</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_state</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;start_state must be a non-string iterable.&quot;</span><span class="p">)</span>
+            <span class="c1"># Must be an array-like iterable. Reorder according to self.variables.</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">st</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">start_state</span><span class="p">}</span>
+            <span class="n">start_state</span> <span class="o">=</span> <span class="p">[</span><span class="n">State</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">start_state</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_state</span><span class="p">(</span><span class="n">start_state</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">start_state</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if a list representing the state of the variables is valid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Start state must be a non-string iterable object.&quot;</span><span class="p">)</span>
+        <span class="n">state_vars</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">var</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">state</span><span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">state_vars</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Start state must represent a complete assignment to all variables.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected variables in state: </span><span class="si">{</span><span class="n">state_vars</span><span class="si">}</span><span class="s2">, Got: </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Assignment </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2"> invalid.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="MarkovChain.add_variable"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.add_variable">[docs]</a>    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">card</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a variable to the model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: any hashable python object</span>
+
+<span class="sd">        card: int</span>
+<span class="sd">            Representing the cardinality of the variable to be added.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; model = MC()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variable(&#39;x&#39;, 4)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">variable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Variable </span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2"> already exists.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">card</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="MarkovChain.add_variables_from"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.add_variables_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_variables_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">cards</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add several variables to the model at once.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: array-like iterable object</span>
+<span class="sd">            List of variables to be added.</span>
+
+<span class="sd">        cards: array-like iterable object</span>
+<span class="sd">            List of cardinalities of the variables to be added.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; model = MC()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variables_from([&#39;x&#39;, &#39;y&#39;], [3, 4])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">card</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">cards</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_variable</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">card</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MarkovChain.add_transition_model"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.add_transition_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_transition_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">transition_model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a transition model for a particular variable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variable: any hashable python object</span>
+<span class="sd">            must be an existing variable of the model.</span>
+
+<span class="sd">        transition_model: dict or 2d array</span>
+<span class="sd">            dict representing valid transition probabilities defined for every possible state of the variable.</span>
+<span class="sd">            array represent a square matrix where every row sums to 1,</span>
+<span class="sd">            array[i,j] indicates the transition probalities from State i to State j</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; model = MC()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variable(&#39;grade&#39;, 3)</span>
+<span class="sd">        &gt;&gt;&gt; grade_tm = {0: {0: 0.1, 1: 0.5, 2: 0.4}, 1: {0: 0.2, 1: 0.2, 2: 0.6 }, 2: {0: 0.7, 1: 0.15, 2: 0.15}}</span>
+<span class="sd">        &gt;&gt;&gt; grade_tm_matrix = np.array([[0.1, 0.5, 0.4], [0.2, 0.2, 0.6], [0.7, 0.15, 0.15]])</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;grade&#39;, grade_tm)</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;grade&#39;, grade_tm_matrix)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_model</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">transition_model</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">transition_model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c1"># check if the transition model is valid</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_model</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition_model</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Transition model must be a dict or numpy array&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Transition model must be 2d array.given </span><span class="si">{</span><span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Dimension mismatch </span><span class="si">{</span><span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">!=</span><span class="si">{</span><span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># convert the matrix to dict</span>
+                <span class="n">size</span> <span class="o">=</span> <span class="n">transition_model</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">transition_model</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">i</span><span class="p">,</span>
+                        <span class="nb">dict</span><span class="p">(</span>
+                            <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">transition_model</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="n">exp_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">[</span><span class="n">variable</span><span class="p">]))</span>
+        <span class="n">tm_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">transition_model</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_states</span> <span class="o">==</span> <span class="n">tm_states</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Transitions must be defined for all states of variable </span><span class="si">{</span><span class="n">variable</span><span class="si">}</span><span class="s2">. Expected states: </span><span class="si">{</span><span class="n">exp_states</span><span class="si">}</span><span class="s2">, Got: </span><span class="si">{</span><span class="n">tm_states</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transition_model</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Each transition must be a dict.&quot;</span><span class="p">)</span>
+            <span class="n">prob_sum</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">prob</span> <span class="ow">in</span> <span class="n">transition</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">prob</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Transitions must represent valid probability weights.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">prob_sum</span> <span class="o">+=</span> <span class="n">prob</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">prob_sum</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Transition probabilities must sum to 1.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">transition_model</span></div>
+
+<div class="viewcode-block" id="MarkovChain.sample"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sample from the Markov Chain.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start_state: dict or array-like iterable</span>
+<span class="sd">            Representing the starting states of the variables. If None is passed, a random start_state is chosen.</span>
+<span class="sd">        size: int</span>
+<span class="sd">            Number of samples to be generated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MC([&#39;intel&#39;, &#39;diff&#39;], [2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; model.set_start_state([State(&#39;intel&#39;, 0), State(&#39;diff&#39;, 2)])</span>
+<span class="sd">        &gt;&gt;&gt; intel_tm = {0: {0: 0.25, 1: 0.75}, 1: {0: 0.5, 1: 0.5}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">        &gt;&gt;&gt; diff_tm = {0: {0: 0.1, 1: 0.5, 2: 0.4}, 1: {0: 0.2, 1: 0.2, 2: 0.6 }, 2: {0: 0.7, 1: 0.15, 2: 0.15}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+<span class="sd">        &gt;&gt;&gt; model.sample(size=5)</span>
+<span class="sd">           intel  diff</span>
+<span class="sd">        0      0     2</span>
+<span class="sd">        1      1     0</span>
+<span class="sd">        2      0     1</span>
+<span class="sd">        3      1     0</span>
+<span class="sd">        4      0     2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">start_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span>
+            <span class="c1"># else use previously-set state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_start_state</span><span class="p">(</span><span class="n">start_state</span><span class="p">)</span>
+
+        <span class="n">sampled</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">sampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">st</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+
+        <span class="n">var_states</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="n">var_values</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                <span class="n">var_states</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">var_values</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                <span class="n">samples</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_discrete</span><span class="p">(</span>
+                    <span class="n">var_states</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">],</span> <span class="n">var_values</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span>
+                <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">):</span>
+                <span class="n">next_st</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">next_st</span><span class="p">)</span>
+            <span class="n">sampled</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">st</span> <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">st</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">sampled</span></div>
+
+<div class="viewcode-block" id="MarkovChain.prob_from_sample"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.prob_from_sample">[docs]</a>    <span class="k">def</span> <span class="nf">prob_from_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given an instantiation (partial or complete) of the variables of the model,</span>
+<span class="sd">        compute the probability of observing it over multiple windows in a given sample.</span>
+
+<span class="sd">        If &#39;sample&#39; is not passed as an argument, generate the statistic by sampling from the</span>
+<span class="sd">        Markov Chain, starting with a random initial state.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models.MarkovChain import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MC([&#39;intel&#39;, &#39;diff&#39;], [3, 2])</span>
+<span class="sd">        &gt;&gt;&gt; intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {2: 0.5, 1:0.5}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">        &gt;&gt;&gt; diff_tm = {0: {0: 0.5, 1: 0.5}, 1: {0: 0.25, 1:0.75}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+<span class="sd">        &gt;&gt;&gt; model.prob_from_sample([State(&#39;diff&#39;, 0)])</span>
+<span class="sd">        array([ 0.27,  0.4 ,  0.18,  0.23, ..., 0.29])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># generate sample of size 10000</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">(),</span> <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">window_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">window_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">//</span> <span class="mi">100</span>  <span class="c1"># default window size is 100</span>
+        <span class="n">windows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="o">//</span> <span class="n">window_size</span>
+        <span class="n">probabilities</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">windows</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">windows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">window_size</span><span class="p">):</span>
+                <span class="n">ind</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">window_size</span> <span class="o">+</span> <span class="n">j</span>
+                <span class="n">state_eq</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ind</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">state</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">state_eq</span><span class="p">):</span>
+                    <span class="n">probabilities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">probabilities</span> <span class="o">/</span> <span class="n">window_size</span></div>
+
+<div class="viewcode-block" id="MarkovChain.generate_sample"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.generate_sample">[docs]</a>    <span class="k">def</span> <span class="nf">generate_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generator version of self.sample</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List of State namedtuples, representing the assignment to all variables of the model.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models.MarkovChain import MarkovChain</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MarkovChain()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variables_from([&#39;intel&#39;, &#39;diff&#39;], [3, 2])</span>
+<span class="sd">        &gt;&gt;&gt; intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">        &gt;&gt;&gt; diff_tm = {0: {0: 0.5, 1: 0.5}, 1: {0: 0.25, 1:0.75}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+<span class="sd">        &gt;&gt;&gt; gen = model.generate_sample([State(&#39;intel&#39;, 0), State(&#39;diff&#39;, 0)], 2)</span>
+<span class="sd">        &gt;&gt;&gt; [sample for sample in gen]</span>
+<span class="sd">        [[State(var=&#39;intel&#39;, state=2), State(var=&#39;diff&#39;, state=1)],</span>
+<span class="sd">         [State(var=&#39;intel&#39;, state=2), State(var=&#39;diff&#39;, state=0)]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">start_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">()</span>
+            <span class="c1"># else use previously-set state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_start_state</span><span class="p">(</span><span class="n">start_state</span><span class="p">)</span>
+        <span class="c1"># sampled.loc[0] = [self.state[var] for var in self.variables]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">):</span>
+                <span class="n">next_st</span> <span class="o">=</span> <span class="n">sample_discrete</span><span class="p">(</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">st</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">next_st</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[:]</span></div>
+
+<div class="viewcode-block" id="MarkovChain.is_stationarity"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.is_stationarity">[docs]</a>    <span class="k">def</span> <span class="nf">is_stationarity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the given markov chain is stationary and checks the steady state</span>
+<span class="sd">        probability values for the state are consistent.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tolerance: float</span>
+<span class="sd">            represents the diff between actual steady state value and the computed value</span>
+<span class="sd">        sample: [State(i,j)]</span>
+<span class="sd">            represents the list of state which the markov chain has sampled</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Boolean:</span>
+<span class="sd">            True, if the markov chain converges to steady state distribution within the tolerance</span>
+<span class="sd">            False, if the markov chain does not converge to steady state distribution within tolerance</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models.MarkovChain import MarkovChain</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MarkovChain()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variables_from([&#39;intel&#39;, &#39;diff&#39;], [3, 2])</span>
+<span class="sd">        &gt;&gt;&gt; intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">        &gt;&gt;&gt; diff_tm = {0: {0: 0.5, 1: 0.5}, 1: {0: 0.25, 1:0.75}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+<span class="sd">        &gt;&gt;&gt; model.is_stationarity()</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">return_val</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="c1"># convert dict to numpy matrix</span>
+            <span class="n">transition_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="p">],</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">S</span><span class="p">,</span> <span class="n">U</span> <span class="o">=</span> <span class="n">eig</span><span class="p">(</span><span class="n">transition_mat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">stationary</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">U</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">S</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-8</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+            <span class="n">stationary</span> <span class="o">=</span> <span class="p">(</span><span class="n">stationary</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">stationary</span><span class="p">))</span><span class="o">.</span><span class="n">real</span>
+
+            <span class="n">probabilites</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">window_size</span> <span class="o">=</span> <span class="mi">10000</span> <span class="k">if</span> <span class="n">sample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">transition_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">probabilites</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prob_from_sample</span><span class="p">([</span><span class="n">State</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">)],</span> <span class="n">window_size</span><span class="o">=</span><span class="n">window_size</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">probabilites</span><span class="p">,</span> <span class="n">stationary</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">return_val</span> <span class="o">=</span> <span class="n">return_val</span> <span class="ow">and</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">return_val</span> <span class="o">=</span> <span class="n">return_val</span> <span class="ow">and</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">return_val</span></div>
+
+<div class="viewcode-block" id="MarkovChain.random_state"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.random_state">[docs]</a>    <span class="k">def</span> <span class="nf">random_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a random state of the Markov Chain.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        List of namedtuples, representing a random assignment to all variables of the model.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain as MC</span>
+<span class="sd">        &gt;&gt;&gt; model = MC([&#39;intel&#39;, &#39;diff&#39;], [2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; model.random_state()</span>
+<span class="sd">        [State(var=&#39;diff&#39;, state=2), State(var=&#39;intel&#39;, state=1)]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">State</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="MarkovChain.copy"><a class="viewcode-back" href="../../../coreBN.models.html#coreBN.models.MarkovChain.MarkovChain.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of Markov Chain Model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        MarkovChain : Copy of MarkovChain.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import MarkovChain</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import State</span>
+<span class="sd">        &gt;&gt;&gt; model = MarkovChain()</span>
+<span class="sd">        &gt;&gt;&gt; model.add_variables_from([&#39;intel&#39;, &#39;diff&#39;], [3, 2])</span>
+<span class="sd">        &gt;&gt;&gt; intel_tm = {0: {0: 0.2, 1: 0.4, 2:0.4}, 1: {0: 0, 1: 0.5, 2: 0.5}, 2: {0: 0.3, 1: 0.3, 2: 0.4}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;intel&#39;, intel_tm)</span>
+<span class="sd">        &gt;&gt;&gt; diff_tm = {0: {0: 0.5, 1: 0.5}, 1: {0: 0.25, 1:0.75}}</span>
+<span class="sd">        &gt;&gt;&gt; model.add_transition_model(&#39;diff&#39;, diff_tm)</span>
+<span class="sd">        &gt;&gt;&gt; model.set_start_state([State(&#39;intel&#39;, 0), State(&#39;diff&#39;, 1)])</span>
+<span class="sd">        &gt;&gt;&gt; model_copy = model.copy()</span>
+<span class="sd">        &gt;&gt;&gt; model_copy.transition_models</span>
+<span class="sd">        &gt;&gt;&gt; {&#39;diff&#39;: {0: {0: 0.1, 1: 0.5, 2: 0.4}, 1: {0: 0.2, 1: 0.2, 2: 0.6}, 2: {0: 0.7, 1: 0.15, 2: 0.15}},</span>
+<span class="sd">        ...  &#39;intel&#39;: {0: {0: 0.25, 1: 0.75}, 1: {0: 0.5, 1: 0.5}}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">markovchain_copy</span> <span class="o">=</span> <span class="n">MarkovChain</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="n">card</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cardinalities</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+            <span class="n">start_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="p">:</span>
+            <span class="n">markovchain_copy</span><span class="o">.</span><span class="n">transition_models</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_models</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">markovchain_copy</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.IO.XMLBIF &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.IO.XMLBIF</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.IO.XMLBIF</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">BytesIO</span>
+<span class="kn">import</span> <span class="nn">pyparsing</span> <span class="k">as</span> <span class="nn">pp</span>
+
+
+<span class="c1"># TODO input and output state</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="c1"># try:</span>
+        <span class="c1">#    import xml.etree.cElementTree as etree</span>
+        <span class="c1">#    commented out because xml.etree.cElementTree is giving errors with dictionary attributes</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to import ElementTree from any known place&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span><span class="p">,</span> <span class="n">State</span>
+
+
+<div class="viewcode-block" id="XMLBIFReader"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader">[docs]</a><span class="k">class</span> <span class="nc">XMLBIFReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for reading network file in XMLBIF format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialisation of XMLBIFReader object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : file or str</span>
+<span class="sd">            File of XMLBIF data</span>
+<span class="sd">            File of XMLBIF data</span>
+
+<span class="sd">        string : str</span>
+<span class="sd">            String of XMLBIF data</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        # xmlbif_test.xml is the file present in</span>
+<span class="sd">        # http://www.cs.cmu.edu/~fgcozman/Research/InterchangeFormat/</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import XMLBIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; model = reader.get_model()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NETWORK&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NETWORK&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either path or string&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edge_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_edges</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_CPD</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_property</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+
+<div class="viewcode-block" id="XMLBIFReader.get_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns list of variables of the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_variables()</span>
+<span class="sd">        [&#39;light-on&#39;, &#39;bowel-problem&#39;, &#39;dog-out&#39;, &#39;hear-bark&#39;, &#39;family-out&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">variable</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">variables</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_edges"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the edges of the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_edges()</span>
+<span class="sd">        [[&#39;family-out&#39;, &#39;light-on&#39;],</span>
+<span class="sd">         [&#39;family-out&#39;, &#39;dog-out&#39;],</span>
+<span class="sd">         [&#39;bowel-problem&#39;, &#39;dog-out&#39;],</span>
+<span class="sd">         [&#39;dog-out&#39;, &#39;hear-bark&#39;]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edge_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">edge_list</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_states"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_states">[docs]</a>    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the states of variables present in the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_states()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;true&#39;, &#39;false&#39;],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;true&#39;, &#39;false&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [&#39;true&#39;, &#39;false&#39;],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;true&#39;, &#39;false&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;true&#39;, &#39;false&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_states</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">variable</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">outcome</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">outcome</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;OUTCOME&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">variable_states</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_parents"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the parents of the variables present in the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_parents()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;family-out&#39;, &#39;bowel-problem&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;dog-out&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;family-out&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_parents</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">definition</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;FOR&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">edge</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">definition</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;GIVEN&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">definition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;DEFINITION&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">variable_parents</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_values"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the CPD of the variables present in the network</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_values()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: array([[ 0.01],</span>
+<span class="sd">                                 [ 0.99]]),</span>
+<span class="sd">         &#39;dog-out&#39;: array([[ 0.99,  0.01,  0.97,  0.03],</span>
+<span class="sd">                           [ 0.9 ,  0.1 ,  0.3 ,  0.7 ]]),</span>
+<span class="sd">         &#39;family-out&#39;: array([[ 0.15],</span>
+<span class="sd">                              [ 0.85]]),</span>
+<span class="sd">         &#39;hear-bark&#39;: array([[ 0.7 ,  0.3 ],</span>
+<span class="sd">                             [ 0.01,  0.99]]),</span>
+<span class="sd">         &#39;light-on&#39;: array([[ 0.6 ,  0.4 ],</span>
+<span class="sd">                            [ 0.05,  0.95]])}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_CPD</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">definition</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;FOR&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()))</span>
+            <span class="k">for</span> <span class="n">definition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;DEFINITION&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">definition</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;TABLE&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">variable_CPD</span><span class="p">:</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">variable_CPD</span><span class="p">[</span><span class="n">variable</span><span class="p">])</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">variable</span><span class="p">]),</span>
+                    <span class="n">arr</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">variable</span><span class="p">]),</span>
+                <span class="p">),</span>
+                <span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">variable_CPD</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
+        <span class="k">return</span> <span class="n">variable_CPD</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_property"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_property">[docs]</a>    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the property of the variable</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIF.XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_property()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;position = (190, 69)&#39;],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;position = (155, 165)&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [&#39;position = (112, 69)&#39;],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;position = (154, 241)&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;position = (73, 165)&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_property</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">variable</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">:</span> <span class="p">[</span>
+                <span class="nb">property</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="nb">property</span> <span class="ow">in</span> <span class="n">variable</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;PROPERTY&quot;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;VARIABLE&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">variable_property</span></div>
+
+<div class="viewcode-block" id="XMLBIFReader.get_model"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFReader.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name_type</span><span class="o">=</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a Bayesian Network instance from the file/string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        state_name_type: int, str, or bool (default: str)</span>
+<span class="sd">            The data type to which to convert the state names of the variables.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BayesianNetwork instance: The read model.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import XMLBIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = XMLBIFReader(&quot;xmlbif_test.xml&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; model = reader.get_model()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">edge_list</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span>
+
+        <span class="n">tabular_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_CPD</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">evidence_card</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">evidence_var</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">evidence_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="p">]</span>
+            <span class="n">cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                <span class="n">var</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">]),</span>
+                <span class="n">values</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">],</span>
+                <span class="n">evidence_card</span><span class="o">=</span><span class="n">evidence_card</span><span class="p">,</span>
+                <span class="n">state_names</span><span class="o">=</span><span class="p">{</span>
+                    <span class="n">var</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">state_name_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+                    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">([</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+                <span class="p">},</span>
+            <span class="p">)</span>
+            <span class="n">tabular_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">tabular_cpds</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_property</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">prop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">prop_name</span><span class="p">,</span> <span class="n">prop_value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">prop</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">))</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">prop_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_value</span>
+
+        <span class="k">return</span> <span class="n">model</span></div></div>
+
+
+<div class="viewcode-block" id="XMLBIFWriter"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter">[docs]</a><span class="k">class</span> <span class="nc">XMLBIFWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for writing XMLBIF network file format.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">prettyprint</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise a XMLBIFWriter object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: BayesianNetwork Instance</span>
+<span class="sd">            Model to write</span>
+
+<span class="sd">        encoding: str (optional)</span>
+<span class="sd">            Encoding for text data</span>
+
+<span class="sd">        prettyprint: Bool(optional)</span>
+<span class="sd">            Indentation in output XML if true</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import XMLBIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.utils import get_example_model</span>
+<span class="sd">        &gt;&gt;&gt; model = get_example_model(&#39;asia&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.write_xmlbif(&#39;asia.xml&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;model must an instance of BayesianNetwork&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prettyprint</span> <span class="o">=</span> <span class="n">prettyprint</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s2">&quot;BIF&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;VERSION&quot;</span><span class="p">:</span> <span class="s2">&quot;0.3&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">,</span> <span class="s2">&quot;NETWORK&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;UNTITLED&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_definition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the XML as string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prettyprint</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">BytesIO</span><span class="p">()</span>
+        <span class="n">et</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span>
+        <span class="n">et</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+
+<div class="viewcode-block" id="XMLBIFWriter.indent"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.indent">[docs]</a>    <span class="k">def</span> <span class="nf">indent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elem</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inplace prettyprint formatter.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">level</span> <span class="o">*</span> <span class="s2">&quot;  &quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">level</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">elem</span><span class="o">.</span><span class="n">tail</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">tail</span> <span class="o">=</span> <span class="n">i</span></div>
+
+<div class="viewcode-block" id="XMLBIFWriter.get_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add variables to XMLBIF</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        dict: dict of type {variable: variable tags}</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_variables()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: &lt;Element VARIABLE at 0x7fe28607dd88&gt;,</span>
+<span class="sd">         &#39;family-out&#39;: &lt;Element VARIABLE at 0x7fe28607de08&gt;,</span>
+<span class="sd">         &#39;hear-bark&#39;: &lt;Element VARIABLE at 0x7fe28607de48&gt;,</span>
+<span class="sd">         &#39;dog-out&#39;: &lt;Element VARIABLE at 0x7fe28607ddc8&gt;,</span>
+<span class="sd">         &#39;light-on&#39;: &lt;Element VARIABLE at 0x7fe28607de88&gt;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">variable_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="n">variable_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s2">&quot;VARIABLE&quot;</span><span class="p">,</span> <span class="n">attrib</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;TYPE&quot;</span><span class="p">:</span> <span class="s2">&quot;nature&quot;</span><span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">variable_tag</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="s2">&quot;NAME&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">return</span> <span class="n">variable_tag</span></div>
+
+<div class="viewcode-block" id="XMLBIFWriter.get_states"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.get_states">[docs]</a>    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add outcome to variables of XMLBIF</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        dict: dict of type {variable: outcome tags}</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_states()</span>
+<span class="sd">        {&#39;dog-out&#39;: [&lt;Element OUTCOME at 0x7ffbabfcdec8&gt;, &lt;Element OUTCOME at 0x7ffbabfcdf08&gt;],</span>
+<span class="sd">         &#39;family-out&#39;: [&lt;Element OUTCOME at 0x7ffbabfd4108&gt;, &lt;Element OUTCOME at 0x7ffbabfd4148&gt;],</span>
+<span class="sd">         &#39;bowel-problem&#39;: [&lt;Element OUTCOME at 0x7ffbabfd4088&gt;, &lt;Element OUTCOME at 0x7ffbabfd40c8&gt;],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&lt;Element OUTCOME at 0x7ffbabfcdf48&gt;, &lt;Element OUTCOME at 0x7ffbabfcdf88&gt;],</span>
+<span class="sd">         &#39;light-on&#39;: [&lt;Element OUTCOME at 0x7ffbabfcdfc8&gt;, &lt;Element OUTCOME at 0x7ffbabfd4048&gt;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">outcome_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span>
+            <span class="n">outcome_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">cpd</span><span class="o">.</span><span class="n">state_names</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">cpd</span><span class="o">.</span><span class="n">state_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">states</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">cpd</span><span class="o">.</span><span class="n">get_cardinality</span><span class="p">([</span><span class="n">var</span><span class="p">])[</span><span class="n">var</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">states</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                <span class="n">state_tag</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="s2">&quot;OUTCOME&quot;</span><span class="p">)</span>
+                <span class="n">state_tag</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_valid_state_name</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+                <span class="n">outcome_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">state_tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">outcome_tag</span></div>
+
+    <span class="k">def</span> <span class="nf">_make_valid_state_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transform the input state_name into a valid state in XMLBIF.</span>
+<span class="sd">        XMLBIF states must start with a letter an only contain letters,</span>
+<span class="sd">        numbers and underscores.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Throw a warning that the state names are going to be modified instead of silently modifying it.</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">state_name</span><span class="p">)</span>
+        <span class="n">s_fixed</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">pp</span><span class="o">.</span><span class="n">CharsNotIn</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">alphanums</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">setParseAction</span><span class="p">(</span><span class="n">pp</span><span class="o">.</span><span class="n">replaceWith</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">transformString</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">s_fixed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+            <span class="n">s_fixed</span> <span class="o">=</span> <span class="n">s_fixed</span>
+        <span class="k">return</span> <span class="n">s_fixed</span>
+
+<div class="viewcode-block" id="XMLBIFWriter.get_properties"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.get_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add property to variables in XMLBIF</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        dict: dict of type {variable: property tag}</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_property()</span>
+<span class="sd">        {&#39;light-on&#39;: &lt;Element PROPERTY at 0x7f7a2ffac1c8&gt;,</span>
+<span class="sd">         &#39;family-out&#39;: &lt;Element PROPERTY at 0x7f7a2ffac148&gt;,</span>
+<span class="sd">         &#39;hear-bark&#39;: &lt;Element PROPERTY at 0x7f7a2ffac188&gt;,</span>
+<span class="sd">         &#39;bowel-problem&#39;: &lt;Element PROPERTY at 0x7f7a2ffac0c8&gt;,</span>
+<span class="sd">         &#39;dog-out&#39;: &lt;Element PROPERTY at 0x7f7a2ffac108&gt;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">property_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="n">property_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="s2">&quot;PROPERTY&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">property_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">property_tag</span></div>
+
+<div class="viewcode-block" id="XMLBIFWriter.get_definition"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.get_definition">[docs]</a>    <span class="k">def</span> <span class="nf">get_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add Definition to XMLBIF</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        dict: dict of type {variable: definition tag}</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_definition()</span>
+<span class="sd">        {&#39;hear-bark&#39;: &lt;Element DEFINITION at 0x7f1d48977408&gt;,</span>
+<span class="sd">         &#39;family-out&#39;: &lt;Element DEFINITION at 0x7f1d489773c8&gt;,</span>
+<span class="sd">         &#39;dog-out&#39;: &lt;Element DEFINITION at 0x7f1d48977388&gt;,</span>
+<span class="sd">         &#39;bowel-problem&#39;: &lt;Element DEFINITION at 0x7f1d48977348&gt;,</span>
+<span class="sd">         &#39;light-on&#39;: &lt;Element DEFINITION at 0x7f1d48977448&gt;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="n">cpds</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">variable</span><span class="p">)</span>
+        <span class="n">definition_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">definition_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="s2">&quot;DEFINITION&quot;</span><span class="p">)</span>
+            <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">definition_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">],</span> <span class="s2">&quot;FOR&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span>
+            <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">definition_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">],</span> <span class="s2">&quot;GIVEN&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">parent</span>
+
+        <span class="k">return</span> <span class="n">definition_tag</span></div>
+
+<div class="viewcode-block" id="XMLBIFWriter.get_values"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add Table to XMLBIF.</span>
+
+<span class="sd">        Return</span>
+<span class="sd">        ---------------</span>
+<span class="sd">        dict: dict of type {variable: table tag}</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_values()</span>
+<span class="sd">        {&#39;dog-out&#39;: &lt;Element TABLE at 0x7f240726f3c8&gt;,</span>
+<span class="sd">         &#39;light-on&#39;: &lt;Element TABLE at 0x7f240726f488&gt;,</span>
+<span class="sd">         &#39;bowel-problem&#39;: &lt;Element TABLE at 0x7f240726f388&gt;,</span>
+<span class="sd">         &#39;family-out&#39;: &lt;Element TABLE at 0x7f240726f408&gt;,</span>
+<span class="sd">         &#39;hear-bark&#39;: &lt;Element TABLE at 0x7f240726f448&gt;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="n">definition_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span>
+        <span class="n">table_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">table_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">definition_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">],</span> <span class="s2">&quot;TABLE&quot;</span>
+            <span class="p">)</span>
+            <span class="n">table_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">):</span>
+                <span class="n">table_tag</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">text</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+
+        <span class="k">return</span> <span class="n">table_tag</span></div>
+
+<div class="viewcode-block" id="XMLBIFWriter.write_xmlbif"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.XMLBIF.XMLBIFWriter.write_xmlbif">[docs]</a>    <span class="k">def</span> <span class="nf">write_xmlbif</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the xml data into the file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename: Name of the file.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import XMLBIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.utils import get_example_model</span>
+<span class="sd">        &gt;&gt;&gt; model = get_example_model(&#39;asia&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; writer = XMLBIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.write_xmlbif(&#39;asia.xml&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

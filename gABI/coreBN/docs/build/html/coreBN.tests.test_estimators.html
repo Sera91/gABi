@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_estimators package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.tests.test_factors package" href="coreBN.tests.test_factors.html" />
+    <link rel="prev" title="coreBN.tests.test_base package" href="coreBN.tests.test_base.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.tests.html">coreBN.tests package</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_estimators package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.tests.test_estimators.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-tests-test-estimators-package">
+<h1>coreBN.tests.test_estimators package<a class="headerlink" href="#corebn-tests-test-estimators-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.tests.test_estimators.test_BaseEstimator">
+<span id="corebn-tests-test-estimators-test-baseestimator-module"></span><h2>coreBN.tests.test_estimators.test_BaseEstimator module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_BaseEstimator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_BaseEstimator.</span></span><span class="sig-name descname"><span class="pre">TestBaseEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BaseEstimator.html#TestBaseEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BaseEstimator.html#TestBaseEstimator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BaseEstimator.html#TestBaseEstimator.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.test_missing_data">
+<span class="sig-name descname"><span class="pre">test_missing_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BaseEstimator.html#TestBaseEstimator.test_missing_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.test_missing_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.test_state_count">
+<span class="sig-name descname"><span class="pre">test_state_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BaseEstimator.html#TestBaseEstimator.test_state_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BaseEstimator.TestBaseEstimator.test_state_count" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_BayesianEstimator">
+<span id="corebn-tests-test-estimators-test-bayesianestimator-module"></span><h2>coreBN.tests.test_estimators.test_BayesianEstimator module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_BayesianEstimator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_BayesianEstimator.</span></span><span class="sig-name descname"><span class="pre">TestBayesianEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_error_latent_model">
+<span class="sig-name descname"><span class="pre">test_error_latent_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_error_latent_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_error_latent_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_dirichlet">
+<span class="sig-name descname"><span class="pre">test_estimate_cpd_dirichlet</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_estimate_cpd_dirichlet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_dirichlet" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_improper_prior">
+<span class="sig-name descname"><span class="pre">test_estimate_cpd_improper_prior</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_estimate_cpd_improper_prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_improper_prior" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_shortcuts">
+<span class="sig-name descname"><span class="pre">test_estimate_cpd_shortcuts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_estimate_cpd_shortcuts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_estimate_cpd_shortcuts" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters">
+<span class="sig-name descname"><span class="pre">test_get_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_get_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters2">
+<span class="sig-name descname"><span class="pre">test_get_parameters2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_get_parameters2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters3">
+<span class="sig-name descname"><span class="pre">test_get_parameters3</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_BayesianEstimator.html#TestBayesianEstimator.test_get_parameters3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_BayesianEstimator.TestBayesianEstimator.test_get_parameters3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_CITests">
+<span id="corebn-tests-test-estimators-test-citests-module"></span><h2>coreBN.tests.test_estimators.test_CITests module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_CITests" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestChiSquare">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_CITests.</span></span><span class="sig-name descname"><span class="pre">TestChiSquare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestChiSquare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestChiSquare" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestChiSquare.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestChiSquare.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestChiSquare.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_chisquare_adult_dataset">
+<span class="sig-name descname"><span class="pre">test_chisquare_adult_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestChiSquare.test_chisquare_adult_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_chisquare_adult_dataset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_discrete_tests">
+<span class="sig-name descname"><span class="pre">test_discrete_tests</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestChiSquare.test_discrete_tests"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_discrete_tests" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_exactly_same_vars">
+<span class="sig-name descname"><span class="pre">test_exactly_same_vars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestChiSquare.test_exactly_same_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestChiSquare.test_exactly_same_vars" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestPearsonr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_CITests.</span></span><span class="sig-name descname"><span class="pre">TestPearsonr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestPearsonr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestPearsonr" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestPearsonr.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestPearsonr.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestPearsonr.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_CITests.TestPearsonr.test_pearsonr">
+<span class="sig-name descname"><span class="pre">test_pearsonr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_CITests.html#TestPearsonr.test_pearsonr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_CITests.TestPearsonr.test_pearsonr" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_EM">
+<span id="corebn-tests-test-estimators-test-em-module"></span><h2>coreBN.tests.test_estimators.test_EM module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_EM" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_EM.TestEMObserved">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_EM.</span></span><span class="sig-name descname"><span class="pre">TestEMObserved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_EM.html#TestEMObserved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_EM.TestEMObserved" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_EM.TestEMObserved.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_EM.html#TestEMObserved.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_EM.TestEMObserved.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_EM.TestEMObserved.test_get_parameters">
+<span class="sig-name descname"><span class="pre">test_get_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_EM.html#TestEMObserved.test_get_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_EM.TestEMObserved.test_get_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator">
+<span id="corebn-tests-test-estimators-test-maximumlikelihoodestimator-module"></span><h2>coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.</span></span><span class="sig-name descname"><span class="pre">TestMLE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_class_init">
+<span class="sig-name descname"><span class="pre">test_class_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_class_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_class_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_error_latent_model">
+<span class="sig-name descname"><span class="pre">test_error_latent_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_error_latent_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_error_latent_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_estimate_cpd">
+<span class="sig-name descname"><span class="pre">test_estimate_cpd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_estimate_cpd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_estimate_cpd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_get_parameters_incomplete_data">
+<span class="sig-name descname"><span class="pre">test_get_parameters_incomplete_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_get_parameters_incomplete_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_get_parameters_incomplete_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_missing_data">
+<span class="sig-name descname"><span class="pre">test_missing_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_missing_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_missing_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_nonoccurring_values">
+<span class="sig-name descname"><span class="pre">test_nonoccurring_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_nonoccurring_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_nonoccurring_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_state_names1">
+<span class="sig-name descname"><span class="pre">test_state_names1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_state_names1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_state_names1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_state_names2">
+<span class="sig-name descname"><span class="pre">test_state_names2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_MaximumLikelihoodEstimator.html#TestMLE.test_state_names2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_MaximumLikelihoodEstimator.TestMLE.test_state_names2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_PC">
+<span id="corebn-tests-test-estimators-test-pc-module"></span><h2>coreBN.tests.test_estimators.test_PC module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_PC" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_PC.</span></span><span class="sig-name descname"><span class="pre">TestPCEstimatorFromContinuousData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromContinuousData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData.test_build_dag">
+<span class="sig-name descname"><span class="pre">test_build_dag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromContinuousData.test_build_dag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData.test_build_dag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData.test_build_skeleton">
+<span class="sig-name descname"><span class="pre">test_build_skeleton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromContinuousData.test_build_skeleton"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromContinuousData.test_build_skeleton" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_PC.</span></span><span class="sig-name descname"><span class="pre">TestPCEstimatorFromDiscreteData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromDiscreteData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData.test_build_dag">
+<span class="sig-name descname"><span class="pre">test_build_dag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromDiscreteData.test_build_dag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData.test_build_dag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData.test_build_skeleton">
+<span class="sig-name descname"><span class="pre">test_build_skeleton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromDiscreteData.test_build_skeleton"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromDiscreteData.test_build_skeleton" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_PC.</span></span><span class="sig-name descname"><span class="pre">TestPCEstimatorFromIndependencies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromIndependencies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_build_skeleton_from_ind">
+<span class="sig-name descname"><span class="pre">test_build_skeleton_from_ind</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromIndependencies.test_build_skeleton_from_ind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_build_skeleton_from_ind" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_estimate_dag">
+<span class="sig-name descname"><span class="pre">test_estimate_dag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromIndependencies.test_estimate_dag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_estimate_dag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_skeleton_to_pdag">
+<span class="sig-name descname"><span class="pre">test_skeleton_to_pdag</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCEstimatorFromIndependencies.test_skeleton_to_pdag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCEstimatorFromIndependencies.test_skeleton_to_pdag" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCFakeCITest">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_PC.</span></span><span class="sig-name descname"><span class="pre">TestPCFakeCITest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCFakeCITest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCFakeCITest" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.fake_ci_t">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fake_ci_t</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCFakeCITest.fake_ci_t"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.fake_ci_t" title="Permalink to this definition"></a></dt>
+<dd><p>A mock CI testing function which gives False for every condition
+except for the following:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>B ⟂ C</p></li>
+<li><p>B ⟂ D</p></li>
+<li><p>C ⟂ D</p></li>
+<li><p>A ⟂ B | C</p></li>
+<li><p>A ⟂ C | B</p></li>
+</ol>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCFakeCITest.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.test_build_skeleton_orig">
+<span class="sig-name descname"><span class="pre">test_build_skeleton_orig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCFakeCITest.test_build_skeleton_orig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.test_build_skeleton_orig" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.test_build_skeleton_stable">
+<span class="sig-name descname"><span class="pre">test_build_skeleton_stable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCFakeCITest.test_build_skeleton_stable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCFakeCITest.test_build_skeleton_stable" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCRealModels">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_PC.</span></span><span class="sig-name descname"><span class="pre">TestPCRealModels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCRealModels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCRealModels" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCRealModels.test_pc_alarm">
+<span class="sig-name descname"><span class="pre">test_pc_alarm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCRealModels.test_pc_alarm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCRealModels.test_pc_alarm" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_PC.TestPCRealModels.test_pc_asia">
+<span class="sig-name descname"><span class="pre">test_pc_asia</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_PC.html#TestPCRealModels.test_pc_asia"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_PC.TestPCRealModels.test_pc_asia" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_ParameterEstimator">
+<span id="corebn-tests-test-estimators-test-parameterestimator-module"></span><h2>coreBN.tests.test_estimators.test_ParameterEstimator module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_ParameterEstimator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_ParameterEstimator.</span></span><span class="sig-name descname"><span class="pre">TestParameterEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ParameterEstimator.html#TestParameterEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ParameterEstimator.html#TestParameterEstimator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ParameterEstimator.html#TestParameterEstimator.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.test_missing_data">
+<span class="sig-name descname"><span class="pre">test_missing_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ParameterEstimator.html#TestParameterEstimator.test_missing_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.test_missing_data" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.test_state_count">
+<span class="sig-name descname"><span class="pre">test_state_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ParameterEstimator.html#TestParameterEstimator.test_state_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ParameterEstimator.TestParameterEstimator.test_state_count" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_SEMEstimator">
+<span id="corebn-tests-test-estimators-test-semestimator-module"></span><h2>coreBN.tests.test_estimators.test_SEMEstimator module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_SEMEstimator" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_SEMEstimator.</span></span><span class="sig-name descname"><span class="pre">TestIVEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestIVEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestIVEstimator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator.test_fit">
+<span class="sig-name descname"><span class="pre">test_fit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestIVEstimator.test_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestIVEstimator.test_fit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_SEMEstimator.</span></span><span class="sig-name descname"><span class="pre">TestSEMEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_custom_estimator_random_init">
+<span class="sig-name descname"><span class="pre">test_custom_estimator_random_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_custom_estimator_random_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_custom_estimator_random_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_custom_estimator_std_init">
+<span class="sig-name descname"><span class="pre">test_custom_estimator_std_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_custom_estimator_std_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_custom_estimator_std_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_demo_estimator_random_init">
+<span class="sig-name descname"><span class="pre">test_demo_estimator_random_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_demo_estimator_random_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_demo_estimator_random_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_get_init_values">
+<span class="sig-name descname"><span class="pre">test_get_init_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_get_init_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_get_init_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_union_estimator_random_init">
+<span class="sig-name descname"><span class="pre">test_union_estimator_random_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_union_estimator_random_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_union_estimator_random_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_union_estimator_std_init">
+<span class="sig-name descname"><span class="pre">test_union_estimator_std_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_SEMEstimator.html#TestSEMEstimator.test_union_estimator_std_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_SEMEstimator.TestSEMEstimator.test_union_estimator_std_init" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_ScoreCache">
+<span id="corebn-tests-test-estimators-test-scorecache-module"></span><h2>coreBN.tests.test_estimators.test_ScoreCache module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_ScoreCache" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_ScoreCache.</span></span><span class="sig-name descname"><span class="pre">TestScoreCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_caching">
+<span class="sig-name descname"><span class="pre">test_caching</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache.test_caching"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_caching" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_remove_least_recently_used">
+<span class="sig-name descname"><span class="pre">test_remove_least_recently_used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache.test_remove_least_recently_used"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_remove_least_recently_used" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_score_cache">
+<span class="sig-name descname"><span class="pre">test_score_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache.test_score_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_score_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_score_cache_invalid_scorer">
+<span class="sig-name descname"><span class="pre">test_score_cache_invalid_scorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache.test_score_cache_invalid_scorer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_score_cache_invalid_scorer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_small_cache">
+<span class="sig-name descname"><span class="pre">test_small_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_ScoreCache.html#TestScoreCache.test_small_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_ScoreCache.TestScoreCache.test_small_cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators.test_StructureScore">
+<span id="corebn-tests-test-estimators-test-structurescore-module"></span><h2>coreBN.tests.test_estimators.test_StructureScore module<a class="headerlink" href="#module-coreBN.tests.test_estimators.test_StructureScore" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_StructureScore.</span></span><span class="sig-name descname"><span class="pre">TestBDeuScore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDeuScore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDeuScore.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDeuScore.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score">
+<span class="sig-name descname"><span class="pre">test_score</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDeuScore.test_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score_titanic">
+<span class="sig-name descname"><span class="pre">test_score_titanic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDeuScore.test_score_titanic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score_titanic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDsScore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_StructureScore.</span></span><span class="sig-name descname"><span class="pre">TestBDsScore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDsScore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDsScore.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Example taken from <a class="reference external" href="https://arxiv.org/pdf/1708.00689.pdf">https://arxiv.org/pdf/1708.00689.pdf</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDsScore.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.test_score">
+<span class="sig-name descname"><span class="pre">test_score</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBDsScore.test_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.test_score" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBicScore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_StructureScore.</span></span><span class="sig-name descname"><span class="pre">TestBicScore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBicScore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBicScore" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBicScore.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBicScore.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBicScore.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBicScore.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score">
+<span class="sig-name descname"><span class="pre">test_score</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBicScore.test_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score_titanic">
+<span class="sig-name descname"><span class="pre">test_score_titanic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestBicScore.test_score_titanic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score_titanic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestK2Score">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_estimators.test_StructureScore.</span></span><span class="sig-name descname"><span class="pre">TestK2Score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestK2Score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestK2Score" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestK2Score.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestK2Score.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestK2Score.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestK2Score.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score">
+<span class="sig-name descname"><span class="pre">test_score</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestK2Score.test_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score_titanic">
+<span class="sig-name descname"><span class="pre">test_score_titanic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_estimators/test_StructureScore.html#TestK2Score.test_score_titanic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score_titanic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_estimators">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.tests.test_estimators" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.tests.test_base.html" class="btn btn-neutral float-left" title="coreBN.tests.test_base package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.tests.test_factors.html" class="btn btn-neutral float-right" title="coreBN.tests.test_factors package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

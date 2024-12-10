@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.independencies.Independencies &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.independencies.Independencies</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.independencies.Independencies</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+
+<div class="viewcode-block" id="Independencies"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies">[docs]</a><span class="k">class</span> <span class="nc">Independencies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for independencies.</span>
+<span class="sd">    independencies class represents a set of Conditional Independence</span>
+<span class="sd">    assertions (eg: &quot;X is independent of Y given Z&quot; where X, Y and Z</span>
+<span class="sd">    are random variables) or Independence assertions (eg: &quot;X is</span>
+<span class="sd">    independent of Y&quot; where X and Y are random variables).</span>
+<span class="sd">    Initialize the independencies Class with Conditional Independence</span>
+<span class="sd">    assertions or Independence assertions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    assertions: Lists or Tuples</span>
+<span class="sd">            Each assertion is a list or tuple of the form: [event1,</span>
+<span class="sd">            event2 and event3]</span>
+<span class="sd">            eg: assertion [&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;] would be X is independent</span>
+<span class="sd">            of Y given Z.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Creating an independencies object with one independence assertion:</span>
+<span class="sd">    Random Variable X is independent of Y</span>
+
+<span class="sd">    &gt;&gt;&gt; independencies = independencies([&#39;X&#39;, &#39;Y&#39;])</span>
+
+<span class="sd">    Creating an independencies object with three conditional</span>
+<span class="sd">    independence assertions:</span>
+<span class="sd">    First assertion is Random Variable X is independent of Y given Z.</span>
+
+<span class="sd">    &gt;&gt;&gt; independencies = independencies([&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;],</span>
+<span class="sd">    ...             [&#39;a&#39;, [&#39;b&#39;, &#39;c&#39;], &#39;d&#39;],</span>
+<span class="sd">    ...             [&#39;l&#39;, [&#39;m&#39;, &#39;n&#39;], &#39;o&#39;])</span>
+
+<span class="sd">    Public Methods</span>
+<span class="sd">    --------------</span>
+<span class="sd">    add_assertions</span>
+<span class="sd">    get_assertions</span>
+<span class="sd">    get_factorized_product</span>
+<span class="sd">    closure</span>
+<span class="sd">    entails</span>
+<span class="sd">    is_equivalent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">assertions</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_assertions</span><span class="p">(</span><span class="o">*</span><span class="n">assertions</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">assertion</span><span class="p">)</span> <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">string</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">independency</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">independency</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="p">)</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">independency</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">independency</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Independencies.contains"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.contains">[docs]</a>    <span class="k">def</span> <span class="nf">contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assertion</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns `True` if `assertion` is contained in this `Independencies`-object,</span>
+<span class="sd">        otherwise `False`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        assertion: IndependenceAssertion()-object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies, IndependenceAssertion</span>
+<span class="sd">        &gt;&gt;&gt; ind = Independencies([&#39;A&#39;, &#39;B&#39;, [&#39;C&#39;, &#39;D&#39;]])</span>
+<span class="sd">        &gt;&gt;&gt; IndependenceAssertion(&#39;A&#39;, &#39;B&#39;, [&#39;C&#39;, &#39;D&#39;]) in ind</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; # does not depend on variable order:</span>
+<span class="sd">        &gt;&gt;&gt; IndependenceAssertion(&#39;B&#39;, &#39;A&#39;, [&#39;D&#39;, &#39;C&#39;]) in ind</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; # but does not check entailment:</span>
+<span class="sd">        &gt;&gt;&gt; IndependenceAssertion(&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;) in Independencies([&#39;X&#39;, &#39;Y&#39;])</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">assertion</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39; in &lt;Independencies()&gt;&#39; requires IndependenceAssertion as left operand, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">assertion</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span></div>
+
+    <span class="fm">__contains__</span> <span class="o">=</span> <span class="n">contains</span>
+
+<div class="viewcode-block" id="Independencies.get_all_variables"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.get_all_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a set of all the variables in all the independence assertions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">frozenset</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">ind</span><span class="o">.</span><span class="n">all_vars</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Independencies.get_assertions"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.get_assertions">[docs]</a>    <span class="k">def</span> <span class="nf">get_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the independencies object which is a set of IndependenceAssertion objects.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies</span>
+<span class="sd">        &gt;&gt;&gt; independencies = Independencies([&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; independencies.get_assertions()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span></div>
+
+<div class="viewcode-block" id="Independencies.add_assertions"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.add_assertions">[docs]</a>    <span class="k">def</span> <span class="nf">add_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">assertions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds assertions to independencies.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        assertions: Lists or Tuples</span>
+<span class="sd">                Each assertion is a list or tuple of variable, independent_of and given.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies</span>
+<span class="sd">        &gt;&gt;&gt; independencies = Independencies()</span>
+<span class="sd">        &gt;&gt;&gt; independencies.add_assertions([&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; independencies.add_assertions([&#39;a&#39;, [&#39;b&#39;, &#39;c&#39;], &#39;d&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="n">assertions</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">assertion</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">assertion</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="n">assertion</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">assertion</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">assertion</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="n">assertion</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">assertion</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Independencies.closure"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.closure">[docs]</a>    <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a new `Independencies()`-object that additionally contains those `IndependenceAssertions`</span>
+<span class="sd">        that are implied by the the current independencies (using with the `semi-graphoid axioms</span>
+<span class="sd">        &lt;https://en.wikipedia.org/w/index.php?title=Conditional_independence&amp;oldid=708760689#Rules_of_conditional_independence&gt;`_;</span>
+<span class="sd">        see (Pearl, 1989, `Conditional Independence and its representations</span>
+<span class="sd">        &lt;http://www.cs.technion.ac.il/~dang/journal_papers/pearl1989conditional.pdf&gt;`_)).</span>
+
+<span class="sd">        Might be very slow if more than six variables are involved.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies</span>
+<span class="sd">        &gt;&gt;&gt; ind1 = Independencies((&#39;A&#39;, [&#39;B&#39;, &#39;C&#39;], &#39;D&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; ind1.closure()</span>
+<span class="sd">        (A \u27C2 B | D, C)</span>
+<span class="sd">        (A \u27C2 B, C | D)</span>
+<span class="sd">        (A \u27C2 B | D)</span>
+<span class="sd">        (A \u27C2 C | D, B)</span>
+<span class="sd">        (A \u27C2 C | D)</span>
+
+<span class="sd">        &gt;&gt;&gt; ind2 = Independencies((&#39;W&#39;, [&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]))</span>
+<span class="sd">        &gt;&gt;&gt; ind2.closure()</span>
+<span class="sd">        (W \u27C2 Y)</span>
+<span class="sd">        (W \u27C2 Y | X)</span>
+<span class="sd">        (W \u27C2 Z | Y)</span>
+<span class="sd">        (W \u27C2 Z, X, Y)</span>
+<span class="sd">        (W \u27C2 Z)</span>
+<span class="sd">        (W \u27C2 Z, X)</span>
+<span class="sd">        (W \u27C2 X, Y)</span>
+<span class="sd">        (W \u27C2 Z | X)</span>
+<span class="sd">        (W \u27C2 Z, Y | X)</span>
+<span class="sd">        [..]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">single_var</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+            <span class="s2">&quot;Checks if var represents a single variable&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">var</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+        <span class="k">def</span> <span class="nf">sg0</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
+            <span class="s2">&quot;Symmetry rule: &#39;X ⟂ Y | Z&#39; -&gt; &#39;Y ⟂ X | Z&#39;&quot;</span>
+            <span class="k">return</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="n">ind</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="n">ind</span><span class="o">.</span><span class="n">event3</span><span class="p">)</span>
+
+        <span class="c1"># since X⟂Y|Z == Y⟂X|Z in core, sg0 (symmetry) is not used as an axiom/rule.</span>
+        <span class="c1"># instead we use a decorator for the other axioms to apply them on both sides</span>
+        <span class="k">def</span> <span class="nf">apply_left_and_right</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">symmetric_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">func</span><span class="p">(</span><span class="n">sg0</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">(</span>
+                        <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="n">func</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sg0</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                        <span class="o">+</span> <span class="n">func</span><span class="p">(</span><span class="n">sg0</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="o">+</span> <span class="n">func</span><span class="p">(</span><span class="n">sg0</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">sg0</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                    <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">symmetric_func</span>
+
+        <span class="nd">@apply_left_and_right</span>
+        <span class="k">def</span> <span class="nf">sg1</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
+            <span class="s2">&quot;Decomposition rule: &#39;X ⟂ Y,W | Z&#39; -&gt; &#39;X ⟂ Y | Z&#39;, &#39;X ⟂ W | Z&#39;&quot;</span>
+            <span class="k">if</span> <span class="n">single_var</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">event2</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="n">ind</span><span class="o">.</span><span class="n">event2</span> <span class="o">-</span> <span class="p">{</span><span class="n">elem</span><span class="p">},</span> <span class="n">ind</span><span class="o">.</span><span class="n">event3</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">ind</span><span class="o">.</span><span class="n">event2</span>
+                <span class="p">]</span>
+
+        <span class="nd">@apply_left_and_right</span>
+        <span class="k">def</span> <span class="nf">sg2</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
+            <span class="s2">&quot;Weak Union rule: &#39;X ⟂ Y,W | Z&#39; -&gt; &#39;X ⟂ Y | W,Z&#39;, &#39;X ⟂ W | Y,Z&#39;&quot;</span>
+            <span class="k">if</span> <span class="n">single_var</span><span class="p">(</span><span class="n">ind</span><span class="o">.</span><span class="n">event2</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span>
+                    <span class="n">IndependenceAssertion</span><span class="p">(</span>
+                        <span class="n">ind</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="n">ind</span><span class="o">.</span><span class="n">event2</span> <span class="o">-</span> <span class="p">{</span><span class="n">elem</span><span class="p">},</span> <span class="p">{</span><span class="n">elem</span><span class="p">}</span> <span class="o">|</span> <span class="n">ind</span><span class="o">.</span><span class="n">event3</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">ind</span><span class="o">.</span><span class="n">event2</span>
+                <span class="p">]</span>
+
+        <span class="nd">@apply_left_and_right</span>
+        <span class="k">def</span> <span class="nf">sg3</span><span class="p">(</span><span class="n">ind1</span><span class="p">,</span> <span class="n">ind2</span><span class="p">):</span>
+            <span class="s2">&quot;Contraction rule: &#39;X ⟂ W | Y,Z&#39; &amp; &#39;X ⟂ Y | Z&#39; -&gt; &#39;X ⟂ W,Y | Z&#39;&quot;</span>
+            <span class="k">if</span> <span class="n">ind1</span><span class="o">.</span><span class="n">event1</span> <span class="o">!=</span> <span class="n">ind2</span><span class="o">.</span><span class="n">event1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">ind2</span><span class="o">.</span><span class="n">event2</span>
+            <span class="n">Z</span> <span class="o">=</span> <span class="n">ind2</span><span class="o">.</span><span class="n">event3</span>
+            <span class="n">Y_Z</span> <span class="o">=</span> <span class="n">ind1</span><span class="o">.</span><span class="n">event3</span>
+            <span class="k">if</span> <span class="n">Y</span> <span class="o">&lt;</span> <span class="n">Y_Z</span> <span class="ow">and</span> <span class="n">Z</span> <span class="o">&lt;</span> <span class="n">Y_Z</span> <span class="ow">and</span> <span class="n">Y</span><span class="o">.</span><span class="n">isdisjoint</span><span class="p">(</span><span class="n">Z</span><span class="p">):</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">IndependenceAssertion</span><span class="p">(</span><span class="n">ind1</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="n">ind1</span><span class="o">.</span><span class="n">event2</span> <span class="o">|</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">)]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># apply semi-graphoid axioms as long as new independencies are found.</span>
+        <span class="n">all_independencies</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">new_inds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">independencies</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">new_inds</span><span class="p">:</span>
+            <span class="n">new_pairs</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">new_inds</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">new_inds</span><span class="p">,</span> <span class="n">all_independencies</span><span class="p">))</span>
+                <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">all_independencies</span><span class="p">,</span> <span class="n">new_inds</span><span class="p">))</span>
+            <span class="p">)</span>
+
+            <span class="n">all_independencies</span> <span class="o">|=</span> <span class="n">new_inds</span>
+            <span class="n">new_inds</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="nb">sum</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">sg1</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">new_inds</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="p">[</span><span class="n">sg2</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">new_inds</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="p">[</span><span class="n">sg3</span><span class="p">(</span><span class="o">*</span><span class="n">inds</span><span class="p">)</span> <span class="k">for</span> <span class="n">inds</span> <span class="ow">in</span> <span class="n">new_pairs</span><span class="p">],</span>
+                    <span class="p">[],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">new_inds</span> <span class="o">-=</span> <span class="n">all_independencies</span>
+
+        <span class="k">return</span> <span class="n">Independencies</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">all_independencies</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Independencies.entails"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.entails">[docs]</a>    <span class="k">def</span> <span class="nf">entails</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entailed_independencies</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns `True` if the `entailed_independencies` are implied by this `Independencies`-object, otherwise `False`.</span>
+<span class="sd">        Entailment is checked using the semi-graphoid axioms.</span>
+
+<span class="sd">        Might be very slow if more than six variables are involved.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        entailed_independencies: Independencies()-object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies</span>
+<span class="sd">        &gt;&gt;&gt; ind1 = Independencies([[&#39;A&#39;, &#39;B&#39;], [&#39;C&#39;, &#39;D&#39;], &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; ind2 = Independencies([&#39;A&#39;, &#39;C&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; ind1.entails(ind2)</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; ind2.entails(ind1)</span>
+<span class="sd">        False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entailed_independencies</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="n">implications</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">ind</span> <span class="ow">in</span> <span class="n">implications</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">entailed_independencies</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Independencies.is_equivalent"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.is_equivalent">[docs]</a>    <span class="k">def</span> <span class="nf">is_equivalent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns True if the two Independencies-objects are equivalent, otherwise False.</span>
+<span class="sd">        (i.e. any Bayesian Network that satisfies the one set</span>
+<span class="sd">        of conditional independencies also satisfies the other).</span>
+
+<span class="sd">        Might be very slow if more than six variables are involved.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other: Independencies()-object</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import Independencies</span>
+<span class="sd">        &gt;&gt;&gt; ind1 = Independencies([&#39;X&#39;, [&#39;Y&#39;, &#39;W&#39;], &#39;Z&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; ind2 = Independencies([&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;], [&#39;X&#39;, &#39;W&#39;, &#39;Z&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; ind3 = Independencies([&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;], [&#39;X&#39;, &#39;W&#39;, &#39;Z&#39;], [&#39;X&#39;, &#39;Y&#39;, [&#39;W&#39;,&#39;Z&#39;]])</span>
+<span class="sd">        &gt;&gt;&gt; ind1.is_equivalent(ind2)</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; ind1.is_equivalent(ind3)</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">and</span> <span class="n">other</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+        <span class="c1"># TODO: write reduce function.</span>
+
+<div class="viewcode-block" id="Independencies.reduce"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.reduce">[docs]</a>    <span class="k">def</span> <span class="nf">reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add function to remove duplicate Independence Assertions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Independencies.latex_string"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.latex_string">[docs]</a>    <span class="k">def</span> <span class="nf">latex_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of string.</span>
+<span class="sd">        Each string represents the IndependenceAssertion in latex.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">assertion</span><span class="o">.</span><span class="n">latex_string</span><span class="p">()</span> <span class="k">for</span> <span class="n">assertion</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="Independencies.get_factorized_product"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.Independencies.get_factorized_product">[docs]</a>    <span class="k">def</span> <span class="nf">get_factorized_product</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">latex</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># TODO: Write this whole function</span>
+        <span class="c1">#</span>
+        <span class="c1"># The problem right now is that the factorized product for all</span>
+        <span class="c1"># P(A, B, C), P(B, A, C) etc should be same but on solving normally</span>
+        <span class="c1"># we get different results which have to be simplified to a simpler</span>
+        <span class="c1"># form. How to do that ??? and also how to decide which is the most</span>
+        <span class="c1"># simplified form???</span>
+        <span class="c1">#</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="IndependenceAssertion"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.IndependenceAssertion">[docs]</a><span class="k">class</span> <span class="nc">IndependenceAssertion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents Conditional Independence or Independence assertion.</span>
+
+<span class="sd">    Each assertion has 3 attributes: event1, event2, event3.</span>
+<span class="sd">    The attributes for</span>
+
+<span class="sd">    .. math:: U \perp X, Y | Z</span>
+
+<span class="sd">    is read as: Random Variable U is independent of X and Y given Z would be:</span>
+
+<span class="sd">    event1 = {U}</span>
+
+<span class="sd">    event2 = {X, Y}</span>
+
+<span class="sd">    event3 = {Z}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    event1: String or List of strings</span>
+<span class="sd">            Random Variable which is independent.</span>
+
+<span class="sd">    event2: String or list of strings.</span>
+<span class="sd">            Random Variables from which event1 is independent</span>
+
+<span class="sd">    event3: String or list of strings.</span>
+<span class="sd">            Random Variables given which event1 is independent of event2.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.independencies import IndependenceAssertion</span>
+<span class="sd">    &gt;&gt;&gt; assertion = IndependenceAssertion(&#39;U&#39;, &#39;X&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; assertion = IndependenceAssertion(&#39;U&#39;, [&#39;X&#39;, &#39;Y&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; assertion = IndependenceAssertion(&#39;U&#39;, [&#39;X&#39;, &#39;Y&#39;], &#39;Z&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; assertion = IndependenceAssertion([&#39;U&#39;, &#39;V&#39;], [&#39;X&#39;, &#39;Y&#39;], [&#39;Z&#39;, &#39;A&#39;])</span>
+
+
+<span class="sd">    Public Methods</span>
+<span class="sd">    --------------</span>
+<span class="sd">    get_assertion</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event1</span><span class="o">=</span><span class="p">[],</span> <span class="n">event2</span><span class="o">=</span><span class="p">[],</span> <span class="n">event3</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an IndependenceAssertion object with event1, event2 and event3 attributes.</span>
+
+<span class="sd">                    event2</span>
+<span class="sd">                    ^</span>
+<span class="sd">        event1     /   event3</span>
+<span class="sd">           ^      /     ^</span>
+<span class="sd">           |     /      |</span>
+<span class="sd">          (U || X, Y | Z) read as Random variable U is independent of X and Y given Z.</span>
+<span class="sd">            ---</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">event2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;event2 needs to be specified&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">event2</span><span class="p">,</span> <span class="n">event3</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">event1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;event1 needs to be specified&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event3</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">event1</span><span class="p">,</span> <span class="n">event2</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;event1&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">event1</span> <span class="k">else</span> <span class="s2">&quot;event2&quot;</span> <span class="o">+</span> <span class="s2">&quot; needs to be specified&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">event1</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_return_list_if_not_collection</span><span class="p">(</span><span class="n">event1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event2</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_return_list_if_not_collection</span><span class="p">(</span><span class="n">event2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event3</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_return_list_if_not_collection</span><span class="p">(</span><span class="n">event3</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_vars</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">{event1}</span><span class="s2"> </span><span class="se">\u27C2</span><span class="s2"> </span><span class="si">{event2}</span><span class="s2"> | </span><span class="si">{event3}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">event1</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">]),</span>
+                <span class="n">event2</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">]),</span>
+                <span class="n">event3</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;(</span><span class="si">{event1}</span><span class="s2"> </span><span class="se">\u27C2</span><span class="s2"> </span><span class="si">{event2}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">event1</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">]),</span>
+                <span class="n">event2</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">]),</span>
+            <span class="p">)</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">)</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">frozenset</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_return_list_if_not_collection</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If variable is a string returns a list containing variable.</span>
+<span class="sd">        Else returns variable itself.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">event</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">event</span>
+
+<div class="viewcode-block" id="IndependenceAssertion.get_assertion"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.IndependenceAssertion.get_assertion">[docs]</a>    <span class="k">def</span> <span class="nf">get_assertion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a tuple of the attributes: variable, independent_of, given.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.independencies import IndependenceAssertion</span>
+<span class="sd">        &gt;&gt;&gt; asser = IndependenceAssertion(&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; asser.get_assertion()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span></div>
+
+<div class="viewcode-block" id="IndependenceAssertion.latex_string"><a class="viewcode-back" href="../../../coreBN.independencies.html#coreBN.independencies.Independencies.IndependenceAssertion.latex_string">[docs]</a>    <span class="k">def</span> <span class="nf">latex_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="si">{event1}</span><span class="s2"> \perp </span><span class="si">{event2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">event1</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">]),</span>
+                <span class="n">event2</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;</span><span class="si">{event1}</span><span class="s2"> \perp </span><span class="si">{event2}</span><span class="s2"> \mid </span><span class="si">{event3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">event1</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event1</span><span class="p">]),</span>
+                <span class="n">event2</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event2</span><span class="p">]),</span>
+                <span class="n">event3</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event3</span><span class="p">]),</span>
+            <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

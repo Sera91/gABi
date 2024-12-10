@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.utils.state_name &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.utils.state_name</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.utils.state_name</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="StateNameMixin"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin">[docs]</a><span></span><span class="k">class</span> <span class="nc">StateNameMixin</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is inherited by classes which deal with state names of variables.</span>
+<span class="sd">    The state names are stored in instances of `StateNameMixin`. The conversion between</span>
+<span class="sd">    state number and names are also handled by methods in this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StateNameMixin.store_state_names"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin.store_state_names">[docs]</a>    <span class="k">def</span> <span class="nf">store_state_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">cardinality</span><span class="p">,</span> <span class="n">state_names</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize an instance of StateNameMixin.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import DiscreteFactor</span>
+<span class="sd">        &gt;&gt;&gt; sn = {&#39;speed&#39;: [&#39;low&#39;, &#39;medium&#39;, &#39;high&#39;],</span>
+<span class="sd">        ...       &#39;switch&#39;: [&#39;on&#39;, &#39;off&#39;],</span>
+<span class="sd">        ...       &#39;time&#39;: [&#39;day&#39;, &#39;night&#39;]}</span>
+<span class="sd">        &gt;&gt;&gt; phi = DiscreteFactor(variables=[&#39;speed&#39;, &#39;switch&#39;, &#39;time&#39;],</span>
+<span class="sd">        ...                      cardinality=[3, 2, 2],</span>
+<span class="sd">        ...                      values=np.ones(12),</span>
+<span class="sd">        ...                      state_names=sn)</span>
+<span class="sd">        &gt;&gt;&gt; print(phi.state_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">state_names</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">state_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;The state names must be for the form: {variable: list_of_states}&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Repeated statenames for variable: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Make a copy, so that the original object does&#39;t get modified after operations.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="o">=</span> <span class="n">state_names</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="c1"># Create maps for easy access to specific state names of state numbers.</span>
+            <span class="k">if</span> <span class="n">state_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">name</span><span class="p">:</span> <span class="n">no</span> <span class="k">for</span> <span class="n">no</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                    <span class="p">}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">no</span><span class="p">:</span> <span class="n">name</span> <span class="k">for</span> <span class="n">no</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+                    <span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">var</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cardinality</span><span class="p">[</span><span class="n">index</span><span class="p">])))</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">var</span><span class="p">:</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">cardinality</span><span class="p">[</span><span class="n">index</span><span class="p">]))}</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="StateNameMixin.get_state_names"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin.get_state_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_state_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">state_no</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given `var` and `state_no` returns the state name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">state_no</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">state_no</span></div>
+
+<div class="viewcode-block" id="StateNameMixin.get_state_no"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin.get_state_no">[docs]</a>    <span class="k">def</span> <span class="nf">get_state_no</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">state_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Given `var` and `state_name` return the state number.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">state_name</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">state_name</span></div>
+
+<div class="viewcode-block" id="StateNameMixin.add_state_names"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin.add_state_names">[docs]</a>    <span class="k">def</span> <span class="nf">add_state_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the attributes of this class with another factor `phi1`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        phi1: Instance of coreBN.factors.DiscreteFactor</span>
+<span class="sd">            The factor whose states and variables need to be added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">phi1</span><span class="o">.</span><span class="n">state_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">phi1</span><span class="o">.</span><span class="n">name_to_no</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">phi1</span><span class="o">.</span><span class="n">no_to_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="StateNameMixin.del_state_names"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.state_name.StateNameMixin.del_state_names">[docs]</a>    <span class="k">def</span> <span class="nf">del_state_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes the state names for variables in var_list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_list</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_to_no</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_to_name</span><span class="p">[</span><span class="n">var</span><span class="p">]</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

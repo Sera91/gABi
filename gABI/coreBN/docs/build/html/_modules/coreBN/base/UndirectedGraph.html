@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.base.UndirectedGraph &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.base.UndirectedGraph</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.base.UndirectedGraph</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+
+
+<div class="viewcode-block" id="UndirectedGraph"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph">[docs]</a><span class="k">class</span> <span class="nc">UndirectedGraph</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for all the Undirected Graphical models.</span>
+<span class="sd">    Each node in the graph can represent either a random variable, `Factor`,</span>
+<span class="sd">    or a cluster of random variables. Edges in the graph are interactions</span>
+<span class="sd">    between the nodes.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : input graph, based on networkx Graph class</span>
+<span class="sd">        The data can be an edge list or any Networkx graph object.</span>
+<span class="sd">        If data=None (default) an empty graph is created. </span>
+<span class="sd">   </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UndirectedGraph</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UndirectedGraph.add_node"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.add_node">[docs]</a>    <span class="k">def</span> <span class="nf">add_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a single node to the Graph.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node: str, int, or any hashable python object.</span>
+<span class="sd">            The node to add to the graph.</span>
+<span class="sd">        weight: int, float</span>
+<span class="sd">            The weight of the node.</span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph()</span>
+<span class="sd">        &gt;&gt;&gt; G.add_node(node=&#39;A&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; G.nodes()</span>
+<span class="sd">        NodeView((&#39;A&#39;,))</span>
+<span class="sd">        Adding a node with some weight.</span>
+<span class="sd">        &gt;&gt;&gt; G.add_node(node=&#39;B&#39;, weight=0.3)</span>
+<span class="sd">        The weight of these nodes can be accessed as:</span>
+<span class="sd">        &gt;&gt;&gt; G.nodes[&#39;B&#39;]</span>
+<span class="sd">        {&#39;weight&#39;: 0.3}</span>
+<span class="sd">       </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check for networkx 2.0 syntax</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">node</span><span class="p">,</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">node</span>
+            <span class="k">if</span> <span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="n">weight</span><span class="p">}</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UndirectedGraph</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UndirectedGraph.add_nodes_from"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.add_nodes_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add multiple nodes to the graph.</span>
+<span class="sd">       </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nodes: iterable container</span>
+<span class="sd">            A container of nodes (list, dict, set, or any hashable python</span>
+<span class="sd">            object).</span>
+<span class="sd">        weights: list, tuple (default=None)</span>
+<span class="sd">            A container of weights (int, float). The weight value at index i</span>
+<span class="sd">            is associated with the variable at index i.</span>
+
+<span class="sd">        Usage example</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph()</span>
+<span class="sd">        &gt;&gt;&gt; G.add_nodes_from(nodes=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; G.nodes()</span>
+<span class="sd">        NodeView((&#39;A&#39;, &#39;B&#39;, &#39;C&#39;))</span>
+<span class="sd">        Adding nodes with weights:</span>
+<span class="sd">        &gt;&gt;&gt; G.add_nodes_from(nodes=[&#39;D&#39;, &#39;E&#39;], weights=[0.3, 0.6])</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weights</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The number of elements in nodes and weights&quot;</span> <span class="s2">&quot;should be equal.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">nodes</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UndirectedGraph.add_edge"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.add_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add an edge between u and v.</span>
+<span class="sd">        The nodes u and v will be automatically added if they are</span>
+<span class="sd">        not already in the graph.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        u, v : nodes</span>
+<span class="sd">            Nodes can be any hashable Python object.</span>
+<span class="sd">        weight: int, float (default=None)</span>
+<span class="sd">            The weight of the edge.</span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph()</span>
+<span class="sd">        &gt;&gt;&gt; G.add_nodes_from(nodes=[&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charles&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edge(u=&#39;Alice&#39;, v=&#39;Bob&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; G.nodes()</span>
+<span class="sd">        NodeView((&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charles&#39;))</span>
+<span class="sd">        &gt;&gt;&gt; G.edges()</span>
+<span class="sd">        EdgeView([(&#39;Alice&#39;, &#39;Bob&#39;)])</span>
+<span class="sd">    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UndirectedGraph</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UndirectedGraph.add_edges_from"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.add_edges_from">[docs]</a>    <span class="k">def</span> <span class="nf">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ebunch</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add all the edges in edge_bunch.</span>
+<span class="sd">        If nodes referred in the ebunch are not already present, they</span>
+<span class="sd">        will be automatically added. Node names can be any hashable python</span>
+<span class="sd">        object.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ebunch : edge container </span>
+<span class="sd">            Each edge given in the container will be added to the graph.</span>
+<span class="sd">            The edges must be given as 2-tuples (u, v).</span>
+<span class="sd">        weights: list, tuple (default=None)</span>
+<span class="sd">            A container of weights (int, float). The weight value at index i</span>
+<span class="sd">            is associated with the edge at index i.</span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph()</span>
+<span class="sd">        &gt;&gt;&gt; G.add_nodes_from(nodes=[&#39;Alice&#39;, &#39;Bob&#39;, &#39;Charles&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edges_from(ebunch=[(&#39;Alice&#39;, &#39;Bob&#39;), (&#39;Bob&#39;, &#39;Charles&#39;)]</span>
+<span class="sd">        &gt;&gt;&gt;#Adding edges with weights:</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edges_from([(&#39;Ankur&#39;, &#39;Maria&#39;), (&#39;Maria&#39;, &#39;Mason&#39;)], weights=[0.3, 0.5])</span>
+<span class="sd">        &gt;&gt;&gt; G.edge[&#39;Ankur&#39;][&#39;Maria&#39;]</span>
+<span class="sd">        {&#39;weight&#39;: 0.3}</span>
+<span class="sd">   </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ebunch</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weights</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of elements in ebunch and weights&quot;</span> <span class="s2">&quot;should be equal&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ebunch</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">ebunch</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ebunch</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">ebunch</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="UndirectedGraph.is_clique"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.is_clique">[docs]</a>    <span class="k">def</span> <span class="nf">is_clique</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the given nodes form a clique.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nodes: list, array-like</span>
+<span class="sd">            List of nodes to check if they are a part of any clique.</span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph(ebunch=[(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;B&#39;, &#39;D&#39;),</span>
+<span class="sd">                                        (&#39;B&#39;, &#39;E&#39;), (&#39;D&#39;, &#39;E&#39;), (&#39;E&#39;, &#39;F&#39;),</span>
+<span class="sd">                                        (&#39;D&#39;, &#39;F&#39;), (&#39;B&#39;, &#39;F&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; G.is_clique(nodes=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;])</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; G.is_clique(nodes=[&#39;B&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;])</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="UndirectedGraph.is_triangulated"><a class="viewcode-back" href="../../../coreBN.base.html#coreBN.base.UndirectedGraph.UndirectedGraph.is_triangulated">[docs]</a>    <span class="k">def</span> <span class="nf">is_triangulated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether the undirected graph is triangulated (also known as chordal) or not.</span>
+<span class="sd">        A chordal graph is one in which all cycles of four or more vertices have a chord.</span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.base import UndirectedGraph</span>
+<span class="sd">        &gt;&gt;&gt; G = UndirectedGraph()</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edges_from(ebunch=[(&#39;x1&#39;, &#39;x2&#39;), (&#39;x1&#39;, &#39;x3&#39;),(&#39;x2&#39;, &#39;x4&#39;), (&#39;x3&#39;, &#39;x4&#39;)])                       </span>
+<span class="sd">        &gt;&gt;&gt; G.is_triangulated()</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; G.add_edge(u=&#39;x1&#39;, v=&#39;x4&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; G.is_triangulated()</span>
+<span class="sd">        True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">is_chordal</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

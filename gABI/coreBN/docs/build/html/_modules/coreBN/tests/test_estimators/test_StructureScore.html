@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_estimators.test_StructureScore &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_estimators.test_StructureScore</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.tests.test_estimators.test_StructureScore</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+<span class="kn">from</span> <span class="nn">coreBN.estimators</span> <span class="kn">import</span> <span class="n">BDeuScore</span><span class="p">,</span> <span class="n">BDsScore</span><span class="p">,</span> <span class="n">BicScore</span><span class="p">,</span> <span class="n">K2Score</span>
+
+
+<div class="viewcode-block" id="TestBDeuScore"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore">[docs]</a><span class="k">class</span> <span class="nc">TestBDeuScore</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestBDeuScore.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">)])</span>
+
+        <span class="c1"># data_link - &quot;https://www.kaggle.com/c/titanic/download/train.csv&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="s2">&quot;coreBN/tests/test_estimators/testdata/titanic_train.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span><span class="p">[[</span><span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="TestBDeuScore.test_score"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score">[docs]</a>    <span class="k">def</span> <span class="nf">test_score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">BDeuScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">),</span> <span class="o">-</span><span class="mf">9.907103407446435</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">BDeuScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">BayesianNetwork</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestBDeuScore.test_score_titanic"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.test_score_titanic">[docs]</a>    <span class="k">def</span> <span class="nf">test_score_titanic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">BDeuScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span><span class="p">,</span> <span class="n">equivalent_sample_size</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+        <span class="n">titanic</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">),</span> <span class="o">-</span><span class="mf">1892.7383393910427</span><span class="p">)</span>
+        <span class="n">titanic2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">)])</span>
+        <span class="n">titanic2</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic2</span><span class="p">),</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestBDeuScore.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDeuScore.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">d1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span></div></div>
+
+
+<div class="viewcode-block" id="TestBDsScore"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore">[docs]</a><span class="k">class</span> <span class="nc">TestBDsScore</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestBDsScore.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Example taken from https://arxiv.org/pdf/1708.00689.pdf&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;X&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;Y&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;Z&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;W&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">)])</span></div>
+
+<div class="viewcode-block" id="TestBDsScore.test_score"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.test_score">[docs]</a>    <span class="k">def</span> <span class="nf">test_score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span>
+            <span class="n">BDsScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">,</span> <span class="n">equivalent_sample_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">),</span>
+            <span class="o">-</span><span class="mf">36.82311976667139</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">BDsScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">,</span> <span class="n">equivalent_sample_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">),</span>
+            <span class="o">-</span><span class="mf">45.788991276221964</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestBDsScore.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBDsScore.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">d1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span></div></div>
+
+
+<div class="viewcode-block" id="TestBicScore"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBicScore">[docs]</a><span class="k">class</span> <span class="nc">TestBicScore</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestBicScore.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">)])</span>
+
+        <span class="c1"># data_link - &quot;https://www.kaggle.com/c/titanic/download/train.csv&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="s2">&quot;coreBN/tests/test_estimators/testdata/titanic_train.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span><span class="p">[[</span><span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="TestBicScore.test_score"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score">[docs]</a>    <span class="k">def</span> <span class="nf">test_score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">BicScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">),</span> <span class="o">-</span><span class="mf">10.698440814229318</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">BicScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">BayesianNetwork</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestBicScore.test_score_titanic"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.test_score_titanic">[docs]</a>    <span class="k">def</span> <span class="nf">test_score_titanic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">BicScore</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span><span class="p">)</span>
+        <span class="n">titanic</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">),</span> <span class="o">-</span><span class="mf">1896.7250012840179</span><span class="p">)</span>
+        <span class="n">titanic2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">)])</span>
+        <span class="n">titanic2</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic2</span><span class="p">),</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestBicScore.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestBicScore.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">d1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span></div></div>
+
+
+<div class="viewcode-block" id="TestK2Score"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestK2Score">[docs]</a><span class="k">class</span> <span class="nc">TestK2Score</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestK2Score.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;C&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">)])</span>
+
+        <span class="c1"># data_link - &quot;https://www.kaggle.com/c/titanic/download/train.csv&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="s2">&quot;coreBN/tests/test_estimators/testdata/titanic_train.csv&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span><span class="p">[[</span><span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="TestK2Score.test_score"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score">[docs]</a>    <span class="k">def</span> <span class="nf">test_score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">K2Score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">),</span> <span class="o">-</span><span class="mf">10.73813429536977</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">K2Score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d1</span><span class="p">)</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">BayesianNetwork</span><span class="p">()),</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestK2Score.test_score_titanic"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.test_score_titanic">[docs]</a>    <span class="k">def</span> <span class="nf">test_score_titanic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scorer</span> <span class="o">=</span> <span class="n">K2Score</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span><span class="p">)</span>
+        <span class="n">titanic</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">),</span> <span class="o">-</span><span class="mf">1891.0630673606006</span><span class="p">)</span>
+        <span class="n">titanic2</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">([(</span><span class="s2">&quot;Pclass&quot;</span><span class="p">,</span> <span class="s2">&quot;Sex&quot;</span><span class="p">)])</span>
+        <span class="n">titanic2</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([</span><span class="s2">&quot;Sex&quot;</span><span class="p">,</span> <span class="s2">&quot;Survived&quot;</span><span class="p">,</span> <span class="s2">&quot;Pclass&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertLess</span><span class="p">(</span><span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic2</span><span class="p">),</span> <span class="n">scorer</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">titanic</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestK2Score.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_estimators.html#coreBN.tests.test_estimators.test_StructureScore.TestK2Score.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">d1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">titanic_data2</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.utils.utils &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.utils.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+<span class="kn">from</span> <span class="nn">pkg_resources</span> <span class="kn">import</span> <span class="n">resource_filename</span>
+
+
+<div class="viewcode-block" id="get_example_model"><a class="viewcode-back" href="../../../coreBN.utils.html#coreBN.utils.utils.get_example_model">[docs]</a><span class="k">def</span> <span class="nf">get_example_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches the specified model from bnlearn repository and returns a</span>
+<span class="sd">    coreBN.model instance.</span>
+
+<span class="sd">    Parameter</span>
+<span class="sd">    ---------</span>
+<span class="sd">    model: str</span>
+<span class="sd">        Any model from bnlearn repository (http://www.bnlearn.com/bnrepository).</span>
+
+<span class="sd">        Discrete Bayesian Network Options:</span>
+<span class="sd">            Small Networks:</span>
+<span class="sd">                1. asia</span>
+<span class="sd">                2. cancer</span>
+<span class="sd">                3. earthquake</span>
+<span class="sd">                4. sachs</span>
+<span class="sd">                5. survey</span>
+<span class="sd">            Medium Networks:</span>
+<span class="sd">                1. alarm</span>
+<span class="sd">                2. barley</span>
+<span class="sd">                3. child</span>
+<span class="sd">                4. insurance</span>
+<span class="sd">                5. mildew</span>
+<span class="sd">                6. water</span>
+<span class="sd">            Large Networks:</span>
+<span class="sd">                1. hailfinder</span>
+<span class="sd">                2. hepar2</span>
+<span class="sd">                3. win95pts</span>
+<span class="sd">            Very Large Networks:</span>
+<span class="sd">                1. andes</span>
+<span class="sd">                2. diabetes</span>
+<span class="sd">                3. link</span>
+<span class="sd">                4. munin1</span>
+<span class="sd">                5. munin2</span>
+<span class="sd">                6. munin3</span>
+<span class="sd">                7. munin4</span>
+<span class="sd">                8. pathfinder</span>
+<span class="sd">                9. pigs</span>
+<span class="sd">                10. munin</span>
+<span class="sd">        Gaussian Bayesian Network Options:</span>
+<span class="sd">                1. ecoli70</span>
+<span class="sd">                2. magic-niab</span>
+<span class="sd">                3. magic-irri</span>
+<span class="sd">                4. arth150</span>
+<span class="sd">        Conditional Linear Gaussian Bayesian Network Options:</span>
+<span class="sd">                1. sangiovese</span>
+<span class="sd">                2. mehra</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; from coreBN.data import get_example_model</span>
+<span class="sd">    &gt;&gt;&gt; model = get_example_model(model=&#39;asia&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; model</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    coreBN.models instance: An instance of one of the model classes in coreBN.models</span>
+<span class="sd">                           depending on the type of dataset.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">coreBN.IO</span> <span class="kn">import</span> <span class="n">BIFReader</span>
+
+    <span class="n">filenames</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;asia&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/asia.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cancer&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/cancer.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;earthquake&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/earthquake.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sachs&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/sachs.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;survey&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/survey.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;alarm&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/alarm.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;barley&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/barley.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;child&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/child.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;insurance&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/insurance.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mildew&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/mildew.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;water&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/water.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hailfinder&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/hailfinder.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hepar2&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/hepar2.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;win95pts&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/win95pts.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;andes&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/andes.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;diabetes&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/diabetes.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/link.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;munin1&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/munin1.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;munin2&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/munin2.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;munin3&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/munin3.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;munin4&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/munin4.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pathfinder&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/pathfinder.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pigs&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/pigs.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;munin&quot;</span><span class="p">:</span> <span class="s2">&quot;utils/example_models/munin.bif.gz&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ecoli70&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;magic-niab&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;magic-irri&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;arth150&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sangiovese&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mehra&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filenames</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;dataset should be one of the options&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">filenames</span><span class="p">[</span><span class="n">model</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;The specified dataset isn&#39;t supported&quot;</span><span class="p">)</span>
+
+    <span class="n">path</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">resource_filename</span><span class="p">(</span><span class="s2">&quot;coreBN&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">BIFReader</span><span class="p">(</span><span class="n">string</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">),</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

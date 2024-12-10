@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_independencies.test_Independencies &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_independencies.test_Independencies</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.tests.test_independencies.test_Independencies</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.independencies</span> <span class="kn">import</span> <span class="n">Independencies</span><span class="p">,</span> <span class="n">IndependenceAssertion</span>
+
+
+<div class="viewcode-block" id="TestIndependenceAssertion"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion">[docs]</a><span class="k">class</span> <span class="nc">TestIndependenceAssertion</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestIndependenceAssertion.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertion</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="TestIndependenceAssertion.test_return_list_if_not_collection"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_return_list_if_not_collection">[docs]</a>    <span class="k">def</span> <span class="nf">test_return_list_if_not_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion</span><span class="o">.</span><span class="n">_return_list_if_not_collection</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">),</span> <span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertListEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertion</span><span class="o">.</span><span class="n">_return_list_if_not_collection</span><span class="p">([</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">]),</span> <span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependenceAssertion.test_get_assertion"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_get_assertion">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_assertion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTupleEqual</span><span class="p">(</span>
+            <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">(),</span> <span class="p">({</span><span class="s2">&quot;U&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;V&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;Z&quot;</span><span class="p">})</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTupleEqual</span><span class="p">(</span>
+            <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get_assertion</span><span class="p">(),</span> <span class="p">({</span><span class="s2">&quot;U&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;V&quot;</span><span class="p">},</span> <span class="nb">set</span><span class="p">())</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependenceAssertion.test_init"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;U&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;V&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event3</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Z&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">([</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event1</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;U&quot;</span><span class="p">,</span> <span class="s2">&quot;V&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event2</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertSetEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assertion1</span><span class="o">.</span><span class="n">event3</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="TestIndependenceAssertion.test_init_exceptions"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.test_init_exceptions">[docs]</a>    <span class="k">def</span> <span class="nf">test_init_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">,</span> <span class="n">event2</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="n">event3</span><span class="o">=</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">,</span> <span class="n">event2</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">,</span> <span class="n">event3</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">,</span> <span class="n">event1</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">IndependenceAssertion</span><span class="p">,</span> <span class="n">event1</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;U&quot;</span><span class="p">],</span> <span class="n">event3</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Z&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="TestIndependenceAssertion.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependenceAssertion.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertion</span></div></div>
+
+
+<div class="viewcode-block" id="TestIndependeciesAssertionEq"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq">[docs]</a><span class="k">class</span> <span class="nc">TestIndependeciesAssertionEq</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestIndependeciesAssertionEq.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i1</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i3</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i4</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="s2">&quot;e&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i5</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="s2">&quot;e&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i6</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i7</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i8</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i9</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span> <span class="s2">&quot;e&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i10</span> <span class="o">=</span> <span class="n">IndependenceAssertion</span><span class="p">([</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependeciesAssertionEq.test_eq1"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq1">[docs]</a>    <span class="k">def</span> <span class="nf">test_eq1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i1</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i4</span> <span class="o">==</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i6</span> <span class="o">==</span> <span class="s2">&quot;c&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependeciesAssertionEq.test_eq2"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq2">[docs]</a>    <span class="k">def</span> <span class="nf">test_eq2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i3</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i6</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependeciesAssertionEq.test_eq3"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.test_eq3">[docs]</a>    <span class="k">def</span> <span class="nf">test_eq3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i4</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i6</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i7</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i8</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i4</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i9</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i5</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i9</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i10</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">i9</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i10</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i8</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependeciesAssertionEq.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependeciesAssertionEq.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i1</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i3</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i4</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i5</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i6</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i7</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i8</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i9</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">i10</span></div></div>
+
+
+<div class="viewcode-block" id="TestIndependencies"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies">[docs]</a><span class="k">class</span> <span class="nc">TestIndependencies</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+<div class="viewcode-block" id="TestIndependencies.setUp"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.setUp">[docs]</a>    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">(</span>
+            <span class="p">[[</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">]],</span> <span class="p">[[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">]]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies5</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">]],</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">],</span> <span class="s2">&quot;g&quot;</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_init"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_init">[docs]</a>    <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_add_assertions"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_add_assertions">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span><span class="p">,</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">])</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_get_assertions"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_assertions">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_assertions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span><span class="o">.</span><span class="n">independencies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies1</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span><span class="o">.</span><span class="n">independencies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies2</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_get_all_variables"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_get_all_variables">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_all_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span><span class="o">.</span><span class="n">get_all_variables</span><span class="p">(),</span>
+            <span class="nb">frozenset</span><span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span><span class="o">.</span><span class="n">get_all_variables</span><span class="p">(),</span>
+            <span class="nb">frozenset</span><span class="p">((</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Independencies5</span><span class="o">.</span><span class="n">get_all_variables</span><span class="p">(),</span>
+            <span class="nb">frozenset</span><span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">)),</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_closure"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_closure">[docs]</a>    <span class="k">def</span> <span class="nf">test_closure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span> <span class="s2">&quot;D&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">ind1</span><span class="o">.</span><span class="n">closure</span><span class="p">(),</span>
+            <span class="n">Independencies</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">],</span> <span class="s2">&quot;D&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span>
+            <span class="n">ind2</span><span class="o">.</span><span class="n">closure</span><span class="p">(),</span>
+            <span class="n">Independencies</span><span class="p">(</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">],</span> <span class="s2">&quot;Z&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">]),</span>
+                <span class="p">(</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">),</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">ind3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">(</span>
+            <span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">]),</span>
+            <span class="p">([</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">]),</span>
+            <span class="p">([</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span>
+            <span class="p">([</span><span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">],</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind3</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span><span class="o">.</span><span class="n">get_assertions</span><span class="p">()),</span> <span class="mi">78</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_entails"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_entails">[docs]</a>    <span class="k">def</span> <span class="nf">test_entails</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;D&quot;</span><span class="p">],</span> <span class="s2">&quot;E&quot;</span><span class="p">])</span>
+        <span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="s2">&quot;E&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ind1</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">ind2</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind1</span><span class="p">))</span>
+        <span class="n">ind3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">((</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ind3</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind3</span><span class="o">.</span><span class="n">closure</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ind3</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span><span class="o">.</span><span class="n">entails</span><span class="p">(</span><span class="n">ind3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_is_equivalent"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_is_equivalent">[docs]</a>    <span class="k">def</span> <span class="nf">test_is_equivalent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ind1</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">],</span> <span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="n">ind2</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">])</span>
+        <span class="n">ind3</span> <span class="o">=</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ind1</span><span class="o">.</span><span class="n">is_equivalent</span><span class="p">(</span><span class="n">ind3</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.test_eq"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.test_eq">[docs]</a>    <span class="k">def</span> <span class="nf">test_eq</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">Independencies</span><span class="p">()</span> <span class="o">==</span> <span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">Independencies</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;C&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="n">Independencies</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">Independencies</span><span class="p">()</span> <span class="o">==</span> <span class="n">Independencies</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="TestIndependencies.tearDown"><a class="viewcode-back" href="../../../../coreBN.tests.test_independencies.html#coreBN.tests.test_independencies.test_Independencies.TestIndependencies.tearDown">[docs]</a>    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies3</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies4</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">Independencies5</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

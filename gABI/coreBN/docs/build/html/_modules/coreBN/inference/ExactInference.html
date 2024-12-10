@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.inference.ExactInference &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.inference.ExactInference</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.inference.ExactInference</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">opt_einsum</span> <span class="kn">import</span> <span class="n">contract</span>
+<span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors</span> <span class="kn">import</span> <span class="n">factor_product</span>
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">DiscreteFactor</span>
+<span class="kn">from</span> <span class="nn">coreBN.global_vars</span> <span class="kn">import</span> <span class="n">SHOW_PROGRESS</span>
+<span class="kn">from</span> <span class="nn">coreBN.inference</span> <span class="kn">import</span> <span class="n">Inference</span>
+<span class="kn">from</span> <span class="nn">coreBN.inference.EliminationOrder</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MinFill</span><span class="p">,</span>
+    <span class="n">MinNeighbors</span><span class="p">,</span>
+    <span class="n">MinWeight</span><span class="p">,</span>
+    <span class="n">WeightedMinFill</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BayesianNetwork</span><span class="p">,</span>
+    <span class="n">DynamicBayesianNetwork</span><span class="p">,</span>
+    <span class="n">JunctionTree</span><span class="p">,</span>
+    <span class="n">MarkovNetwork</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="VariableElimination"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination">[docs]</a><span class="k">class</span> <span class="nc">VariableElimination</span><span class="p">(</span><span class="n">Inference</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_working_factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">evidence</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Uses the evidence given to the query methods to modify the factors before running</span>
+<span class="sd">        the variable elimination algorithm.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        evidence: dict</span>
+<span class="sd">            Dict of the form {variable: state}</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: Modified working factors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">working_factors</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">node</span><span class="p">:</span> <span class="p">{(</span><span class="n">factor</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="n">node</span><span class="p">]}</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Dealing with evidence. Reducing factors over it before VE is run.</span>
+        <span class="k">if</span> <span class="n">evidence</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">evidence_var</span> <span class="ow">in</span> <span class="n">evidence</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">evidence_var</span><span class="p">]:</span>
+                    <span class="n">factor_reduced</span> <span class="o">=</span> <span class="n">factor</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span>
+                        <span class="p">[(</span><span class="n">evidence_var</span><span class="p">,</span> <span class="n">evidence</span><span class="p">[</span><span class="n">evidence_var</span><span class="p">])],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">factor_reduced</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+                        <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">((</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">))</span>
+                        <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">factor_reduced</span><span class="p">,</span> <span class="n">evidence_var</span><span class="p">))</span>
+                <span class="k">del</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">evidence_var</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">working_factors</span>
+
+    <span class="k">def</span> <span class="nf">_get_elimination_order</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">,</span> <span class="n">elimination_order</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deals with all elimination order parameters given to _variable_elimination method</span>
+<span class="sd">        and returns a list of variables that are to be eliminated</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        elimination_order: str or list</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list: A list of variables names in the order they need to be eliminated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">to_eliminate</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+            <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">evidence</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Step 1: If elimination_order is a list, verify it&#39;s correct and return.</span>
+        <span class="c1"># Step 1.1: Check that not of the `variables` and `evidence` is in the elimination_order.</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">,</span> <span class="s2">&quot;__iter__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="n">var</span> <span class="ow">in</span> <span class="n">elimination_order</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span>
+                    <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">evidence</span> <span class="k">else</span> <span class="p">[])</span>
+                <span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Elimination order contains variables which are in&quot;</span>
+                    <span class="s2">&quot; variables or evidence args&quot;</span>
+                <span class="p">)</span>
+            <span class="c1"># Step 1.2: Check if elimination_order has variables which are not in the model.</span>
+            <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">elimination_order</span><span class="p">):</span>
+                <span class="n">elimination_order</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                    <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">(),</span> <span class="n">elimination_order</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Step 1.3: Check if the elimination_order has all the variables that need to be eliminated.</span>
+            <span class="k">elif</span> <span class="n">to_eliminate</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Elimination order doesn&#39;t contain all the variables&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;which need to be eliminated. The variables which need to&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;be eliminated are </span><span class="si">{</span><span class="n">to_eliminate</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">elimination_order</span>
+
+        <span class="c1"># Step 2: If elimination order is None or a Markov model, return a random order.</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">elimination_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">to_eliminate</span>
+
+        <span class="c1"># Step 3: If elimination order is a str, compute the order using the specified heuristic.</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span>
+        <span class="p">):</span>
+            <span class="n">heuristic_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;weightedminfill&quot;</span><span class="p">:</span> <span class="n">WeightedMinFill</span><span class="p">,</span>
+                <span class="s2">&quot;minneighbors&quot;</span><span class="p">:</span> <span class="n">MinNeighbors</span><span class="p">,</span>
+                <span class="s2">&quot;minweight&quot;</span><span class="p">:</span> <span class="n">MinWeight</span><span class="p">,</span>
+                <span class="s2">&quot;minfill&quot;</span><span class="p">:</span> <span class="n">MinFill</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">elimination_order</span> <span class="o">=</span> <span class="n">heuristic_dict</span><span class="p">[</span><span class="n">elimination_order</span><span class="o">.</span><span class="n">lower</span><span class="p">()](</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_elimination_order</span><span class="p">(</span><span class="n">nodes</span><span class="o">=</span><span class="n">to_eliminate</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">elimination_order</span>
+
+    <span class="k">def</span> <span class="nf">_variable_elimination</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">,</span>
+        <span class="n">operation</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">elimination_order</span><span class="o">=</span><span class="s2">&quot;MinFill&quot;</span><span class="p">,</span>
+        <span class="n">joint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implementation of a generalized variable elimination.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list, array-like</span>
+<span class="sd">            variables that are not to be eliminated.</span>
+
+<span class="sd">        operation: str (&#39;marginalize&#39; | &#39;maximize&#39;)</span>
+<span class="sd">            The operation to do for eliminating the variable.</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        elimination_order: str or list (array-like)</span>
+<span class="sd">            If str: Heuristic to use to find the elimination order.</span>
+<span class="sd">            If array-like: The elimination order to use.</span>
+<span class="sd">            If None: A random elimination order is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Step 1: Deal with the input arguments.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;variables must be a list of strings&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">evidence</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;evidence must be a list of strings&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Dealing with the case when variables is not provided.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="n">all_factors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">factor_li</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">all_factors</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">factor_li</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">joint</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="nb">set</span><span class="p">(</span><span class="n">all_factors</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_factors</span><span class="p">)</span>
+
+        <span class="c1"># Step 2: Prepare data structures to run the algorithm.</span>
+        <span class="n">eliminated_variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># Get working factors and elimination order</span>
+        <span class="n">working_factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_working_factors</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span>
+        <span class="n">elimination_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_elimination_order</span><span class="p">(</span>
+            <span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">,</span> <span class="n">elimination_order</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Step 3: Run variable elimination</span>
+        <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">and</span> <span class="n">SHOW_PROGRESS</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pbar</span> <span class="o">=</span> <span class="n">elimination_order</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">show_progress</span> <span class="ow">and</span> <span class="n">SHOW_PROGRESS</span><span class="p">:</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eliminating: </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Removing all the factors containing the variables which are</span>
+            <span class="c1"># eliminated (as all the factors should be considered only once)</span>
+            <span class="n">factors</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">factor</span>
+                <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">eliminated_variables</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="n">factors</span><span class="p">)</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">operation</span><span class="p">)([</span><span class="n">var</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">:</span>
+                <span class="n">working_factors</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">phi</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+            <span class="n">eliminated_variables</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+        <span class="c1"># Step 4: Prepare variables to be returned.</span>
+        <span class="n">final_distribution</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">node</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">eliminated_variables</span><span class="p">):</span>
+                    <span class="n">final_distribution</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">))</span>
+        <span class="n">final_distribution</span> <span class="o">=</span> <span class="p">[</span><span class="n">factor</span> <span class="k">for</span> <span class="n">factor</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">final_distribution</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">joint</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="n">final_distribution</span><span class="p">)</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="n">final_distribution</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query_var_factor</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">query_var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                    <span class="n">phi</span> <span class="o">=</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="n">final_distribution</span><span class="p">)</span>
+                    <span class="n">query_var_factor</span><span class="p">[</span><span class="n">query_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span>
+                        <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">query_var</span><span class="p">])),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">query_var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                    <span class="n">phi</span> <span class="o">=</span> <span class="n">factor_product</span><span class="p">(</span><span class="o">*</span><span class="n">final_distribution</span><span class="p">)</span>
+                    <span class="n">query_var_factor</span><span class="p">[</span><span class="n">query_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span>
+                        <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">query_var</span><span class="p">])),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+            <span class="k">return</span> <span class="n">query_var_factor</span>
+
+<div class="viewcode-block" id="VariableElimination.query"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">elimination_order</span><span class="o">=</span><span class="s2">&quot;greedy&quot;</span><span class="p">,</span>
+        <span class="n">joint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables for which you want to compute the probability</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        virtual_evidence: list (default:None)</span>
+<span class="sd">            A list of coreBN.factors.discrete.TabularCPD representing the virtual</span>
+<span class="sd">            evidences.</span>
+
+<span class="sd">        elimination_order: str or list (default=&#39;greedy&#39;)</span>
+<span class="sd">            Order in which to eliminate the variables in the algorithm. If list is provided,</span>
+<span class="sd">            should contain all variables in the model except the ones in `variables`. str options</span>
+<span class="sd">            are: `greedy`, `WeightedMinFill`, `MinNeighbors`, `MinWeight`, `MinFill`. Please</span>
+<span class="sd">            refer https://core.org/exact_infer/ve.html#module-core.inference.EliminationOrder</span>
+<span class="sd">            for details.</span>
+
+<span class="sd">        joint: boolean (default: True)</span>
+<span class="sd">            If True, returns a Joint Distribution over `variables`.</span>
+<span class="sd">            If False, returns a dict of distributions over each of the `variables`.</span>
+
+<span class="sd">        show_progress: boolean</span>
+<span class="sd">            If True, shows a progress bar.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import VariableElimination</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = VariableElimination(model)</span>
+<span class="sd">        &gt;&gt;&gt; phi_query = inference.query([&#39;A&#39;, &#39;B&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="c1"># Step 1: Parameter Checks</span>
+        <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">common_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t have the same variables in both `variables` and `evidence`. Found in both: </span><span class="si">{</span><span class="n">common_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Step 2: If virtual_evidence is provided, modify the network.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">virtual_evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_evidence</span><span class="p">(</span><span class="n">virtual_evidence</span><span class="p">)</span>
+            <span class="n">virt_evidence</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__&quot;</span> <span class="o">+</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_evidence</span><span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence</span><span class="p">,</span> <span class="o">**</span><span class="n">virt_evidence</span><span class="p">},</span>
+                <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">elimination_order</span><span class="o">=</span><span class="n">elimination_order</span><span class="p">,</span>
+                <span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Step 3: Prune the network based on variables and evidence.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="n">model_reduced</span><span class="p">,</span> <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_bayesian_model</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">)</span>
+            <span class="n">factors</span> <span class="o">=</span> <span class="n">model_reduced</span><span class="o">.</span><span class="n">cpds</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+            <span class="n">factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">factors</span>
+
+        <span class="c1"># Step 4: If elimination_order is greedy, do a tensor contraction approach</span>
+        <span class="c1">#         else do the classic Variable Elimination.</span>
+        <span class="k">if</span> <span class="n">elimination_order</span> <span class="o">==</span> <span class="s2">&quot;greedy&quot;</span><span class="p">:</span>
+            <span class="c1"># Step 5.1: Compute the values array for factors after reducing them to provided</span>
+            <span class="c1">#           evidence.</span>
+            <span class="n">evidence_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span>
+            <span class="n">reduce_indexes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">reshape_indexes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">phi</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+                <span class="n">indexes_to_reduce</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">evidence_vars</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="n">indexer</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indexes_to_reduce</span><span class="p">:</span>
+                    <span class="n">indexer</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_state_no</span><span class="p">(</span>
+                        <span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">evidence</span><span class="p">[</span><span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+                    <span class="p">)</span>
+                <span class="n">reduce_indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">indexer</span><span class="p">))</span>
+                <span class="n">reshape_indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="mi">1</span> <span class="k">if</span> <span class="n">indexer</span> <span class="o">!=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="k">else</span> <span class="n">phi</span><span class="o">.</span><span class="n">cardinality</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">indexer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reduce_indexes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Step 5.2: Prepare values and index arrays to do use in einsum</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">JunctionTree</span><span class="p">):</span>
+                <span class="n">var_int_map</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">var</span><span class="p">:</span> <span class="n">i</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                        <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">model_reduced</span><span class="o">.</span><span class="n">nodes</span><span class="p">()))</span>
+                    <span class="p">)</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var_int_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model_reduced</span><span class="o">.</span><span class="n">nodes</span><span class="p">())}</span>
+            <span class="n">einsum_expr</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">phi</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">factors</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">reshape_indexes</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1</span><span class="p">}:</span>
+                    <span class="n">einsum_expr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">reduce_indexes</span><span class="p">[</span><span class="n">index</span><span class="p">]])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                            <span class="n">reshape_indexes</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">einsum_expr</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">var_int_map</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">phi</span><span class="o">.</span><span class="n">variables</span><span class="p">])</span>
+            <span class="n">result_values</span> <span class="o">=</span> <span class="n">contract</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">einsum_expr</span><span class="p">,</span> <span class="p">[</span><span class="n">var_int_map</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">],</span> <span class="n">optimize</span><span class="o">=</span><span class="s2">&quot;greedy&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Step 5.3: Prepare return values.</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">DiscreteFactor</span><span class="p">(</span>
+                <span class="n">variables</span><span class="p">,</span>
+                <span class="n">result_values</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">result_values</span><span class="p">,</span>
+                <span class="n">state_names</span><span class="o">=</span><span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="n">model_reduced</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">joint</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">BayesianNetwork</span><span class="p">,</span> <span class="n">JunctionTree</span><span class="p">,</span> <span class="n">DynamicBayesianNetwork</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">result</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">all_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">BayesianNetwork</span><span class="p">,</span> <span class="n">JunctionTree</span><span class="p">,</span> <span class="n">DynamicBayesianNetwork</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                        <span class="n">result_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span>
+                            <span class="n">all_vars</span> <span class="o">-</span> <span class="p">{</span><span class="n">var</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                        <span class="n">result_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">marginalize</span><span class="p">(</span>
+                            <span class="n">all_vars</span> <span class="o">-</span> <span class="p">{</span><span class="n">var</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+                        <span class="p">)</span>
+
+                <span class="k">return</span> <span class="n">result_dict</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Step 5.1: Initialize data structures for the reduced bn.</span>
+            <span class="n">reduced_ve</span> <span class="o">=</span> <span class="n">VariableElimination</span><span class="p">(</span><span class="n">model_reduced</span><span class="p">)</span>
+            <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+            <span class="c1"># Step 5.2: Do the actual variable elimination</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_variable_elimination</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">operation</span><span class="o">=</span><span class="s2">&quot;marginalize&quot;</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+                <span class="n">elimination_order</span><span class="o">=</span><span class="n">elimination_order</span><span class="p">,</span>
+                <span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="VariableElimination.max_marginal"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination.max_marginal">[docs]</a>    <span class="k">def</span> <span class="nf">max_marginal</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">elimination_order</span><span class="o">=</span><span class="s2">&quot;MinFill&quot;</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the max-marginal over the variables given the evidence.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables over which we want to compute the max-marginal.</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        elimination_order: list</span>
+<span class="sd">            order of variable eliminations (if nothing is provided) order is</span>
+<span class="sd">            computed automatically</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import VariableElimination</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = VariableElimination(model)</span>
+<span class="sd">        &gt;&gt;&gt; phi_query = inference.max_marginal([&#39;A&#39;, &#39;B&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">variables</span> <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">common_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t have the same variables in both `variables` and `evidence`. Found in both: </span><span class="si">{</span><span class="n">common_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="n">model_reduced</span><span class="p">,</span> <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_bayesian_model</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="n">reduced_ve</span> <span class="o">=</span> <span class="n">VariableElimination</span><span class="p">(</span><span class="n">model_reduced</span><span class="p">)</span>
+        <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="n">final_distribution</span> <span class="o">=</span> <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_variable_elimination</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">operation</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">,</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+            <span class="n">elimination_order</span><span class="o">=</span><span class="n">elimination_order</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">final_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VariableElimination.map_query"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination.map_query">[docs]</a>    <span class="k">def</span> <span class="nf">map_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">elimination_order</span><span class="o">=</span><span class="s2">&quot;MinFill&quot;</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the MAP Query over the variables given the evidence.</span>
+
+<span class="sd">        Note: When multiple variables are passed, it returns the map_query for each</span>
+<span class="sd">        of them individually.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables over which we want to compute the max-marginal.</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        virtual_evidence: list (default:None)</span>
+<span class="sd">            A list of coreBN.factors.discrete.TabularCPD representing the virtual</span>
+<span class="sd">            evidences.</span>
+
+<span class="sd">        elimination_order: list</span>
+<span class="sd">            order of variable eliminations (if nothing is provided) order is</span>
+<span class="sd">            computed automatically</span>
+
+<span class="sd">        show_progress: boolean</span>
+<span class="sd">            If True, shows a progress bar.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import VariableElimination</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = VariableElimination(model)</span>
+<span class="sd">        &gt;&gt;&gt; phi_query = inference.map_query([&#39;A&#39;, &#39;B&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">variables</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="n">variables</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">common_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t have the same variables in both `variables` and `evidence`. Found in both: </span><span class="si">{</span><span class="n">common_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">virtual_evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_evidence</span><span class="p">(</span><span class="n">virtual_evidence</span><span class="p">)</span>
+            <span class="n">virt_evidence</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__&quot;</span> <span class="o">+</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_evidence</span><span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence</span><span class="p">,</span> <span class="o">**</span><span class="n">virt_evidence</span><span class="p">},</span>
+                <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">elimination_order</span><span class="o">=</span><span class="n">elimination_order</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="n">model_reduced</span><span class="p">,</span> <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_bayesian_model</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model_reduced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="n">reduced_ve</span> <span class="o">=</span> <span class="n">VariableElimination</span><span class="p">(</span><span class="n">model_reduced</span><span class="p">)</span>
+        <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="c1"># TODO:Check the note in docstring. Change that behavior to return the joint MAP</span>
+        <span class="n">final_distribution</span> <span class="o">=</span> <span class="n">reduced_ve</span><span class="o">.</span><span class="n">_variable_elimination</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">operation</span><span class="o">=</span><span class="s2">&quot;marginalize&quot;</span><span class="p">,</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+            <span class="n">elimination_order</span><span class="o">=</span><span class="n">elimination_order</span><span class="p">,</span>
+            <span class="n">joint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">argmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">final_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">assignment</span> <span class="o">=</span> <span class="n">final_distribution</span><span class="o">.</span><span class="n">assignment</span><span class="p">([</span><span class="n">argmax</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">map_query_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var_assignment</span> <span class="ow">in</span> <span class="n">assignment</span><span class="p">:</span>
+            <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">var_assignment</span>
+            <span class="n">map_query_results</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">map_query_results</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                <span class="n">return_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_query_results</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">return_dict</span></div>
+
+<div class="viewcode-block" id="VariableElimination.induced_graph"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination.induced_graph">[docs]</a>    <span class="k">def</span> <span class="nf">induced_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elimination_order</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the induced graph formed by running Variable Elimination on the network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        elimination_order: list, array like</span>
+<span class="sd">            List of variables in the order in which they are to be eliminated.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import VariableElimination</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = VariableElimination(model)</span>
+<span class="sd">        &gt;&gt;&gt; inference.induced_graph([&#39;C&#39;, &#39;D&#39;, &#39;A&#39;, &#39;B&#39;, &#39;E&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="c1"># If the elimination order does not contain the same variables as the model</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Set of variables in elimination order&quot;</span>
+                <span class="s2">&quot; different from variables in model&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">eliminated_variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">working_factors</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">node</span><span class="p">:</span> <span class="p">[</span><span class="n">factor</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span> <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span><span class="p">[</span><span class="n">node</span><span class="p">]]</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span>
+        <span class="p">}</span>
+
+        <span class="c1"># The set of cliques that should be in the induced graph</span>
+        <span class="n">cliques</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">factors</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">factors</span><span class="p">:</span>
+                <span class="n">cliques</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">factor</span><span class="p">))</span>
+
+        <span class="c1"># Removing all the factors containing the variables which are</span>
+        <span class="c1"># eliminated (as all the factors should be considered only once)</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">elimination_order</span><span class="p">:</span>
+            <span class="n">factors</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">factor</span>
+                <span class="k">for</span> <span class="n">factor</span> <span class="ow">in</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">eliminated_variables</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">factors</span><span class="p">))</span><span class="o">.</span><span class="n">difference</span><span class="p">({</span><span class="n">var</span><span class="p">})</span>
+            <span class="n">cliques</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">phi</span><span class="p">))</span>
+            <span class="k">del</span> <span class="n">working_factors</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">phi</span><span class="p">:</span>
+                <span class="n">working_factors</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">phi</span><span class="p">))</span>
+            <span class="n">eliminated_variables</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+
+        <span class="n">edges_comb</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cliques</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">edges_comb</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="VariableElimination.induced_width"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.VariableElimination.induced_width">[docs]</a>    <span class="k">def</span> <span class="nf">induced_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elimination_order</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the width (integer) of the induced graph formed by running Variable Elimination on the network.</span>
+<span class="sd">        The width is the defined as the number of nodes in the largest clique in the graph minus 1.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        elimination_order: list, array like</span>
+<span class="sd">            List of variables in the order in which they are to be eliminated.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import VariableElimination</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = VariableElimination(model)</span>
+<span class="sd">        &gt;&gt;&gt; inference.induced_width([&#39;C&#39;, &#39;D&#39;, &#39;A&#39;, &#39;B&#39;, &#39;E&#39;])</span>
+<span class="sd">        3</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">induced_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">induced_graph</span><span class="p">(</span><span class="n">elimination_order</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">nx</span><span class="o">.</span><span class="n">graph_clique_number</span><span class="p">(</span><span class="n">induced_graph</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div></div>
+
+
+<div class="viewcode-block" id="BeliefPropagation"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation">[docs]</a><span class="k">class</span> <span class="nc">BeliefPropagation</span><span class="p">(</span><span class="n">Inference</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for performing inference using Belief Propagation method.</span>
+
+<span class="sd">    Creates a Junction Tree or Clique Tree (JunctionTree class) for the input</span>
+<span class="sd">    probabilistic graphical model and performs calibration of the junction tree</span>
+<span class="sd">    so formed using belief propagation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: BayesianNetwork, MarkovNetwork, FactorGraph, JunctionTree</span>
+<span class="sd">        model for which inference is to performed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BeliefPropagation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">JunctionTree</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_junction_tree</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="BeliefPropagation.get_cliques"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.get_cliques">[docs]</a>    <span class="k">def</span> <span class="nf">get_cliques</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns cliques used for belief propagation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BeliefPropagation.get_clique_beliefs"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.get_clique_beliefs">[docs]</a>    <span class="k">def</span> <span class="nf">get_clique_beliefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns clique beliefs. Should be called after the clique tree (or</span>
+<span class="sd">        junction tree) is calibrated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span></div>
+
+<div class="viewcode-block" id="BeliefPropagation.get_sepset_beliefs"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.get_sepset_beliefs">[docs]</a>    <span class="k">def</span> <span class="nf">get_sepset_beliefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns sepset beliefs. Should be called after clique tree (or junction</span>
+<span class="sd">        tree) is calibrated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_beliefs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sending_clique</span><span class="p">,</span> <span class="n">recieving_clique</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is belief-update method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sending_clique: node (as the operation is on junction tree, node should be a tuple)</span>
+<span class="sd">            Node sending the message</span>
+<span class="sd">        recieving_clique: node (as the operation is on junction tree, node should be a tuple)</span>
+<span class="sd">            Node receiving the message</span>
+<span class="sd">        operation: str (&#39;marginalize&#39; | &#39;maximize&#39;)</span>
+<span class="sd">            The operation to do for passing messages between nodes.</span>
+
+<span class="sd">        Takes belief of one clique and uses it to update the belief of the</span>
+<span class="sd">        neighboring ones.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sepset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">sending_clique</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">recieving_clique</span><span class="p">))</span>
+        <span class="n">sepset_key</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">((</span><span class="n">sending_clique</span><span class="p">,</span> <span class="n">recieving_clique</span><span class="p">))</span>
+
+        <span class="c1"># \sigma_{i \rightarrow j} = \sum_{C_i - S_{i, j}} \beta_i</span>
+        <span class="c1"># marginalize the clique over the sepset</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">sending_clique</span><span class="p">],</span> <span class="n">operation</span><span class="p">)(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">sending_clique</span><span class="p">)</span> <span class="o">-</span> <span class="n">sepset</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+        <span class="c1"># \beta_j = \beta_j * \frac{\sigma_{i \rightarrow j}}{\mu_{i, j}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">recieving_clique</span><span class="p">]</span> <span class="o">*=</span> <span class="p">(</span>
+            <span class="n">sigma</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span><span class="p">[</span><span class="n">sepset_key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span><span class="p">[</span><span class="n">sepset_key</span><span class="p">]</span>
+            <span class="k">else</span> <span class="n">sigma</span>
+        <span class="p">)</span>
+
+        <span class="c1"># \mu_{i, j} = \sigma_{i \rightarrow j}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span><span class="p">[</span><span class="n">sepset_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+
+    <span class="k">def</span> <span class="nf">_is_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether the calibration has converged or not. At convergence</span>
+<span class="sd">        the sepset belief would be precisely the sepset marginal.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        operation: str (&#39;marginalize&#39; | &#39;maximize&#39;)</span>
+<span class="sd">            The operation to do for passing messages between nodes.</span>
+<span class="sd">            if operation == marginalize, it checks whether the junction tree is calibrated or not</span>
+<span class="sd">            else if operation == maximize, it checks whether the junction tree is max calibrated or not</span>
+
+<span class="sd">        Formally, at convergence or at calibration this condition would be satisfied for</span>
+
+<span class="sd">        .. math:: \sum_{C_i - S_{i, j}} \beta_i = \sum_{C_j - S_{i, j}} \beta_j = \mu_{i, j}</span>
+
+<span class="sd">        and at max calibration this condition would be satisfied</span>
+
+<span class="sd">        .. math:: \max_{C_i - S_{i, j}} \beta_i = \max_{C_j - S_{i, j}} \beta_j = \mu_{i, j}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If no clique belief, then the clique tree is not calibrated</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+            <span class="n">sepset</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">sepset_key</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span>
+                <span class="ow">or</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span>
+                <span class="ow">or</span> <span class="n">sepset_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span>
+            <span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="n">marginal_1</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">operation</span><span class="p">)(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">sepset</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="n">marginal_2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">operation</span><span class="p">)(</span>
+                <span class="nb">list</span><span class="p">(</span><span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">sepset</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">marginal_1</span> <span class="o">!=</span> <span class="n">marginal_2</span>
+                <span class="ow">or</span> <span class="n">marginal_1</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span><span class="p">[</span><span class="n">sepset_key</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_calibrate_junction_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generalized calibration of junction tree or clique using belief propagation. This method can be used for both</span>
+<span class="sd">        calibrating as well as max-calibrating.</span>
+<span class="sd">        Uses Lauritzen-Spiegelhalter algorithm or belief-update message passing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        operation: str (&#39;marginalize&#39; | &#39;maximize&#39;)</span>
+<span class="sd">            The operation to do for passing messages between nodes.</span>
+
+<span class="sd">        Reference</span>
+<span class="sd">        ---------</span>
+<span class="sd">        Algorithm 10.3 Calibration using belief propagation in clique tree</span>
+<span class="sd">        Probabilistic Graphical Models: Principles and Techniques</span>
+<span class="sd">        Daphne Koller and Nir Friedman.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialize clique beliefs as well as sepset beliefs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">clique</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">get_factors</span><span class="p">(</span><span class="n">clique</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">clique</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nb">frozenset</span><span class="p">(</span><span class="n">edge</span><span class="p">):</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">edges</span><span class="p">()</span>
+        <span class="p">}</span>
+
+        <span class="k">for</span> <span class="n">clique</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_converged</span><span class="p">(</span><span class="n">operation</span><span class="o">=</span><span class="n">operation</span><span class="p">):</span>
+                <span class="n">neighbors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">clique</span><span class="p">)</span>
+                <span class="c1"># update root&#39;s belief using nieighbor clique&#39;s beliefs</span>
+                <span class="c1"># upward pass</span>
+                <span class="k">for</span> <span class="n">neighbor_clique</span> <span class="ow">in</span> <span class="n">neighbors</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_beliefs</span><span class="p">(</span><span class="n">neighbor_clique</span><span class="p">,</span> <span class="n">clique</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="n">operation</span><span class="p">)</span>
+                <span class="n">bfs_edges</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">algorithms</span><span class="o">.</span><span class="n">breadth_first_search</span><span class="o">.</span><span class="n">bfs_edges</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="p">,</span> <span class="n">clique</span>
+                <span class="p">)</span>
+                <span class="c1"># update the beliefs of all the nodes starting from the root to leaves using root&#39;s belief</span>
+                <span class="c1"># downward pass</span>
+                <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">bfs_edges</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_update_beliefs</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">operation</span><span class="o">=</span><span class="n">operation</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+<div class="viewcode-block" id="BeliefPropagation.calibrate"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.calibrate">[docs]</a>    <span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calibration using belief propagation in junction tree or clique tree.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import BeliefPropagation</span>
+<span class="sd">        &gt;&gt;&gt; G = BayesianNetwork([(&#39;diff&#39;, &#39;grade&#39;), (&#39;intel&#39;, &#39;grade&#39;),</span>
+<span class="sd">        ...                    (&#39;intel&#39;, &#39;SAT&#39;), (&#39;grade&#39;, &#39;letter&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; diff_cpd = TabularCPD(&#39;diff&#39;, 2, [[0.2], [0.8]])</span>
+<span class="sd">        &gt;&gt;&gt; intel_cpd = TabularCPD(&#39;intel&#39;, 3, [[0.5], [0.3], [0.2]])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd = TabularCPD(&#39;grade&#39;, 3,</span>
+<span class="sd">        ...                        [[0.1, 0.1, 0.1, 0.1, 0.1, 0.1],</span>
+<span class="sd">        ...                         [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],</span>
+<span class="sd">        ...                         [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]],</span>
+<span class="sd">        ...                        evidence=[&#39;diff&#39;, &#39;intel&#39;],</span>
+<span class="sd">        ...                        evidence_card=[2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; sat_cpd = TabularCPD(&#39;SAT&#39;, 2,</span>
+<span class="sd">        ...                      [[0.1, 0.2, 0.7],</span>
+<span class="sd">        ...                       [0.9, 0.8, 0.3]],</span>
+<span class="sd">        ...                      evidence=[&#39;intel&#39;], evidence_card=[3])</span>
+<span class="sd">        &gt;&gt;&gt; letter_cpd = TabularCPD(&#39;letter&#39;, 2,</span>
+<span class="sd">        ...                         [[0.1, 0.4, 0.8],</span>
+<span class="sd">        ...                          [0.9, 0.6, 0.2]],</span>
+<span class="sd">        ...                         evidence=[&#39;grade&#39;], evidence_card=[3])</span>
+<span class="sd">        &gt;&gt;&gt; G.add_cpds(diff_cpd, intel_cpd, grade_cpd, sat_cpd, letter_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; bp = BeliefPropagation(G)</span>
+<span class="sd">        &gt;&gt;&gt; bp.calibrate()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calibrate_junction_tree</span><span class="p">(</span><span class="n">operation</span><span class="o">=</span><span class="s2">&quot;marginalize&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BeliefPropagation.max_calibrate"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.max_calibrate">[docs]</a>    <span class="k">def</span> <span class="nf">max_calibrate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Max-calibration of the junction tree using belief propagation.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import BeliefPropagation</span>
+<span class="sd">        &gt;&gt;&gt; G = BayesianNetwork([(&#39;diff&#39;, &#39;grade&#39;), (&#39;intel&#39;, &#39;grade&#39;),</span>
+<span class="sd">        ...                    (&#39;intel&#39;, &#39;SAT&#39;), (&#39;grade&#39;, &#39;letter&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; diff_cpd = TabularCPD(&#39;diff&#39;, 2, [[0.2], [0.8]])</span>
+<span class="sd">        &gt;&gt;&gt; intel_cpd = TabularCPD(&#39;intel&#39;, 3, [[0.5], [0.3], [0.2]])</span>
+<span class="sd">        &gt;&gt;&gt; grade_cpd = TabularCPD(&#39;grade&#39;, 3,</span>
+<span class="sd">        ...                        [[0.1, 0.1, 0.1, 0.1, 0.1, 0.1],</span>
+<span class="sd">        ...                         [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],</span>
+<span class="sd">        ...                         [0.8, 0.8, 0.8, 0.8, 0.8, 0.8]],</span>
+<span class="sd">        ...                        evidence=[&#39;diff&#39;, &#39;intel&#39;],</span>
+<span class="sd">        ...                        evidence_card=[2, 3])</span>
+<span class="sd">        &gt;&gt;&gt; sat_cpd = TabularCPD(&#39;SAT&#39;, 2,</span>
+<span class="sd">        ...                      [[0.1, 0.2, 0.7],</span>
+<span class="sd">        ...                       [0.9, 0.8, 0.3]],</span>
+<span class="sd">        ...                      evidence=[&#39;intel&#39;], evidence_card=[3])</span>
+<span class="sd">        &gt;&gt;&gt; letter_cpd = TabularCPD(&#39;letter&#39;, 2,</span>
+<span class="sd">        ...                         [[0.1, 0.4, 0.8],</span>
+<span class="sd">        ...                          [0.9, 0.6, 0.2]],</span>
+<span class="sd">        ...                         evidence=[&#39;grade&#39;], evidence_card=[3])</span>
+<span class="sd">        &gt;&gt;&gt; G.add_cpds(diff_cpd, intel_cpd, grade_cpd, sat_cpd, letter_cpd)</span>
+<span class="sd">        &gt;&gt;&gt; bp = BeliefPropagation(G)</span>
+<span class="sd">        &gt;&gt;&gt; bp.max_calibrate()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calibrate_junction_tree</span><span class="p">(</span><span class="n">operation</span><span class="o">=</span><span class="s2">&quot;maximize&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">joint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a generalized query method that can be used for both query and map query.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables for which you want to compute the probability</span>
+<span class="sd">        operation: str (&#39;marginalize&#39; | &#39;maximize&#39;)</span>
+<span class="sd">            The operation to do for passing messages between nodes.</span>
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import BeliefPropagation</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; values = pd.DataFrame(np.random.randint(low=0, high=2, size=(1000, 5)),</span>
+<span class="sd">        ...                       columns=[&#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; model = BayesianNetwork([(&#39;A&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;B&#39;), (&#39;C&#39;, &#39;D&#39;), (&#39;B&#39;, &#39;E&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; model.fit(values)</span>
+<span class="sd">        &gt;&gt;&gt; inference = BeliefPropagation(model)</span>
+<span class="sd">        &gt;&gt;&gt; phi_query = inference.query([&#39;A&#39;, &#39;B&#39;])</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Algorithm 10.4 Out-of-clique inference in clique tree</span>
+<span class="sd">        Probabilistic Graphical Models: Principles and Techniques Daphne Koller and Nir Friedman.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">is_calibrated</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_converged</span><span class="p">(</span><span class="n">operation</span><span class="o">=</span><span class="n">operation</span><span class="p">)</span>
+        <span class="c1"># Calibrate the junction tree if not calibrated</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_calibrated</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">calibrate</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
+            <span class="n">query_variables</span> <span class="o">=</span> <span class="p">[</span><span class="n">variables</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query_variables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="n">query_variables</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">evidence</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">evidence</span> <span class="k">else</span> <span class="p">[])</span>
+
+        <span class="c1"># Find a tree T&#39; such that query_variables are a subset of scope(T&#39;)</span>
+        <span class="n">nodes_with_query_variables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">query_variables</span><span class="p">:</span>
+            <span class="n">nodes_with_query_variables</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+            <span class="p">)</span>
+        <span class="n">subtree_nodes</span> <span class="o">=</span> <span class="n">nodes_with_query_variables</span>
+
+        <span class="c1"># Conversion of set to tuple just for indexing</span>
+        <span class="n">nodes_with_query_variables</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">nodes_with_query_variables</span><span class="p">)</span>
+        <span class="c1"># As junction tree is a tree, that means that there would be only path between any two nodes in the tree</span>
+        <span class="c1"># thus we can just take the path between any two nodes; no matter there order is</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes_with_query_variables</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">subtree_nodes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                <span class="n">nx</span><span class="o">.</span><span class="n">shortest_path</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="p">,</span>
+                    <span class="n">nodes_with_query_variables</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">nodes_with_query_variables</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="n">subtree_undirected_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_tree</span><span class="o">.</span><span class="n">subgraph</span><span class="p">(</span><span class="n">subtree_nodes</span><span class="p">)</span>
+        <span class="c1"># Converting subtree into a junction tree</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subtree_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="n">JunctionTree</span><span class="p">()</span>
+            <span class="n">subtree</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">subtree_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subtree</span> <span class="o">=</span> <span class="n">JunctionTree</span><span class="p">(</span><span class="n">subtree_undirected_graph</span><span class="o">.</span><span class="n">edges</span><span class="p">())</span>
+
+        <span class="c1"># Selecting a node is root node. Root node would be having only one neighbor</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subtree</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">root_node</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">subtree</span><span class="o">.</span><span class="n">nodes</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">root_node</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">subtree</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">subtree</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">clique_potential_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">root_node</span><span class="p">]]</span>
+
+        <span class="c1"># For other nodes in the subtree compute the clique potentials as follows</span>
+        <span class="c1"># As all the nodes are nothing but tuples so simple set(root_node) won&#39;t work at it would update the set with&#39;</span>
+        <span class="c1"># all the elements of the tuple; instead use set([root_node]) as it would include only the tuple not the</span>
+        <span class="c1"># internal elements within it.</span>
+        <span class="n">parent_nodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">root_node</span><span class="p">])</span>
+        <span class="n">nodes_traversed</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">parent_nodes</span><span class="p">:</span>
+            <span class="n">parent_node</span> <span class="o">=</span> <span class="n">parent_nodes</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">subtree</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">parent_node</span><span class="p">))</span> <span class="o">-</span> <span class="n">nodes_traversed</span><span class="p">:</span>
+                <span class="n">clique_potential_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">clique_beliefs</span><span class="p">[</span><span class="n">child_node</span><span class="p">]</span>
+                    <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sepset_beliefs</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">([</span><span class="n">parent_node</span><span class="p">,</span> <span class="n">child_node</span><span class="p">])]</span>
+                <span class="p">)</span>
+                <span class="n">parent_nodes</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">child_node</span><span class="p">])</span>
+            <span class="n">nodes_traversed</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">parent_node</span><span class="p">])</span>
+
+        <span class="c1"># Add factors to the corresponding junction tree</span>
+        <span class="n">subtree</span><span class="o">.</span><span class="n">add_factors</span><span class="p">(</span><span class="o">*</span><span class="n">clique_potential_list</span><span class="p">)</span>
+
+        <span class="c1"># Sum product variable elimination on the subtree</span>
+        <span class="n">variable_elimination</span> <span class="o">=</span> <span class="n">VariableElimination</span><span class="p">(</span><span class="n">subtree</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;marginalize&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">variable_elimination</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+                <span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;maximize&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">variable_elimination</span><span class="o">.</span><span class="n">map_query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="BeliefPropagation.query"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">variables</span><span class="p">,</span>
+        <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">joint</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Query method using belief propagation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables for which you want to compute the probability</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        virtual_evidence: list (default:None)</span>
+<span class="sd">            A list of coreBN.factors.discrete.TabularCPD representing the virtual</span>
+<span class="sd">            evidences.</span>
+
+<span class="sd">        joint: boolean</span>
+<span class="sd">            If True, returns a Joint Distribution over `variables`.</span>
+<span class="sd">            If False, returns a dict of distributions over each of the `variables`.</span>
+
+<span class="sd">        show_progress: boolean</span>
+<span class="sd">            If True shows a progress bar.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import BeliefPropagation</span>
+<span class="sd">        &gt;&gt;&gt; bayesian_model = BayesianNetwork([(&#39;A&#39;, &#39;J&#39;), (&#39;R&#39;, &#39;J&#39;), (&#39;J&#39;, &#39;Q&#39;),</span>
+<span class="sd">        ...                                 (&#39;J&#39;, &#39;L&#39;), (&#39;G&#39;, &#39;L&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_a = TabularCPD(&#39;A&#39;, 2, [[0.2], [0.8]])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_r = TabularCPD(&#39;R&#39;, 2, [[0.4], [0.6]])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_j = TabularCPD(&#39;J&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.6, 0.7, 0.1],</span>
+<span class="sd">        ...                     [0.1, 0.4, 0.3, 0.9]],</span>
+<span class="sd">        ...                    [&#39;R&#39;, &#39;A&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_q = TabularCPD(&#39;Q&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.2],</span>
+<span class="sd">        ...                     [0.1, 0.8]],</span>
+<span class="sd">        ...                    [&#39;J&#39;], [2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_l = TabularCPD(&#39;L&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.45, 0.8, 0.1],</span>
+<span class="sd">        ...                     [0.1, 0.55, 0.2, 0.9]],</span>
+<span class="sd">        ...                    [&#39;G&#39;, &#39;J&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_g = TabularCPD(&#39;G&#39;, 2, [[0.6], [0.4]])</span>
+<span class="sd">        &gt;&gt;&gt; bayesian_model.add_cpds(cpd_a, cpd_r, cpd_j, cpd_q, cpd_l, cpd_g)</span>
+<span class="sd">        &gt;&gt;&gt; belief_propagation = BeliefPropagation(bayesian_model)</span>
+<span class="sd">        &gt;&gt;&gt; belief_propagation.query(variables=[&#39;J&#39;, &#39;Q&#39;],</span>
+<span class="sd">        ...                          evidence={&#39;A&#39;: 0, &#39;R&#39;: 0, &#39;G&#39;: 0, &#39;L&#39;: 1})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">orig_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Step 1: Parameter Checks</span>
+        <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">common_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t have the same variables in both `variables` and `evidence`. Found in both: </span><span class="si">{</span><span class="n">common_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Step 2: If virtual_evidence is provided, modify model and evidence.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">virtual_evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_evidence</span><span class="p">(</span><span class="n">virtual_evidence</span><span class="p">)</span>
+            <span class="n">virt_evidence</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__&quot;</span> <span class="o">+</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_evidence</span><span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence</span><span class="p">,</span> <span class="o">**</span><span class="n">virt_evidence</span><span class="p">},</span>
+                <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Step 3: Do network pruning.</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_bayesian_model</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="c1"># Step 4: Run inference.</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">operation</span><span class="o">=</span><span class="s2">&quot;marginalize&quot;</span><span class="p">,</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+            <span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orig_model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">joint</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BeliefPropagation.map_query"><a class="viewcode-back" href="../../../coreBN.inference.html#coreBN.inference.ExactInference.BeliefPropagation.map_query">[docs]</a>    <span class="k">def</span> <span class="nf">map_query</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        MAP Query method using belief propagation.</span>
+
+<span class="sd">        Note: When multiple variables are passed, it returns the map_query for each</span>
+<span class="sd">        of them individually.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variables: list</span>
+<span class="sd">            list of variables for which you want to compute the probability</span>
+
+<span class="sd">        virtual_evidence: list (default:None)</span>
+<span class="sd">            A list of coreBN.factors.discrete.TabularCPD representing the virtual</span>
+<span class="sd">            evidences.</span>
+
+<span class="sd">        evidence: dict</span>
+<span class="sd">            a dict key, value pair as {var: state_of_var_observed}</span>
+<span class="sd">            None if no evidence</span>
+
+<span class="sd">        show_progress: boolean</span>
+<span class="sd">            If True, shows a progress bar.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.factors.discrete import TabularCPD</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.models import BayesianNetwork</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.inference import BeliefPropagation</span>
+<span class="sd">        &gt;&gt;&gt; bayesian_model = BayesianNetwork([(&#39;A&#39;, &#39;J&#39;), (&#39;R&#39;, &#39;J&#39;), (&#39;J&#39;, &#39;Q&#39;),</span>
+<span class="sd">        ...                                 (&#39;J&#39;, &#39;L&#39;), (&#39;G&#39;, &#39;L&#39;)])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_a = TabularCPD(&#39;A&#39;, 2, [[0.2], [0.8]])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_r = TabularCPD(&#39;R&#39;, 2, [[0.4], [0.6]])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_j = TabularCPD(&#39;J&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.6, 0.7, 0.1],</span>
+<span class="sd">        ...                     [0.1, 0.4, 0.3, 0.9]],</span>
+<span class="sd">        ...                    [&#39;R&#39;, &#39;A&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_q = TabularCPD(&#39;Q&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.2],</span>
+<span class="sd">        ...                     [0.1, 0.8]],</span>
+<span class="sd">        ...                    [&#39;J&#39;], [2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_l = TabularCPD(&#39;L&#39;, 2,</span>
+<span class="sd">        ...                    [[0.9, 0.45, 0.8, 0.1],</span>
+<span class="sd">        ...                     [0.1, 0.55, 0.2, 0.9]],</span>
+<span class="sd">        ...                    [&#39;G&#39;, &#39;J&#39;], [2, 2])</span>
+<span class="sd">        &gt;&gt;&gt; cpd_g = TabularCPD(&#39;G&#39;, 2, [[0.6], [0.4]])</span>
+<span class="sd">        &gt;&gt;&gt; bayesian_model.add_cpds(cpd_a, cpd_r, cpd_j, cpd_q, cpd_l, cpd_g)</span>
+<span class="sd">        &gt;&gt;&gt; belief_propagation = BeliefPropagation(bayesian_model)</span>
+<span class="sd">        &gt;&gt;&gt; belief_propagation.map_query(variables=[&#39;J&#39;, &#39;Q&#39;],</span>
+<span class="sd">        ...                              evidence={&#39;A&#39;: 0, &#39;R&#39;: 0, &#39;G&#39;: 0, &#39;L&#39;: 1})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">variables</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">variables</span>
+        <span class="n">evidence</span> <span class="o">=</span> <span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">common_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">evidence</span> <span class="k">if</span> <span class="n">evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+            <span class="n">variables</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">common_vars</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Can&#39;t have the same variables in both `variables` and `evidence`. Found in both: </span><span class="si">{</span><span class="n">common_vars</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># TODO:Check the note in docstring. Change that behavior to return the joint MAP</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="n">variables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+
+        <span class="c1"># Make a copy of the original model and then replace self.model with it later.</span>
+        <span class="n">orig_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">virtual_evidence</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_evidence</span><span class="p">(</span><span class="n">virtual_evidence</span><span class="p">)</span>
+            <span class="n">virt_evidence</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;__&quot;</span> <span class="o">+</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">virtual_evidence</span><span class="p">}</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">map_query</span><span class="p">(</span>
+                <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">evidence</span><span class="p">,</span> <span class="o">**</span><span class="n">virt_evidence</span><span class="p">},</span>
+                <span class="n">virtual_evidence</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">evidence</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prune_bayesian_model</span><span class="p">(</span><span class="n">variables</span><span class="p">,</span> <span class="n">evidence</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_structures</span><span class="p">()</span>
+
+        <span class="n">final_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query</span><span class="p">(</span>
+            <span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">operation</span><span class="o">=</span><span class="s2">&quot;marginalize&quot;</span><span class="p">,</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="n">evidence</span><span class="p">,</span>
+            <span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">orig_model</span><span class="p">)</span>
+
+        <span class="c1"># To handle the case when no argument is passed then</span>
+        <span class="c1"># _variable_elimination returns a dict.</span>
+        <span class="n">argmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">final_distribution</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">assignment</span> <span class="o">=</span> <span class="n">final_distribution</span><span class="o">.</span><span class="n">assignment</span><span class="p">([</span><span class="n">argmax</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">map_query_results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var_assignment</span> <span class="ow">in</span> <span class="n">assignment</span><span class="p">:</span>
+            <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">var_assignment</span>
+            <span class="n">map_query_results</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">map_query_results</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">return_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+                <span class="n">return_dict</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_query_results</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">return_dict</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

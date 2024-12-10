@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.tests.test_IO package &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="coreBN.tests.test_base package" href="coreBN.tests.test_base.html" />
+    <link rel="prev" title="coreBN.tests package" href="coreBN.tests.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">coreBN</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="coreBN.html">coreBN package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="coreBN.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="coreBN.CItests.html">coreBN.CItests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.IO.html">coreBN.IO package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.base.html">coreBN.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.estimators.html">coreBN.estimators package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.extern.html">coreBN.extern package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.factors.html">coreBN.factors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.independencies.html">coreBN.independencies package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.inference.html">coreBN.inference package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.metrics.html">coreBN.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.models.html">coreBN.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.sampling.html">coreBN.sampling package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="coreBN.tests.html">coreBN.tests package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="coreBN.utils.html">coreBN.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN.global_vars">coreBN.global_vars module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="coreBN.html#module-coreBN">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">coreBN</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.html">coreBN package</a></li>
+          <li class="breadcrumb-item"><a href="coreBN.tests.html">coreBN.tests package</a></li>
+      <li class="breadcrumb-item active">coreBN.tests.test_IO package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/coreBN.tests.test_IO.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="corebn-tests-test-io-package">
+<h1>coreBN.tests.test_IO package<a class="headerlink" href="#corebn-tests-test-io-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-coreBN.tests.test_IO.test_BIF">
+<span id="corebn-tests-test-io-test-bif-module"></span><h2>coreBN.tests.test_IO.test_BIF module<a class="headerlink" href="#module-coreBN.tests.test_IO.test_BIF" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_BIF.</span></span><span class="sig-name descname"><span class="pre">TestBIFReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_edges">
+<span class="sig-name descname"><span class="pre">test_get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_edges" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_model">
+<span class="sig-name descname"><span class="pre">test_get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_parents">
+<span class="sig-name descname"><span class="pre">test_get_parents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_parents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_property">
+<span class="sig-name descname"><span class="pre">test_get_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_property" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_values">
+<span class="sig-name descname"><span class="pre">test_get_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_values_reordered">
+<span class="sig-name descname"><span class="pre">test_get_values_reordered</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_values_reordered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_values_reordered" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_variables">
+<span class="sig-name descname"><span class="pre">test_get_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_get_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_get_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_network_name">
+<span class="sig-name descname"><span class="pre">test_network_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_network_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_network_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_states">
+<span class="sig-name descname"><span class="pre">test_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_states" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFReader.test_water_model">
+<span class="sig-name descname"><span class="pre">test_water_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFReader.test_water_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFReader.test_water_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_BIF.</span></span><span class="sig-name descname"><span class="pre">TestBIFWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFWriter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFWriter.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFWriter.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFWriter.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFWriter.test_str">
+<span class="sig-name descname"><span class="pre">test_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFWriter.test_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFWriter.test_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_BIF.TestBIFWriter.test_write_read_equal">
+<span class="sig-name descname"><span class="pre">test_write_read_equal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_BIF.html#TestBIFWriter.test_write_read_equal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_BIF.TestBIFWriter.test_write_read_equal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_IO.test_PomdpX">
+<span id="corebn-tests-test-io-test-pomdpx-module"></span><h2>coreBN.tests.test_IO.test_PomdpX module<a class="headerlink" href="#module-coreBN.tests.test_IO.test_PomdpX" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_PomdpX.</span></span><span class="sig-name descname"><span class="pre">TestPomdpXReaderString</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_initial_belief_system">
+<span class="sig-name descname"><span class="pre">test_get_initial_belief_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_get_initial_belief_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_initial_belief_system" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_parameter_dd">
+<span class="sig-name descname"><span class="pre">test_get_parameter_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_get_parameter_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_parameter_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_state_transition_function">
+<span class="sig-name descname"><span class="pre">test_get_state_transition_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_get_state_transition_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_state_transition_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_variables">
+<span class="sig-name descname"><span class="pre">test_get_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_get_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_get_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_initial_belief_dd">
+<span class="sig-name descname"><span class="pre">test_initial_belief_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_initial_belief_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_initial_belief_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_obs_function">
+<span class="sig-name descname"><span class="pre">test_obs_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_obs_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_obs_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_obs_function_dd">
+<span class="sig-name descname"><span class="pre">test_obs_function_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_obs_function_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_obs_function_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_reward_function">
+<span class="sig-name descname"><span class="pre">test_reward_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_reward_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_reward_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_state_transition_function">
+<span class="sig-name descname"><span class="pre">test_state_transition_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXReaderString.test_state_transition_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXReaderString.test_state_transition_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_PomdpX.</span></span><span class="sig-name descname"><span class="pre">TestPomdpXWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_initial_belief">
+<span class="sig-name descname"><span class="pre">test_add_initial_belief</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_add_initial_belief"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_initial_belief" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_obs_function">
+<span class="sig-name descname"><span class="pre">test_add_obs_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_add_obs_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_obs_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_reward_function">
+<span class="sig-name descname"><span class="pre">test_add_reward_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_add_reward_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_reward_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_transition_function">
+<span class="sig-name descname"><span class="pre">test_add_transition_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_add_transition_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_add_transition_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_initial_state_belief_dd">
+<span class="sig-name descname"><span class="pre">test_initial_state_belief_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_initial_state_belief_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_initial_state_belief_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_obs_function_dd">
+<span class="sig-name descname"><span class="pre">test_obs_function_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_obs_function_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_obs_function_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_reward_function_dd">
+<span class="sig-name descname"><span class="pre">test_reward_function_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_reward_function_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_reward_function_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_state_transition_function_dd">
+<span class="sig-name descname"><span class="pre">test_state_transition_function_dd</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_state_transition_function_dd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_state_transition_function_dd" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_variables">
+<span class="sig-name descname"><span class="pre">test_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_PomdpX.html#TestPomdpXWriter.test_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_PomdpX.TestPomdpXWriter.test_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_IO.test_XMLBIF">
+<span id="corebn-tests-test-io-test-xmlbif-module"></span><h2>coreBN.tests.test_IO.test_XMLBIF module<a class="headerlink" href="#module-coreBN.tests.test_IO.test_XMLBIF" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_XMLBIF.</span></span><span class="sig-name descname"><span class="pre">TestXMLBIFReaderMethods</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_edges">
+<span class="sig-name descname"><span class="pre">test_get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_edges" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_parents">
+<span class="sig-name descname"><span class="pre">test_get_parents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_parents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_property">
+<span class="sig-name descname"><span class="pre">test_get_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_property" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_states">
+<span class="sig-name descname"><span class="pre">test_get_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_states" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_values">
+<span class="sig-name descname"><span class="pre">test_get_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_variables">
+<span class="sig-name descname"><span class="pre">test_get_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_get_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_get_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_model">
+<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethods.test_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethods.test_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_XMLBIF.</span></span><span class="sig-name descname"><span class="pre">TestXMLBIFReaderMethodsFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.tearDown">
+<span class="sig-name descname"><span class="pre">tearDown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.tearDown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.tearDown" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for deconstructing the test fixture after testing it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_edges">
+<span class="sig-name descname"><span class="pre">test_get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_edges" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_parents">
+<span class="sig-name descname"><span class="pre">test_get_parents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_parents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_parents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_property">
+<span class="sig-name descname"><span class="pre">test_get_property</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_property"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_property" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_states">
+<span class="sig-name descname"><span class="pre">test_get_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_states" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_values">
+<span class="sig-name descname"><span class="pre">test_get_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_values" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_variables">
+<span class="sig-name descname"><span class="pre">test_get_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_get_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_get_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_model">
+<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFReaderMethodsFile.test_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFReaderMethodsFile.test_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_XMLBIF.</span></span><span class="sig-name descname"><span class="pre">TestXMLBIFWriterMethodsString</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFWriterMethodsString"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.assert_models_equivelent">
+<span class="sig-name descname"><span class="pre">assert_models_equivelent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">got</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFWriterMethodsString.assert_models_equivelent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.assert_models_equivelent" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFWriterMethodsString.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_statefull">
+<span class="sig-name descname"><span class="pre">test_write_xmlbif_statefull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFWriterMethodsString.test_write_xmlbif_statefull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_statefull" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_stateless">
+<span class="sig-name descname"><span class="pre">test_write_xmlbif_stateless</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBIF.html#TestXMLBIFWriterMethodsString.test_write_xmlbif_stateless"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBIF.TestXMLBIFWriterMethodsString.test_write_xmlbif_stateless" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_IO.test_XMLBeliefNetwork">
+<span id="corebn-tests-test-io-test-xmlbeliefnetwork-module"></span><h2>coreBN.tests.test_IO.test_XMLBeliefNetwork module<a class="headerlink" href="#module-coreBN.tests.test_IO.test_XMLBeliefNetwork" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_XMLBeliefNetwork.</span></span><span class="sig-name descname"><span class="pre">TestXBNReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_analysis_notebook">
+<span class="sig-name descname"><span class="pre">test_get_analysis_notebook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_analysis_notebook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_analysis_notebook" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_bnmodel_name">
+<span class="sig-name descname"><span class="pre">test_get_bnmodel_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_bnmodel_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_bnmodel_name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_distribution">
+<span class="sig-name descname"><span class="pre">test_get_distribution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_distribution" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_edges">
+<span class="sig-name descname"><span class="pre">test_get_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_edges" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_model">
+<span class="sig-name descname"><span class="pre">test_get_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_static_properties">
+<span class="sig-name descname"><span class="pre">test_get_static_properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_static_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_static_properties" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_variables">
+<span class="sig-name descname"><span class="pre">test_get_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_get_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_get_variables" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_init_exception">
+<span class="sig-name descname"><span class="pre">test_init_exception</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNReader.test_init_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNReader.test_init_exception" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">coreBN.tests.test_IO.test_XMLBeliefNetwork.</span></span><span class="sig-name descname"><span class="pre">TestXBNWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNWriter.setUp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.setUp" title="Permalink to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.test_file">
+<span class="sig-name descname"><span class="pre">test_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/coreBN/tests/test_IO/test_XMLBeliefNetwork.html#TestXBNWriter.test_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#coreBN.tests.test_IO.test_XMLBeliefNetwork.TestXBNWriter.test_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-coreBN.tests.test_IO">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-coreBN.tests.test_IO" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="coreBN.tests.html" class="btn btn-neutral float-left" title="coreBN.tests package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="coreBN.tests.test_base.html" class="btn btn-neutral float-right" title="coreBN.tests.test_base package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

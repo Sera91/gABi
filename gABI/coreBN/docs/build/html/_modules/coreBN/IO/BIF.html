@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="English/Python">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>coreBN.IO.BIF &mdash; gABi 00.00.01 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gABi
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">coreBN</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gABi</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">coreBN.IO.BIF</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for coreBN.IO.BIF</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">string</span> <span class="kn">import</span> <span class="n">Template</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">from</span> <span class="nn">pyparsing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CharsNotIn</span><span class="p">,</span>
+    <span class="n">Group</span><span class="p">,</span>
+    <span class="n">OneOrMore</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Suppress</span><span class="p">,</span>
+    <span class="n">Word</span><span class="p">,</span>
+    <span class="n">ZeroOrMore</span><span class="p">,</span>
+    <span class="n">alphanums</span><span class="p">,</span>
+    <span class="n">cppStyleComment</span><span class="p">,</span>
+    <span class="n">nums</span><span class="p">,</span>
+    <span class="n">printables</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">coreBN.factors.discrete</span> <span class="kn">import</span> <span class="n">TabularCPD</span>
+<span class="kn">from</span> <span class="nn">coreBN.models</span> <span class="kn">import</span> <span class="n">BayesianNetwork</span>
+
+
+<div class="viewcode-block" id="BIFReader"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader">[docs]</a><span class="k">class</span> <span class="nc">BIFReader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for reading network file in bif format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_properties</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a BIFReader object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        path : file or str</span>
+<span class="sd">            File of bif data</span>
+
+<span class="sd">        string : str</span>
+<span class="sd">            String of bif data</span>
+
+<span class="sd">        include_properties: boolean</span>
+<span class="sd">            If True, gets the properties tag from the file and stores in graph properties.</span>
+
+<span class="sd">        n_jobs: int (default: -1)</span>
+<span class="sd">            Number of jobs to run in parallel. `-1` means use all processors.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        # dog-problem.bif file is present at</span>
+<span class="sd">        # http://www.cs.cmu.edu/~javabayes/Examples/DogProblem/dog-problem.bif</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &lt;coreBN.IO.BIF.BIFReader object at 0x7f2375621cf8&gt;</span>
+<span class="sd">        &gt;&gt;&gt; model = reader.get_model()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">network</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">string</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">string</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must specify either path or string&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span> <span class="o">=</span> <span class="n">n_jobs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_properties</span> <span class="o">=</span> <span class="n">include_properties</span>
+
+        <span class="k">if</span> <span class="s1">&#39;&quot;&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">:</span>
+            <span class="c1"># Replacing quotes by spaces to remove case sensitivity like:</span>
+            <span class="c1"># &quot;Dog-Problem&quot; and Dog-problem</span>
+            <span class="c1"># or &quot;true&quot;&quot;false&quot; and &quot;true&quot; &quot;false&quot; and true false</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;/*&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="ow">or</span> <span class="s2">&quot;//&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">cppStyleComment</span><span class="o">.</span><span class="n">suppress</span><span class="p">()</span><span class="o">.</span><span class="n">transformString</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">network</span>
+            <span class="p">)</span>  <span class="c1"># removing comments from the file</span>
+
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name_expr</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state_expr</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">property_expr</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable_grammar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">probability_expr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_expr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_probability_grammar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_network_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_properties</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variable_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_property</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_edges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_edges</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BIFReader.get_variable_grammar"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_variable_grammar">[docs]</a>    <span class="k">def</span> <span class="nf">get_variable_grammar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A method that returns variable grammar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Defining a expression for valid word</span>
+        <span class="n">word_expr</span> <span class="o">=</span> <span class="n">Word</span><span class="p">(</span><span class="n">alphanums</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">word_expr2</span> <span class="o">=</span> <span class="n">Word</span><span class="p">(</span><span class="n">initChars</span><span class="o">=</span><span class="n">printables</span><span class="p">,</span> <span class="n">excludeChars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;{&quot;</span><span class="p">,</span> <span class="s2">&quot;}&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">])</span>
+        <span class="n">name_expr</span> <span class="o">=</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;variable&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">word_expr</span> <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+        <span class="n">state_expr</span> <span class="o">=</span> <span class="n">ZeroOrMore</span><span class="p">(</span><span class="n">word_expr2</span> <span class="o">+</span> <span class="n">Optional</span><span class="p">(</span><span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+        <span class="c1"># Defining a variable state expression</span>
+        <span class="n">variable_state_expr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">word_expr</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">Word</span><span class="p">(</span><span class="n">nums</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;{&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Group</span><span class="p">(</span><span class="n">state_expr</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;}&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># variable states is of the form type description [args] { val1, val2 }; (comma may or may not be present)</span>
+
+        <span class="n">property_expr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;property&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">CharsNotIn</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;;&quot;</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># Creating a expr to find property</span>
+
+        <span class="k">return</span> <span class="n">name_expr</span><span class="p">,</span> <span class="n">variable_state_expr</span><span class="p">,</span> <span class="n">property_expr</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_probability_grammar"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_probability_grammar">[docs]</a>    <span class="k">def</span> <span class="nf">get_probability_grammar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A method that returns probability grammar</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Creating valid word expression for probability, it is of the format</span>
+        <span class="c1"># wor1 | var2 , var3 or var1 var2 var3 or simply var</span>
+        <span class="n">word_expr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Word</span><span class="p">(</span><span class="n">alphanums</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">))</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="n">word_expr2</span> <span class="o">=</span> <span class="n">Word</span><span class="p">(</span>
+            <span class="n">initChars</span><span class="o">=</span><span class="n">printables</span><span class="p">,</span> <span class="n">excludeChars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;)&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span><span class="p">]</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+        <span class="c1"># creating an expression for valid numbers, of the format</span>
+        <span class="c1"># 1.00 or 1 or 1.00. 0.00 or 9.8e-5 etc</span>
+        <span class="n">num_expr</span> <span class="o">=</span> <span class="n">Word</span><span class="p">(</span><span class="n">nums</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span> <span class="o">+</span> <span class="s2">&quot;e&quot;</span> <span class="o">+</span> <span class="s2">&quot;E&quot;</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="n">Optional</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+        <span class="n">probability_expr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;probability&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">OneOrMore</span><span class="p">(</span><span class="n">word_expr</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">optional_expr</span> <span class="o">=</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">OneOrMore</span><span class="p">(</span><span class="n">word_expr2</span><span class="p">)</span> <span class="o">+</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+        <span class="n">probab_attributes</span> <span class="o">=</span> <span class="n">optional_expr</span> <span class="o">|</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">)</span>
+        <span class="n">cpd_expr</span> <span class="o">=</span> <span class="n">probab_attributes</span> <span class="o">+</span> <span class="n">OneOrMore</span><span class="p">(</span><span class="n">num_expr</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">probability_expr</span><span class="p">,</span> <span class="n">cpd_expr</span></div>
+
+<div class="viewcode-block" id="BIFReader.variable_block"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.variable_block">[docs]</a>    <span class="k">def</span> <span class="nf">variable_block</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="s2">&quot;variable&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">.</span><span class="n">start</span><span class="p">())</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">[</span><span class="n">index</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="p">:</span> <span class="n">end</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BIFReader.probability_block"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.probability_block">[docs]</a>    <span class="k">def</span> <span class="nf">probability_block</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="s2">&quot;probability&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">.</span><span class="n">start</span><span class="p">())</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">[</span><span class="n">index</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="p">:</span> <span class="n">end</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_network_name"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_network_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_network_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the name of the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        ---------------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIF.BifReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.network_name()</span>
+<span class="sd">        &#39;Dog-Problem&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;network&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+        <span class="c1"># Creating a network attribute</span>
+        <span class="n">network_attribute</span> <span class="o">=</span> <span class="n">Suppress</span><span class="p">(</span><span class="s2">&quot;network&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">Word</span><span class="p">(</span><span class="n">alphanums</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;{&quot;</span>
+        <span class="n">network_name</span> <span class="o">=</span> <span class="n">network_attribute</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">network_name</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns list of variables of the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_variables()</span>
+<span class="sd">        [&#39;light-on&#39;,&#39;bowel_problem&#39;,&#39;dog-out&#39;,&#39;hear-bark&#39;,&#39;family-out&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_block</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">variable_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">variable_names</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_states"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_states">[docs]</a>    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the states of variables present in the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -----------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_states()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;true&#39;,&#39;false&#39;],</span>
+<span class="sd">        &#39;dog-out&#39;: [&#39;true&#39;,&#39;false&#39;],</span>
+<span class="sd">        &#39;family-out&#39;: [&#39;true&#39;,&#39;false&#39;],</span>
+<span class="sd">        &#39;hear-bark&#39;: [&#39;true&#39;,&#39;false&#39;],</span>
+<span class="sd">        &#39;light-on&#39;: [&#39;true&#39;,&#39;false&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_block</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">variable_states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">variable_states</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_property"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_property">[docs]</a>    <span class="k">def</span> <span class="nf">get_property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the property of the variable</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_property()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;position = (335, 99)&#39;],</span>
+<span class="sd">        &#39;dog-out&#39;: [&#39;position = (300, 195)&#39;],</span>
+<span class="sd">        &#39;family-out&#39;: [&#39;position = (257, 99)&#39;],</span>
+<span class="sd">        &#39;hear-bark&#39;: [&#39;position = (296, 268)&#39;],</span>
+<span class="sd">        &#39;light-on&#39;: [&#39;position = (218, 195)&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_properties</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_block</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+            <span class="n">variable_properties</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">properties</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">variable_properties</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_parents"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the parents of the variables present in the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_parents()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [],</span>
+<span class="sd">        &#39;dog-out&#39;: [&#39;family-out&#39;, &#39;bowel-problem&#39;],</span>
+<span class="sd">        &#39;family-out&#39;: [],</span>
+<span class="sd">        &#39;hear-bark&#39;: [&#39;dog-out&#39;],</span>
+<span class="sd">        &#39;light-on&#39;: [&#39;family-out&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_parents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">probability_block</span><span class="p">():</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probability_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">variable_parents</span><span class="p">[</span><span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">variable_parents</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_values_from_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">probability_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+        <span class="n">var_name</span><span class="p">,</span> <span class="n">parents</span> <span class="o">=</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">names</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpd_expr</span><span class="o">.</span><span class="n">searchString</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+        <span class="c1"># Check if the block is a table.</span>
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;.*</span><span class="se">\\</span><span class="s2">n[ ]*table .*</span><span class="se">\n</span><span class="s2">.*&quot;</span><span class="p">,</span> <span class="n">block</span><span class="p">)):</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cpds</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">arr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var_name</span><span class="p">]),</span>
+                    <span class="n">arr</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var_name</span><span class="p">]),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">arr_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">])</span>
+            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var_name</span><span class="p">]),</span> <span class="n">arr_length</span><span class="p">))</span>
+            <span class="n">values_dict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">prob_line</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+                <span class="n">states</span> <span class="o">=</span> <span class="n">prob_line</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">parents</span><span class="p">)]</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prob_line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">parents</span><span class="p">)</span> <span class="p">:]]</span>
+                <span class="n">values_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">states</span><span class="p">)]</span> <span class="o">=</span> <span class="n">vals</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">combination</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+                <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">parents</span><span class="p">])</span>
+            <span class="p">):</span>
+                <span class="n">arr</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">values_dict</span><span class="p">[</span><span class="n">combination</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">arr</span>
+
+<div class="viewcode-block" id="BIFReader.get_values"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the CPD of the variables present in the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.readwrite import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_values()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: np.array([[0.01],</span>
+<span class="sd">                                    [0.99]]),</span>
+<span class="sd">        &#39;dog-out&#39;: np.array([[0.99, 0.97, 0.9, 0.3],</span>
+<span class="sd">                            [0.01, 0.03, 0.1, 0.7]]),</span>
+<span class="sd">        &#39;family-out&#39;: np.array([[0.15],</span>
+<span class="sd">                                [0.85]]),</span>
+<span class="sd">        &#39;hear-bark&#39;: np.array([[0.7, 0.01],</span>
+<span class="sd">                                [0.3, 0.99]]),</span>
+<span class="sd">        &#39;light-on&#39;: np.array([[0.6, 0.05],</span>
+<span class="sd">                            [0.4, 0.95]])}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cpd_values</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">)(</span>
+            <span class="n">delayed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_values_from_block</span><span class="p">)(</span><span class="n">block</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">probability_block</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="n">variable_cpds</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">cpd_values</span><span class="p">:</span>
+            <span class="n">variable_cpds</span><span class="p">[</span><span class="n">var_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">arr</span>
+
+        <span class="k">return</span> <span class="n">variable_cpds</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_edges"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_edges">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the edges of the network</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.readwrite import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_edges()</span>
+<span class="sd">        [[&#39;family-out&#39;, &#39;light-on&#39;],</span>
+<span class="sd">         [&#39;family-out&#39;, &#39;dog-out&#39;],</span>
+<span class="sd">         [&#39;bowel-problem&#39;, &#39;dog-out&#39;],</span>
+<span class="sd">         [&#39;dog-out&#39;, &#39;hear-bark&#39;]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edges</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="n">value</span><span class="p">,</span> <span class="n">key</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">edges</span></div>
+
+<div class="viewcode-block" id="BIFReader.get_model"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFReader.get_model">[docs]</a>    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_name_type</span><span class="o">=</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the Bayesian Model read from the file/str.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        state_name_type: int, str or bool (default: str)</span>
+<span class="sd">            The data type to which to convert the state names of the variables.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        ----------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader</span>
+<span class="sd">        &gt;&gt;&gt; reader = BIFReader(&quot;bif_test.bif&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; reader.get_model()</span>
+<span class="sd">        &lt;core.models.BayesianNetwork.BayesianNetwork object at 0x7f20af154320&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">BayesianNetwork</span><span class="p">()</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_names</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_edges</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span>
+
+            <span class="n">tabular_cpds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_cpds</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_cpds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="n">sn</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">p_var</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">state_name_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">p_var</span><span class="p">]))</span>
+                    <span class="k">for</span> <span class="n">p_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                <span class="p">}</span>
+                <span class="n">sn</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">state_name_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+                <span class="n">cpd</span> <span class="o">=</span> <span class="n">TabularCPD</span><span class="p">(</span>
+                    <span class="n">var</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">]),</span>
+                    <span class="n">values</span><span class="p">,</span>
+                    <span class="n">evidence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">],</span>
+                    <span class="n">evidence_card</span><span class="o">=</span><span class="p">[</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">evidence_var</span><span class="p">])</span>
+                        <span class="k">for</span> <span class="n">evidence_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="p">],</span>
+                    <span class="n">state_names</span><span class="o">=</span><span class="n">sn</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">tabular_cpds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpd</span><span class="p">)</span>
+
+            <span class="n">model</span><span class="o">.</span><span class="n">add_cpds</span><span class="p">(</span><span class="o">*</span><span class="n">tabular_cpds</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_properties</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">properties</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">properties</span><span class="p">:</span>
+                        <span class="n">prop_name</span><span class="p">,</span> <span class="n">prop_value</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span>
+                            <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">prop</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="n">prop_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">prop_value</span>
+
+            <span class="k">return</span> <span class="n">model</span>
+
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;First get states of variables, edges, parents and network name&quot;</span>
+            <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="BIFWriter"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter">[docs]</a><span class="k">class</span> <span class="nc">BIFWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for writing BIF network file format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise a BIFWriter Object</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model: BayesianNetwork Instance</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        ---------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.utils import get_example_model</span>
+<span class="sd">        &gt;&gt;&gt; asia = get_example_model(&#39;asia&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(asia)</span>
+<span class="sd">        &gt;&gt;&gt; writer</span>
+<span class="sd">        &lt;writer_BIF.BIFWriter at 0x7f05e5ea27b8&gt;</span>
+<span class="sd">        &gt;&gt;&gt; writer.write_bif(&#39;asia.bif&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BayesianNetwork</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;model must be an instance of BayesianNetwork&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">network_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_properties</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_parents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BIFWriter.BIF_templates"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.BIF_templates">[docs]</a>    <span class="k">def</span> <span class="nf">BIF_templates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create template for writing in BIF format</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">network_template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">&quot;network $name {</span><span class="se">\n</span><span class="s2">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># property tag may or may not be present in model,and since no of properties</span>
+        <span class="c1"># can be more than one , will replace them accoriding to format otherwise null</span>
+        <span class="n">variable_template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;variable $name {</span>
+<span class="sd">    type discrete [ $no_of_states ] { $states };</span>
+<span class="sd">$properties}\n&quot;&quot;&quot;</span>
+        <span class="p">)</span>
+        <span class="n">property_template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">&quot;    property $prop ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># $variable_ here is name of variable, used underscore for clarity</span>
+        <span class="n">probability_template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;probability ( $variable_$separator_$parents ) {</span>
+<span class="sd">    table $values ;</span>
+<span class="sd">}\n&quot;&quot;&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">conditional_probability_template_total</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;probability ( $variable_$separator_$parents ) {</span>
+<span class="sd">$values</span>
+<span class="sd">}\n&quot;&quot;&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">conditional_probability_template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;    ( $state ) $values;</span><span class="se">\n</span><span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">network_template</span><span class="p">,</span>
+            <span class="n">variable_template</span><span class="p">,</span>
+            <span class="n">property_template</span><span class="p">,</span>
+            <span class="n">probability_template</span><span class="p">,</span>
+            <span class="n">conditional_probability_template_total</span><span class="p">,</span>
+            <span class="n">conditional_probability_template</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the BIF format as string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="p">(</span>
+            <span class="n">network_template</span><span class="p">,</span>
+            <span class="n">variable_template</span><span class="p">,</span>
+            <span class="n">property_template</span><span class="p">,</span>
+            <span class="n">probability_template</span><span class="p">,</span>
+            <span class="n">conditional_probability_template_total</span><span class="p">,</span>
+            <span class="n">conditional_probability_template</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BIF_templates</span><span class="p">()</span>
+        <span class="n">network</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">network</span> <span class="o">+=</span> <span class="n">network_template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">network_name</span><span class="p">)</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="n">no_of_states</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+            <span class="n">states</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_states</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                <span class="n">properties</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">properties</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">prop_val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_tag</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                    <span class="n">properties</span> <span class="o">+=</span> <span class="n">property_template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="n">prop_val</span><span class="p">)</span>
+            <span class="n">network</span> <span class="o">+=</span> <span class="n">variable_template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                <span class="n">no_of_states</span><span class="o">=</span><span class="n">no_of_states</span><span class="p">,</span>
+                <span class="n">states</span><span class="o">=</span><span class="n">states</span><span class="p">,</span>
+                <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+                <span class="n">parents</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">separator</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">cpd</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">var</span><span class="p">]))</span>
+                <span class="n">network</span> <span class="o">+=</span> <span class="n">probability_template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                    <span class="n">variable_</span><span class="o">=</span><span class="n">var</span><span class="p">,</span> <span class="n">separator_</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="n">parents</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">cpd</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parents_str</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variable_parents</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+                <span class="n">separator</span> <span class="o">=</span> <span class="s2">&quot; | &quot;</span>
+                <span class="n">cpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+                <span class="n">cpd_values_transpose</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">get_values</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+
+                <span class="n">parent_states</span> <span class="o">=</span> <span class="n">product</span><span class="p">(</span>
+                    <span class="o">*</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+                <span class="p">)</span>
+                <span class="n">all_cpd</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parent_states</span><span class="p">):</span>
+                    <span class="n">all_cpd</span> <span class="o">+=</span> <span class="n">conditional_probability_template</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                        <span class="n">state</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">)),</span>
+                        <span class="n">values</span><span class="o">=</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cpd_values_transpose</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:])),</span>
+                    <span class="p">)</span>
+                <span class="n">network</span> <span class="o">+=</span> <span class="n">conditional_probability_template_total</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span>
+                    <span class="n">variable_</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                    <span class="n">separator_</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span>
+                    <span class="n">parents</span><span class="o">=</span><span class="n">parents_str</span><span class="p">,</span>
+                    <span class="n">values</span><span class="o">=</span><span class="n">all_cpd</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">network</span>
+
+<div class="viewcode-block" id="BIFWriter.get_variables"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.get_variables">[docs]</a>    <span class="k">def</span> <span class="nf">get_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add variables to BIF</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list: a list containing names of variable</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; model = BIFReader(&#39;dog-problem.bif&#39;).get_model()</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_variables()</span>
+<span class="sd">        [&#39;bowel-problem&#39;, &#39;family-out&#39;, &#39;hear-bark&#39;, &#39;light-on&#39;, &#39;dog-out&#39;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">variables</span></div>
+
+<div class="viewcode-block" id="BIFWriter.get_states"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.get_states">[docs]</a>    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add states to variable of BIF</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dict of type {variable: a list of states}</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; model = BIFReader(&#39;dog-problem.bif&#39;).get_model()</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_states()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;bowel-problem_0&#39;, &#39;bowel-problem_1&#39;],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;dog-out_0&#39;, &#39;dog-out_1&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [&#39;family-out_0&#39;, &#39;family-out_1&#39;],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;hear-bark_0&#39;, &#39;hear-bark_1&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;light-on_0&#39;, &#39;light-on_1&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variable_states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">variable</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variable</span>
+            <span class="n">variable_states</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">cpd</span><span class="o">.</span><span class="n">state_names</span><span class="p">[</span><span class="n">variable</span><span class="p">]:</span>
+                <span class="n">variable_states</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">variable_states</span></div>
+
+<div class="viewcode-block" id="BIFWriter.get_properties"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.get_properties">[docs]</a>    <span class="k">def</span> <span class="nf">get_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add property to variables in BIF</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dict of type {variable: list of properties }</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.readwrite import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; model = BIFReader(&#39;dog-problem.bif&#39;).get_model()</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_properties()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [&#39;position = (335, 99)&#39;],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;position = (300, 195)&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [&#39;position = (257, 99)&#39;],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;position = (296, 268)&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;position = (218, 195)&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+        <span class="n">property_tag</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">variables</span><span class="p">):</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+            <span class="n">property_tag</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">property_tag</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">prop</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">property_tag</span></div>
+
+<div class="viewcode-block" id="BIFWriter.get_parents"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.get_parents">[docs]</a>    <span class="k">def</span> <span class="nf">get_parents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the parents to BIF</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dict of type {variable: a list of parents}</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.readwrite import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; model = BIFReader(&#39;dog-problem.bif&#39;).get_model()</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_parents()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: [],</span>
+<span class="sd">         &#39;dog-out&#39;: [&#39;bowel-problem&#39;, &#39;family-out&#39;],</span>
+<span class="sd">         &#39;family-out&#39;: [],</span>
+<span class="sd">         &#39;hear-bark&#39;: [&#39;dog-out&#39;],</span>
+<span class="sd">         &#39;light-on&#39;: [&#39;family-out&#39;]}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="n">variable_parents</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">variable_parents</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">variable_parents</span></div>
+
+<div class="viewcode-block" id="BIFWriter.get_cpds"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.get_cpds">[docs]</a>    <span class="k">def</span> <span class="nf">get_cpds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds tables to BIF</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict: dict of type {variable: array}</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; model = BIFReader(&#39;dog-problem.bif&#39;).get_model()</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(model)</span>
+<span class="sd">        &gt;&gt;&gt; writer.get_cpds()</span>
+<span class="sd">        {&#39;bowel-problem&#39;: array([ 0.01,  0.99]),</span>
+<span class="sd">         &#39;dog-out&#39;: array([ 0.99,  0.97,  0.9 ,  0.3 ,  0.01,  0.03,  0.1 ,  0.7 ]),</span>
+<span class="sd">         &#39;family-out&#39;: array([ 0.15,  0.85]),</span>
+<span class="sd">         &#39;hear-bark&#39;: array([ 0.7 ,  0.01,  0.3 ,  0.99]),</span>
+<span class="sd">         &#39;light-on&#39;: array([ 0.6 ,  0.05,  0.4 ,  0.95])}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cpds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_cpds</span><span class="p">()</span>
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">cpd</span> <span class="ow">in</span> <span class="n">cpds</span><span class="p">:</span>
+            <span class="n">tables</span><span class="p">[</span><span class="n">cpd</span><span class="o">.</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">cpd</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">tables</span></div>
+
+<div class="viewcode-block" id="BIFWriter.write_bif"><a class="viewcode-back" href="../../../coreBN.IO.html#coreBN.IO.BIF.BIFWriter.write_bif">[docs]</a>    <span class="k">def</span> <span class="nf">write_bif</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the BIF data into a file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : Name of the file</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.utils import get_example_model</span>
+<span class="sd">        &gt;&gt;&gt; from coreBN.IO import BIFReader, BIFWriter</span>
+<span class="sd">        &gt;&gt;&gt; asia = get_example_model(&#39;asia&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; writer = BIFWriter(asia)</span>
+<span class="sd">        &gt;&gt;&gt; writer.write_bif(filename=&#39;asia.bif&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fout</span><span class="p">:</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">writer</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Serafina Di Gioia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
